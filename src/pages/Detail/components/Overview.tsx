@@ -1,36 +1,43 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { CandleData, CandleData2, CandleDataDetail } from '../../../typing/type';
 
-export default function Overview() {
+export default function Overview({ candleData }: CandleData2) {
+  const [priceColor, setPriceColor] = useState<string>('');
+  const [priceNow, setPriceNow] = useState<string | undefined>();
+
+  useEffect(() => {
+    setPriceNow((prev) => prev);
+  }, [candleData]);
   return (
     <OuterBox>
       <CoinTitle>BTC/BUSD</CoinTitle>
       <CoinOverview>
         <MarketPrice>
-          <Price1>17,405.05</Price1>
-          <Price2>$17,405.05</Price2>
+          <Price1>{Number(candleData?.k.c).toFixed(2).toLocaleString()}</Price1>
+          <Price2>${Number(candleData?.k.c).toFixed(2).toLocaleString()}</Price2>
         </MarketPrice>
         <OverViewMenu>
-          <MenuTitle>24h Change</MenuTitle>
+          <MenuTitle>24시간 변동</MenuTitle>
           <MenuIndex>
             <span>-289.09</span>
             <span>-1.63%</span>
           </MenuIndex>
         </OverViewMenu>
         <OverViewMenu>
-          <MenuTitle>24h High</MenuTitle>
-          <MenuIndex>17,748.96</MenuIndex>
+          <MenuTitle>24시간 최고가</MenuTitle>
+          <MenuIndex>{Number(candleData?.k.h).toFixed(2).toLocaleString()}</MenuIndex>
         </OverViewMenu>
         <OverViewMenu>
-          <MenuTitle>24h Low</MenuTitle>
-          <MenuIndex>17,274,78</MenuIndex>
+          <MenuTitle>24시간 최저가</MenuTitle>
+          <MenuIndex>{Number(candleData?.k.l).toFixed(2).toLocaleString()}</MenuIndex>
         </OverViewMenu>
         <OverViewMenu>
-          <MenuTitle>24h Volume(BTC)</MenuTitle>
+          <MenuTitle>24시간 거래량(BTC)</MenuTitle>
           <MenuIndex>128,259.33</MenuIndex>
         </OverViewMenu>
         <OverViewMenu>
-          <MenuTitle>24h Volume(BUSD)</MenuTitle>
+          <MenuTitle>24시간 거래량(BUSD)</MenuTitle>
           <MenuIndex>2,243,339,938.56</MenuIndex>
         </OverViewMenu>
       </CoinOverview>

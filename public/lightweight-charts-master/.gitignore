@@ -1,0 +1,36 @@
+# nodejs & npm
+node_modules/
+npm-debug.log*
+package-lock.json
+
+debug.html
+
+# python
+*.pyc
+
+# vscode, idea, sublime
+.idea/**
+.vscode/**
+!/.vscode/launch.json
+!/.vscode/settings.json
+*.sublime-project
+*.sublime-workspace
+
+# artifacts
+/lib/
+/dist/
+/src/**/*.js
+/src/**/*.d.ts
+/website/docs/api/
+/website/versioned_docs/**/api/
+/website/build
+/website/.docusaurus
+/website/.cache-loader
+/website/.previous-typings-cache/*.d.ts
+/website/versions.d.ts
+
+!/src/typings/**/*.d.ts
+
+# graphics tests out data
+/tests/e2e/graphics/.gendata/
+tests/e2e/coverage/.gendata

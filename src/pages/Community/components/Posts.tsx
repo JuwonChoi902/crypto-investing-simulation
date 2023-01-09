@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 import styled from 'styled-components';
 
 interface PostData {
@@ -88,10 +89,44 @@ const PostData: PostData = {
 };
 
 export default function Posts() {
+  const [posts, setPosts] = useState<PostDetail[]>();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const dateParsing = (date: string): string => {
+      const theDate = new Date(date);
+      const todayDate = new Date();
+      const strTheDate = theDate.toLocaleString();
+      const strTodayDate = todayDate.toLocaleString();
+
+      if (
+        strTheDate.slice(0, strTheDate.indexOf('오') - 1) !==
+        strTodayDate.slice(0, strTodayDate.indexOf('오') - 1)
+      ) {
+        return `${theDate.getFullYear()}.${String(theDate.getMonth() + 1).padStart(2, '0')}.${String(
+          theDate.getDate(),
+        ).padStart(2, '0')}.`;
+      }
+      return `${String(theDate.getHours()).padStart(2, '0')}:${String(theDate.getMinutes()).padStart(
+        2,
+        '0',
+      )}`;
+    };
+    setPosts(PostData.posts.map((el) => ({ ...el, created_at: dateParsing(el.created_at) })));
+  }, []);
+
+  const goPost = (e: any) => {
+    navigate('/community/post');
+  };
   return (
     <OuterBox>
       <WhatIsList>전체글보기</WhatIsList>
-      <HowManyPosts>10,387개의 글</HowManyPosts>
+      <HowManyPosts>
+        {PostData.number}개의 글
+        <button type='button' onClick={goPost}>
+          글 작성하기
+        </button>
+      </HowManyPosts>
       <PostsBox>
         <TableTitles>
           <TableEmpty />
@@ -101,14 +136,14 @@ export default function Posts() {
           <TableHit>조회</TableHit>
         </TableTitles>
         <PostList>
-          {PostData.map((el) => (
+          {posts?.map((el) => (
             <Post>
               <LabelAndTitle>
                 <Label>질문</Label>
                 <Title>{el.title}</Title>
               </LabelAndTitle>
               <User>{el.user.nickname}</User>
-              <Date>{el.created_at}</Date>
+              <DateInPost>{el.created_at}</DateInPost>
               <Hits>{el.hits}</Hits>
             </Post>
           ))}
@@ -128,10 +163,22 @@ const WhatIsList = styled.div``;
 const HowManyPosts = styled.div`
   display: flex;
   align-items: center;
+  justify-content: space-between;
   height: 30px;
   padding: 6px 0 10px 0;
   font-size: 12px;
   border-bottom: 1px solid black;
+
+  button {
+    /* background-color: ${(props) => props.theme.style.backgroundGrey}; */
+    background-color: white;
+    border: none;
+  }
+
+  button:hover {
+    cursor: pointer;
+    color: ${(props) => props.theme.style.yellow};
+  }
 `;
 const PostsBox = styled.div`
   background-color: white;
@@ -185,18 +232,33 @@ const Label = styled.div`
   align-items: center;
   width: 69px;
   padding-right: 7px;
+
+  &:hover {
+    cursor: pointer;
+    text-decoration: underline;
+  }
 `;
 const Title = styled.div`
   display: flex;
   align-items: center;
+
+  &:hover {
+    cursor: pointer;
+    text-decoration: underline;
+  }
 `;
 const User = styled.div`
   display: flex;
   align-items: center;
   width: 104px;
   padding: 0px 7px;
+
+  &:hover {
+    cursor: pointer;
+    text-decoration: underline;
+  }
 `;
-const Date = styled.div`
+const DateInPost = styled.div`
   ${(props) => props.theme.variables.flex()}
   width: 66px;
   padding: 0px 7px;

@@ -81,6 +81,9 @@ const RankBox = styled.div`
 `;
 const UserNick = styled.div`
   margin-right: 5px;
+  &:hover {
+    cursor: pointer;
+  }
 `;
 const Rank = styled.div`
   display: flex;
@@ -96,6 +99,7 @@ const UserImg = styled.div`
   margin-right: 5px;
   img {
     width: 16px;
+    opacity: 0.2;
   }
 `;
 const UserRank = styled.div`

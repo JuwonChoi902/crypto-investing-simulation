@@ -40,6 +40,7 @@ export default function Footer() {
   );
 }
 const OuterBox = styled.div`
+  margin-top: 200px;
   padding: 0px 20px;
   bottom: 0;
 `;
@@ -79,6 +80,7 @@ const CommunityBox = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-top: 50px;
 
   span {
     font-size: 20px;

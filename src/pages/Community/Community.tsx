@@ -17,8 +17,8 @@ export default function Community() {
       </FilterBox>
       <MainBox>
         <Ranking />
-        <Posts />
-        {/* <Post /> */}
+        {/* <Posts /> */}
+        <Post />
       </MainBox>
     </OuterBox>
   );

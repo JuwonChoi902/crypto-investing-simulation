@@ -1,4 +1,4 @@
-import { lookupService } from 'dns/promises';
+import { useNavigate } from 'react-router';
 import React from 'react';
 import styled from 'styled-components';
 import support from '../Images/support.png';
@@ -6,6 +6,7 @@ import faq from '../Images/faq.png';
 import community from '../Images/community.png';
 
 export default function NeedHelp() {
+  const navigate = useNavigate();
   return (
     <OuterBox>
       <Title>도움이 필요하세요?</Title>
@@ -37,7 +38,7 @@ export default function NeedHelp() {
           <TextBox>
             <HelpTitle>커뮤니티</HelpTitle>
             <HelpDesc>다른 사람들과 투자 정보를 공유하고 친구가 되어보세요.</HelpDesc>
-            <HelpLink>방문하기</HelpLink>
+            <HelpLink onClick={() => navigate('/community')}>방문하기</HelpLink>
           </TextBox>
         </MenuCard>
       </MenuBox>

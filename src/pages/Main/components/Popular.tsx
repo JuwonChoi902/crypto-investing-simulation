@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router';
 import coinImg from '../Images/mainIcon.png';
 
 interface PopularCrypto {
@@ -60,11 +61,12 @@ const PopularCrypto: PopularCrypto[] = [
   },
 ];
 export default function Popular() {
+  const navigate = useNavigate();
   return (
     <OuterBox>
       <TitleBox>
         <Title>인기 가상화폐</Title>
-        <GoMarket>가상화폐 더 보러가기</GoMarket>
+        <GoMarket onClick={() => navigate('/market')}>가상화폐 더 보러가기</GoMarket>
       </TitleBox>
       <ListBox>
         <CategoryBox>

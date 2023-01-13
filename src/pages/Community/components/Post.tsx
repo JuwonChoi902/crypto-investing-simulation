@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import user from '../images/user.png';
 import comment from '../images/comment.png';
@@ -6,7 +6,37 @@ import likeFill from '../images/likeFill.png';
 import dislikeFill from '../images/dislikeFill.png';
 import write from '../images/write.png';
 
-export default function Post() {
+type PostIdProps = {
+  id: number;
+};
+
+interface PostDetail {
+  id: number;
+  title: string;
+  description: string;
+  created_at: string;
+  hits: number;
+  user: UserDetail;
+}
+
+export interface UserDetail {
+  id: number;
+  nickname: string;
+  description: string | null;
+}
+
+export default function Post({ id }: PostIdProps) {
+  const [postData, setPostData] = useState<PostDetail>();
+  useEffect(() => {
+    fetch(`http://172.20.10.2:3000/community?page=1&number=10`, {
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8',
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => setPostData(data));
+  }, []);
+
   const textarea = useRef<HTMLTextAreaElement>(null);
 
   const TextAreaHandler = () => {

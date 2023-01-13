@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import star from './images/star.png';
 import Ranking from './components/Ranking';
@@ -6,6 +6,7 @@ import Posts from './components/Posts';
 import Post from './components/Post';
 
 export default function Community() {
+  const [postNow, setPostNow] = useState(null);
   return (
     <OuterBox>
       <FilterBox>
@@ -17,8 +18,7 @@ export default function Community() {
       </FilterBox>
       <MainBox>
         <Ranking />
-        {/* <Posts /> */}
-        <Post />
+        {postNow ? <Post id={postNow} /> : <Posts setPostNow={setPostNow} />}
       </MainBox>
     </OuterBox>
   );

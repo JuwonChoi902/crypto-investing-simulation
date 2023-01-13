@@ -20,7 +20,7 @@ function Router() {
         <Route path='/market/' element={<Market />} />
         <Route path='/wallet/' element={<Wallet />} />
         <Route path='/community/:id' element={<Community />} />
-        <Route path='/community/post' element={<Posting />} />
+        <Route path='/community/posting' element={<Posting />} />
         <Route path='/detail/' element={<Detail />} />
       </Routes>
       <Footer />

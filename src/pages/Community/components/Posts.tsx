@@ -16,7 +16,7 @@ interface PostDetail {
   user: UserDetail;
 }
 
-interface UserDetail {
+export interface UserDetail {
   id: number;
   nickname: string;
   description: string | null;
@@ -88,7 +88,11 @@ const PostData: PostData = {
   number: 7,
 };
 
-export default function Posts() {
+interface AboutProps {
+  setPostNow: React.Dispatch<React.SetStateAction<number | null>>;
+}
+
+export default function Posts<AboutProps>({ setPostNow }: any) {
   const [posts, setPosts] = useState<PostDetail[]>();
   const navigate = useNavigate();
 
@@ -112,12 +116,22 @@ export default function Posts() {
         '0',
       )}`;
     };
-    setPosts(PostData.posts.map((el) => ({ ...el, created_at: dateParsing(el.created_at) })));
+
+    fetch(`http://172.20.10.2:3000/community?page=1&number=10`, {
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8',
+      },
+    })
+      .then((res) => res.json())
+      .then((data) =>
+        setPosts(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) }))),
+      );
   }, []);
 
   const goPost = (e: any) => {
     navigate('/community/post');
   };
+
   return (
     <OuterBox>
       <WhatIsList>전체글보기</WhatIsList>
@@ -137,10 +151,19 @@ export default function Posts() {
         </TableTitles>
         <PostList>
           {posts?.map((el) => (
-            <Post>
+            <Post key={el.id}>
               <LabelAndTitle>
                 <Label>질문</Label>
-                <Title>{el.title}</Title>
+                <Title
+                  id={el.id}
+                  onClick={(e) => {
+                    if (e.target instanceof Element) {
+                      setPostNow(Number(e.target.id));
+                    }
+                  }}
+                >
+                  {el.title}
+                </Title>
               </LabelAndTitle>
               <User>{el.user.nickname}</User>
               <DateInPost>{el.created_at}</DateInPost>
@@ -238,7 +261,7 @@ const Label = styled.div`
     text-decoration: underline;
   }
 `;
-const Title = styled.div`
+const Title = styled.div<{ id: any }>`
   display: flex;
   align-items: center;
 

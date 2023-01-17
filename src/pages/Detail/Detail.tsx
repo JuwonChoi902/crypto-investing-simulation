@@ -5,6 +5,7 @@ import CallBox from './components/CallBox';
 import MarketTrade from './components/MarketTrade';
 import Chart from './components/Chart';
 import BidAndBuy from './components/BidAndBuy';
+import OrderInfo from './components/OrderInfo';
 import { CandleData, CandleDataDetail, CandleData2 } from '../../typing/type';
 
 export default function Detail() {
@@ -60,10 +61,4 @@ const ChartBox = styled.div`
 `;
 const RightBox = styled.div`
   border-left: 1px solid #edf0f2;
-`;
-
-const OrderInfo = styled.div`
-  width: 100%;
-  height: 269px;
-  border-top: 1px solid #edf0f2;
 `;

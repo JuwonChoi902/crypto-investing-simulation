@@ -16,34 +16,92 @@ interface PostDetail {
   description: string;
   created_at: string;
   hits: number;
+  label: string;
   user: UserDetail;
 }
 
-export interface UserDetail {
+interface UserDetail {
   id: number;
   nickname: string;
   description: string | null;
 }
 
+interface Comments {
+  number: number;
+  reply: CommentDetail;
+}
+
+interface CommentDetail {
+  id: number;
+  comment: string;
+  created_at: string;
+  user: UserDetail;
+}
+
 export default function Post({ id }: PostIdProps) {
   const [postData, setPostData] = useState<PostDetail>();
+  const [commentData, setCommentData] = useState<CommentDetail[]>();
+  const [commentWrite, setCommentWrite] = useState<string>();
+
+  const dateParsing = (date: string): string => {
+    const theDate = new Date(date);
+
+    return `${theDate.getFullYear()}.${String(theDate.getMonth() + 1).padStart(2, '0')}.${String(
+      theDate.getDate(),
+    ).padStart(2, '0')}. ${String(theDate.getHours()).padStart(2, '0')}:${String(
+      theDate.getMinutes(),
+    ).padStart(2, '0')}`;
+  };
+
   useEffect(() => {
-    fetch(`http://172.20.10.2:3000/community?page=1&number=10`, {
+    fetch(`http://pien.kr:4000/community/${id}`, {
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
       },
     })
       .then((res) => res.json())
-      .then((data) => setPostData(data));
+      .then((data) => setPostData({ ...data, created_at: dateParsing(data.created_at) }));
+
+    fetch(`http://pien.kr:4000/community/reply/${id}`, {
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8',
+      },
+    })
+      .then((res) => res.json())
+      .then((data) =>
+        setCommentData(
+          data.reply.map((el: CommentDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
+        ),
+      );
   }, []);
 
   const textarea = useRef<HTMLTextAreaElement>(null);
 
-  const TextAreaHandler = () => {
+  const TextAreaHandler = (event: any) => {
     if (textarea.current) {
       textarea.current.style.height = 'auto';
       textarea.current.style.height = `${textarea.current.scrollHeight}px`;
     }
+
+    setCommentWrite(event.target.value);
+  };
+
+  const makeComment = () => {
+    fetch(`http://pien.kr:4000/community/reply`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8',
+        accessToken:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
+      },
+      body: JSON.stringify({ postId: id, comment: commentWrite }),
+    })
+      .then((res) => res.json())
+      .then((data) =>
+        setCommentData(
+          data.reply.map((el: CommentDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
+        ),
+      );
   };
 
   return (
@@ -55,8 +113,8 @@ export default function Post({ id }: PostIdProps) {
       </NavigateBox>
       <MainBox>
         <TitleBox>
-          <Label>질문</Label>
-          <Title>빈티지 컨버스 사이즈 현행과 동일하게 가야하나요?</Title>
+          <Label>{postData?.label}</Label>
+          <Title>{postData?.title}</Title>
         </TitleBox>
         <UserInfo>
           <UserDesc>
@@ -65,13 +123,13 @@ export default function Post({ id }: PostIdProps) {
             </UserImg>
             <UserDetail>
               <DetailNickBox>
-                <DetailNick>장기석</DetailNick>
+                <DetailNick>{postData?.user?.nickname}</DetailNick>
                 <DetailRank>132위</DetailRank>
                 <AskChat>1:1 채팅</AskChat>
               </DetailNickBox>
               <DetailPostInfo>
-                <CreatedAt>2022.12.16. 02:20</CreatedAt>
-                <Hits>325</Hits>
+                <CreatedAt>{postData?.created_at}</CreatedAt>
+                <Hits>{postData?.hits}</Hits>
               </DetailPostInfo>
             </UserDetail>
           </UserDesc>
@@ -80,18 +138,18 @@ export default function Post({ id }: PostIdProps) {
               <img src={comment} alt='comment' />
               <HowManyComment>
                 <div>댓글</div>
-                <span>5</span>
+                <span>{commentData?.length}</span>
               </HowManyComment>
             </GoComment>
             <GoShare>URL 복사</GoShare>
           </ButtonBox>
         </UserInfo>
-        <Description>제가 빈티지 컨버스는 처음이라 그런데, 현행이랑 동일 사이즈 가면 될까요?</Description>
+        <Description>{postData?.description}</Description>
         <ShowMore>
           <UserImg>
             <img src={user} alt='user' />
           </UserImg>
-          <span>장기석</span>
+          <span>{postData?.user.nickname}</span>
           <div>님의 게시글 더보기</div>
         </ShowMore>
         <LikeAndHateBox>
@@ -111,20 +169,34 @@ export default function Post({ id }: PostIdProps) {
         </LikeAndHateBox>
         <CommentBox>
           <CommentHeader>
-            <CommentTitle>
+            <CommentHeaderBox>
               <div>댓글</div>
-              <span>5개</span>
-            </CommentTitle>
+              <span>{commentData?.length}개</span>
+            </CommentHeaderBox>
           </CommentHeader>
           <Comments>
-            <Comment />
+            {commentData?.map((el, i) => (
+              <Comment index={i}>
+                <UserImg>
+                  <img src={user} alt='user' />
+                </UserImg>
+                <CommentTextBox>
+                  <CommentUserNick>{el.user.nickname}</CommentUserNick>
+                  <CommentDescription>{el.comment}</CommentDescription>
+                  <CommentCreatedAt>
+                    <span>{el.created_at}</span>
+                    <ReplyToReply>답글쓰기</ReplyToReply>
+                  </CommentCreatedAt>
+                </CommentTextBox>
+              </Comment>
+            ))}
           </Comments>
           <CommentPosting>
             <CommentPostingNick />
             <CommentPostingDesc ref={textarea} placeholder='댓글을 남겨보세요' onInput={TextAreaHandler} />
             <CommentPostingBtns>
               <Buttons />
-              <PostThisComment>등록</PostThisComment>
+              <PostThisComment onClick={makeComment}>등록</PostThisComment>
             </CommentPostingBtns>
           </CommentPosting>
         </CommentBox>
@@ -235,8 +307,8 @@ const UserDesc = styled.div`
 const UserImg = styled.div`
   display: flex;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 100%;
   border: 1px solid #e5e5e5;
   overflow: hidden;
@@ -247,6 +319,10 @@ const UserImg = styled.div`
     width: 24px;
     height: 24px;
     opacity: 0.2;
+  }
+
+  &:hover {
+    cursor: pointer;
   }
 `;
 const UserDetail = styled.div``;
@@ -404,7 +480,7 @@ const CommentHeader = styled.div`
   padding-top: 16px;
   margin-bottom: 11px;
 `;
-const CommentTitle = styled.div`
+const CommentHeaderBox = styled.div`
   display: flex;
 
   div {
@@ -420,17 +496,55 @@ const CommentTitle = styled.div`
   }
 `;
 const Comments = styled.div``;
-const Comment = styled.div``;
+const Comment = styled.div<{ index: number }>`
+  display: flex;
+  padding: 12px 0 10px 0;
+  border-top: ${(props) => (props.index === 0 ? 'none' : '1px solid #e5e5e5')};
+`;
+const CommentTextBox = styled.div``;
+const CommentUserNick = styled.div`
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 6px;
+
+  &:hover {
+    cursor: pointer;
+  }
+`;
+const CommentDescription = styled.div`
+  font-size: 13px;
+`;
+const CommentCreatedAt = styled.div`
+  font-size: 12px;
+  color: #979797;
+  margin-top: 7px;
+`;
+const ReplyToReply = styled.button`
+  border: none;
+  font-size: 12px;
+  font-weight: bold;
+  background-color: white;
+  margin-left: 8px;
+  color: #979797;
+
+  &:hover {
+    cursor: pointer;
+  }
+`;
+
 const CommentPosting = styled.div`
   border: 2px solid #e5e5e5;
   border-radius: 5px;
   padding: 16px 10px 10px 18px;
   font-size: 13px;
+  margin-top: 10px;
 `;
+
 const CommentPostingNick = styled.div`
   font-weight: bold;
   margin-bottom: 10px;
 `;
+
 const CommentPostingDesc = styled.textarea`
   margin-bottom: 10px;
   border: none;
@@ -443,11 +557,14 @@ const CommentPostingDesc = styled.textarea`
     outline: none;
   }
 `;
+
 const CommentPostingBtns = styled.div`
   display: flex;
   justify-content: space-between;
 `;
+
 const Buttons = styled.div``;
+
 const PostThisComment = styled.button`
   width: 46px;
   height: 34px;
@@ -455,6 +572,7 @@ const PostThisComment = styled.button`
   font-weight: bold;
   color: #b7b7b7;
   background-color: white;
+
   &:hover {
     cursor: pointer;
   }

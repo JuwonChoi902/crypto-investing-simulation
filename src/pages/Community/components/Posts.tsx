@@ -13,80 +13,81 @@ interface PostDetail {
   description: string;
   created_at: string;
   hits: number;
+  label: string;
   user: UserDetail;
 }
 
-export interface UserDetail {
+interface UserDetail {
   id: number;
   nickname: string;
   description: string | null;
 }
 
-const PostData: PostData = {
-  posts: [
-    {
-      id: 2,
-      title: '갓갓',
-      description: '거석',
-      created_at: '2022-12-14T06:58:03.000Z',
-      hits: 50,
-      user: {
-        id: 1,
-        nickname: '피엔',
-        description: null,
-      },
-    },
-    {
-      id: 3,
-      title: '갓갓',
-      description: '거석',
-      created_at: '2022-12-14T06:58:03.000Z',
-      hits: 40,
-      user: {
-        id: 1,
-        nickname: '피엔',
-        description: null,
-      },
-    },
-    {
-      id: 6,
-      title: '갓갓',
-      description: '거석',
-      created_at: '2022-12-14T07:14:35.000Z',
-      hits: 60,
-      user: {
-        id: 1,
-        nickname: '피엔',
-        description: null,
-      },
-    },
-    {
-      id: 7,
-      title: '갓갓',
-      description: '거석',
-      created_at: '2022-12-14T07:14:35.000Z',
-      hits: 20,
-      user: {
-        id: 1,
-        nickname: '피엔',
-        description: null,
-      },
-    },
-    {
-      id: 8,
-      title: '갓갓',
-      description: '거석',
-      created_at: '2022-12-14T07:14:36.000Z',
-      hits: 50,
-      user: {
-        id: 1,
-        nickname: '피엔',
-        description: null,
-      },
-    },
-  ],
-  number: 7,
-};
+// const PostData: PostData = {
+//   posts: [
+//     {
+//       id: 2,
+//       title: '갓갓',
+//       description: '거석',
+//       created_at: '2022-12-14T06:58:03.000Z',
+//       hits: 50,
+//       user: {
+//         id: 1,
+//         nickname: '피엔',
+//         description: null,
+//       },
+//     },
+//     {
+//       id: 3,
+//       title: '갓갓',
+//       description: '거석',
+//       created_at: '2022-12-14T06:58:03.000Z',
+//       hits: 40,
+//       user: {
+//         id: 1,
+//         nickname: '피엔',
+//         description: null,
+//       },
+//     },
+//     {
+//       id: 6,
+//       title: '갓갓',
+//       description: '거석',
+//       created_at: '2022-12-14T07:14:35.000Z',
+//       hits: 60,
+//       user: {
+//         id: 1,
+//         nickname: '피엔',
+//         description: null,
+//       },
+//     },
+//     {
+//       id: 7,
+//       title: '갓갓',
+//       description: '거석',
+//       created_at: '2022-12-14T07:14:35.000Z',
+//       hits: 20,
+//       user: {
+//         id: 1,
+//         nickname: '피엔',
+//         description: null,
+//       },
+//     },
+//     {
+//       id: 8,
+//       title: '갓갓',
+//       description: '거석',
+//       created_at: '2022-12-14T07:14:36.000Z',
+//       hits: 50,
+//       user: {
+//         id: 1,
+//         nickname: '피엔',
+//         description: null,
+//       },
+//     },
+//   ],
+//   number: 7,
+// };
 
 interface AboutProps {
   setPostNow: React.Dispatch<React.SetStateAction<number | null>>;
@@ -117,7 +118,7 @@ export default function Posts<AboutProps>({ setPostNow }: any) {
       )}`;
     };
 
-    fetch(`http://172.20.10.2:3000/community?page=1&number=10`, {
+    fetch(`http://pien.kr:4000/community?page=1&number=10`, {
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
       },
@@ -136,7 +137,7 @@ export default function Posts<AboutProps>({ setPostNow }: any) {
     <OuterBox>
       <WhatIsList>전체글보기</WhatIsList>
       <HowManyPosts>
-        {PostData.number}개의 글
+        {posts?.length}개의 글
         <button type='button' onClick={goPost}>
           글 작성하기
         </button>
@@ -153,7 +154,7 @@ export default function Posts<AboutProps>({ setPostNow }: any) {
           {posts?.map((el) => (
             <Post key={el.id}>
               <LabelAndTitle>
-                <Label>질문</Label>
+                <Label>{el.label}</Label>
                 <Title
                   id={el.id}
                   onClick={(e) => {

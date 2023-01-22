@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
+import { text } from 'stream/consumers';
+import { useNavigate } from 'react-router';
 import user from '../images/user.png';
 import comment from '../images/comment.png';
 import likeFill from '../images/likeFill.png';
@@ -8,6 +10,7 @@ import write from '../images/write.png';
 
 type PostIdProps = {
   id: number;
+  setPostNow: React.Dispatch<React.SetStateAction<null>>;
 };
 
 interface PostDetail {
@@ -38,10 +41,12 @@ interface CommentDetail {
   user: UserDetail;
 }
 
-export default function Post({ id }: PostIdProps) {
+export default function Post({ id, setPostNow }: PostIdProps) {
   const [postData, setPostData] = useState<PostDetail>();
   const [commentData, setCommentData] = useState<CommentDetail[]>();
   const [commentWrite, setCommentWrite] = useState<string>();
+
+  const navigate = useNavigate();
 
   const dateParsing = (date: string): string => {
     const theDate = new Date(date);
@@ -54,7 +59,7 @@ export default function Post({ id }: PostIdProps) {
   };
 
   useEffect(() => {
-    fetch(`http://pien.kr:4000/community/${id}`, {
+    fetch(`http://192.168.50.135:4000/community/${id}`, {
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
       },
@@ -62,16 +67,14 @@ export default function Post({ id }: PostIdProps) {
       .then((res) => res.json())
       .then((data) => setPostData({ ...data, created_at: dateParsing(data.created_at) }));
 
-    fetch(`http://pien.kr:4000/community/reply/${id}`, {
+    fetch(`http://192.168.50.135:4000/community/reply/${id}`, {
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
       },
     })
       .then((res) => res.json())
       .then((data) =>
-        setCommentData(
-          data.reply.map((el: CommentDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
-        ),
+        setCommentData(data.map((el: CommentDetail) => ({ ...el, created_at: dateParsing(el.created_at) }))),
       );
   }, []);
 
@@ -87,29 +90,85 @@ export default function Post({ id }: PostIdProps) {
   };
 
   const makeComment = () => {
-    fetch(`http://pien.kr:4000/community/reply`, {
+    fetch(`http://192.168.50.135:4000/community/reply`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
-        accessToken:
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
+        Authorization:
+          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
       },
       body: JSON.stringify({ postId: id, comment: commentWrite }),
     })
       .then((res) => res.json())
-      .then((data) =>
-        setCommentData(
-          data.reply.map((el: CommentDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
-        ),
-      );
+      .then((data) => {
+        console.log(data);
+        setCommentData(data.map((el: CommentDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
+      });
+
+    if (textarea.current) {
+      textarea.current.value = '';
+    }
+  };
+
+  const deleteComment = (event: any) => {
+    fetch(`http://192.168.50.135:4000/community/reply/${event.target.id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8',
+        Authorization:
+          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        if (data.status === true) {
+          fetch(`http://192.168.50.135:4000/community/reply/${id}`, {
+            headers: {
+              'Content-Type': 'application/json;charset=utf-8',
+            },
+          })
+            .then((res) => res.json())
+            .then((data) =>
+              setCommentData(
+                data.map((el: CommentDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
+              ),
+            );
+        }
+      });
+  };
+
+  const deletePost = () => {
+    fetch(`http://192.168.50.135:4000/community/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8',
+        Authorization:
+          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === true) {
+          setPostNow(null);
+        }
+      });
   };
 
   return (
     <OuterBox>
       <NavigateBox>
-        <Previous type='button'>이전글</Previous>
-        <Next type='button'>다음글</Next>
-        <List type='button'>목록</List>
+        <NavigateLeft>
+          <EditPost>수정</EditPost>
+          <DeletePost onClick={deletePost}>삭제</DeletePost>
+        </NavigateLeft>
+        <NavigateRight>
+          <Previous type='button'>이전글</Previous>
+          <Next type='button'>다음글</Next>
+          <List type='button' onClick={() => setPostNow(null)}>
+            목록
+          </List>
+        </NavigateRight>
       </NavigateBox>
       <MainBox>
         <TitleBox>
@@ -138,7 +197,7 @@ export default function Post({ id }: PostIdProps) {
               <img src={comment} alt='comment' />
               <HowManyComment>
                 <div>댓글</div>
-                <span>{commentData?.length}</span>
+                <span>{commentData ? commentData.length : 0}</span>
               </HowManyComment>
             </GoComment>
             <GoShare>URL 복사</GoShare>
@@ -171,7 +230,7 @@ export default function Post({ id }: PostIdProps) {
           <CommentHeader>
             <CommentHeaderBox>
               <div>댓글</div>
-              <span>{commentData?.length}개</span>
+              <span>{commentData ? commentData.length : 0}개</span>
             </CommentHeaderBox>
           </CommentHeader>
           <Comments>
@@ -188,6 +247,12 @@ export default function Post({ id }: PostIdProps) {
                     <ReplyToReply>답글쓰기</ReplyToReply>
                   </CommentCreatedAt>
                 </CommentTextBox>
+                <DeleteOrEdit>
+                  <Edit>수정</Edit>
+                  <Delete onClick={deleteComment} id={el.id}>
+                    삭제
+                  </Delete>
+                </DeleteOrEdit>
               </Comment>
             ))}
           </Comments>
@@ -203,7 +268,7 @@ export default function Post({ id }: PostIdProps) {
       </MainBox>
       <NavigateBox2>
         <NaviLeft>
-          <WritePost>
+          <WritePost onClick={() => navigate('/community/posting')}>
             <img src={write} alt='write' />
             글쓰기
           </WritePost>
@@ -223,9 +288,46 @@ const OuterBox = styled.div`
 `;
 const NavigateBox = styled.div`
   display: flex;
-  justify-content: end;
+  justify-content: space-between;
   padding-bottom: 14px;
 `;
+const NavigateLeft = styled.div`
+  display: flex;
+`;
+const NavigateRight = styled.div`
+  display: flex;
+`;
+
+const EditPost = styled.div`
+  ${(props) => props.theme.variables.flex()}
+  width: 76px;
+  height: 36px;
+  background-color: #eff0f2;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+
+  &:hover {
+    cursor: pointer;
+  }
+`;
+const DeletePost = styled.div`
+  ${(props) => props.theme.variables.flex()}
+  width: 76px;
+  height: 36px;
+  background-color: #eff0f2;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-left: 10px;
+
+  &:hover {
+    cursor: pointer;
+  }
+`;
+
 const Previous = styled.button`
   ${(props) => props.theme.variables.flex()}
   width: 76px;
@@ -240,6 +342,7 @@ const Previous = styled.button`
     cursor: pointer;
   }
 `;
+
 const Next = styled.button`
   ${(props) => props.theme.variables.flex()}
   width: 76px;
@@ -498,6 +601,7 @@ const CommentHeaderBox = styled.div`
 const Comments = styled.div``;
 const Comment = styled.div<{ index: number }>`
   display: flex;
+  position: relative;
   padding: 12px 0 10px 0;
   border-top: ${(props) => (props.index === 0 ? 'none' : '1px solid #e5e5e5')};
 `;
@@ -526,6 +630,36 @@ const ReplyToReply = styled.button`
   background-color: white;
   margin-left: 8px;
   color: #979797;
+
+  &:hover {
+    cursor: pointer;
+  }
+`;
+
+const DeleteOrEdit = styled.div`
+  display: flex;
+  position: absolute;
+  right: 0;
+`;
+const Edit = styled.button`
+  background-color: white;
+  border: none;
+  color: #979797;
+  font-size: 12px;
+  font-weight: bold;
+  height: 16px;
+
+  &:hover {
+    cursor: pointer;
+  }
+`;
+const Delete = styled.button<{ id: any }>`
+  background-color: white;
+  border: none;
+  color: #979797;
+  font-size: 12px;
+  font-weight: bold;
+  height: 16px;
 
   &:hover {
     cursor: pointer;

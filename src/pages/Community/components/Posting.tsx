@@ -1,30 +1,74 @@
+import { title } from 'process';
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router';
 import styled from 'styled-components';
 
 export default function Posting() {
-  const [userInput, setUserInput] = useState();
+  const [userInput, setUserInput] = useState({
+    title: '',
+    description: '',
+    label: '',
+  });
+
+  const { title, description, label } = userInput;
+
+  const navigate = useNavigate();
+
+  const postThis = () => {
+    if (title.length < 2 || description.length < 2) {
+      alert('제목과 내용은 2글자 이상이어야 합니다.');
+    }
+    if (label === '') {
+      alert('라벨을 선택하세요');
+    }
+    if (title.length >= 2 && description.length >= 2 && label !== '') {
+      fetch(`http://192.168.50.135:4000/community/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+          Authorization:
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5NDYyMTQsImV4cCI6MTY3Mzk0ODAxNH0.h6ZtgWs1GUcCF5w2ceSXEAZiZqwe8zwplrG1sgmUuv4',
+        },
+        body: JSON.stringify(userInput),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.status === 'good') {
+            navigate('/community/lists');
+          }
+        });
+    }
+  };
+
+  const makingUserInput = (event: any) => {
+    setUserInput({ ...userInput, [event?.target.name]: event.target.value });
+  };
+
   return (
     <OuterBox>
       <HeaderBox>
         <h1>게시판 글쓰기</h1>
-        <button type='button'>등록</button>
+        <button type='button' onClick={postThis}>
+          등록
+        </button>
       </HeaderBox>
       <PostingBox>
         <TitleBox>
           <InputBox>
-            <input name='title' placeholder='제목을 입력하세요.' />
+            <input name='title' onChange={makingUserInput} placeholder='제목을 입력하세요.' />
           </InputBox>
-          <select name='label' required>
+          <select name='label' onChange={makingUserInput} required>
             <option value='' disabled selected>
               라벨을 선택하세요.
             </option>
             <option value='질문'>질문</option>
             <option value='자랑'>자랑</option>
             <option value='공유'>공유</option>
+            <option value='잡담'>잡담</option>
           </select>
         </TitleBox>
         <Description>
-          <textarea name='description' placeholder='내용을 입력하세요.' />
+          <textarea name='description' onChange={makingUserInput} placeholder='내용을 입력하세요.' />
         </Description>
       </PostingBox>
     </OuterBox>

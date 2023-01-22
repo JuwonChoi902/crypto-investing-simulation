@@ -95,6 +95,7 @@ interface AboutProps {
 
 export default function Posts<AboutProps>({ setPostNow }: any) {
   const [posts, setPosts] = useState<PostDetail[]>();
+  const [postNumber, setPostNumber] = useState<number>();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -118,26 +119,27 @@ export default function Posts<AboutProps>({ setPostNow }: any) {
       )}`;
     };
 
-    fetch(`http://pien.kr:4000/community?page=1&number=10`, {
+    fetch(`http://192.168.50.135:4000/community?page=1&number=10`, {
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
       },
     })
       .then((res) => res.json())
-      .then((data) =>
-        setPosts(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) }))),
-      );
+      .then((data) => {
+        setPostNumber(data.number);
+        setPosts(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
+      });
   }, []);
 
   const goPost = (e: any) => {
-    navigate('/community/post');
+    navigate('/community/posting');
   };
 
   return (
     <OuterBox>
       <WhatIsList>전체글보기</WhatIsList>
       <HowManyPosts>
-        {posts?.length}개의 글
+        {postNumber}개의 글
         <button type='button' onClick={goPost}>
           글 작성하기
         </button>

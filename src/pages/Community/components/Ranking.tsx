@@ -1,27 +1,41 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import user from '../images/user.png';
 
-interface UserList {
+interface RankingUsers {
   id: number;
-  userId: string;
-  rank: number;
-  returnRate: number;
+  nickname: string;
+  ranking: number;
+  incomePercent: number;
+  incomeMoney: number;
 }
 
-const UserList: UserList[] = [
-  { id: 1, userId: 'goodjob123', rank: 1, returnRate: 145 },
-  { id: 2, userId: 'rltjrWkdWkd', rank: 2, returnRate: 140 },
-  { id: 3, userId: 'juwon123', rank: 3, returnRate: 135 },
-  { id: 4, userId: 'nerdcloud09', rank: 4, returnRate: 130 },
-  { id: 5, userId: 'icanwinthis123', rank: 5, returnRate: 125 },
-  { id: 6, userId: 'hohoho', rank: 6, returnRate: 120 },
-  { id: 7, userId: 'appleowner17', rank: 7, returnRate: 115 },
-  { id: 8, userId: 'carsalerRich', rank: 8, returnRate: 110 },
-  { id: 9, userId: 'youAneMe2233', rank: 9, returnRate: 105 },
-  { id: 10, userId: 'yoonah95', rank: 10, returnRate: 100 },
-];
+// const UserList: UserList[] = [
+//   { id: 1, userId: 'goodjob123', rank: 1, returnRate: 145 },
+//   { id: 2, userId: 'rltjrWkdWkd', rank: 2, returnRate: 140 },
+//   { id: 3, userId: 'juwon123', rank: 3, returnRate: 135 },
+//   { id: 4, userId: 'nerdcloud09', rank: 4, returnRate: 130 },
+//   { id: 5, userId: 'icanwinthis123', rank: 5, returnRate: 125 },
+//   { id: 6, userId: 'hohoho', rank: 6, returnRate: 120 },
+//   { id: 7, userId: 'appleowner17', rank: 7, returnRate: 115 },
+//   { id: 8, userId: 'carsalerRich', rank: 8, returnRate: 110 },
+//   { id: 9, userId: 'youAneMe2233', rank: 9, returnRate: 105 },
+//   { id: 10, userId: 'yoonah95', rank: 10, returnRate: 100 },
+// ];
+
 export default function Ranking() {
+  const [topTen, setTopTen] = useState<RankingUsers[]>();
+
+  useEffect(() => {
+    fetch(`http://pien.kr:4000/ranking/incomepercent`, {
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8',
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => setTopTen(data));
+  }, []);
+
   return (
     <OuterBox>
       <FilterTap>
@@ -30,14 +44,14 @@ export default function Ranking() {
         <ShowMyRank>내랭킹</ShowMyRank>
       </FilterTap>
       <RankBox>
-        {UserList.map((el) => (
+        {topTen?.map((el) => (
           <Rank>
             <UserImg>
               <img src={user} alt='user' />
             </UserImg>
-            <UserRank>{el.rank}위</UserRank>
-            <UserNick>{el.userId}</UserNick>
-            <UserRate>{el.returnRate}%</UserRate>
+            <UserRank>{el.ranking}위</UserRank>
+            <UserNick>{el.nickname}</UserNick>
+            <UserRate>{Math.floor(el.incomePercent)}%</UserRate>
           </Rank>
         ))}
       </RankBox>

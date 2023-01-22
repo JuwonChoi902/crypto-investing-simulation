@@ -1,20 +1,33 @@
 import styled from 'styled-components';
 import React from 'react';
+import { useNavigate } from 'react-router';
 import icon from './images/mainIcon.png';
 import menuLeft from './images/menuLeft.png';
 import menuRight from './images/menuRight.png';
 
 export default function Nav() {
+  const navigate = useNavigate();
+  const goCommunity = () => {
+    navigate('/community/list');
+  };
+
+  const goMarket = () => {
+    navigate('/market');
+  };
+
+  const goMain = () => {
+    navigate('/main');
+  };
   return (
     <OuterBox>
-      <CryptoBy>
+      <CryptoBy onClick={goMain}>
         <img src={icon} alt='icon' />
         <span>CryptoBy</span>
       </CryptoBy>
       <NavButtonBox>
         <img src={menuLeft} alt='menuLeft' />
-        <NavMenuBtn>구매하기</NavMenuBtn>
-        <NavMenuBtn>커뮤니티</NavMenuBtn>
+        <NavMenuBtn onClick={goMarket}>구매하기</NavMenuBtn>
+        <NavMenuBtn onClick={goCommunity}>커뮤니티</NavMenuBtn>
       </NavButtonBox>
 
       <MenuButtonBox>

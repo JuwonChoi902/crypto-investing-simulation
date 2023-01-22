@@ -18,7 +18,7 @@ export default function Community() {
       </FilterBox>
       <MainBox>
         <Ranking />
-        {postNow ? <Post id={postNow} /> : <Posts setPostNow={setPostNow} />}
+        {postNow ? <Post id={postNow} setPostNow={setPostNow} /> : <Posts setPostNow={setPostNow} />}
       </MainBox>
     </OuterBox>
   );

@@ -2,16 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
 
-interface PostData {
-  posts: PostDetail[];
-  number: number;
-}
-
 interface PostDetail {
   id: number;
   title: string;
   description: string;
   created_at: string;
+  repliesCount: number;
   hits: number;
   label: string;
   user: UserDetail;
@@ -23,103 +19,42 @@ interface UserDetail {
   description: string | null;
 }
 
-// const PostData: PostData = {
-//   posts: [
-//     {
-//       id: 2,
-//       title: '갓갓',
-//       description: '거석',
-//       created_at: '2022-12-14T06:58:03.000Z',
-//       hits: 50,
-//       user: {
-//         id: 1,
-//         nickname: '피엔',
-//         description: null,
-//       },
-//     },
-//     {
-//       id: 3,
-//       title: '갓갓',
-//       description: '거석',
-//       created_at: '2022-12-14T06:58:03.000Z',
-//       hits: 40,
-//       user: {
-//         id: 1,
-//         nickname: '피엔',
-//         description: null,
-//       },
-//     },
-//     {
-//       id: 6,
-//       title: '갓갓',
-//       description: '거석',
-//       created_at: '2022-12-14T07:14:35.000Z',
-//       hits: 60,
-//       user: {
-//         id: 1,
-//         nickname: '피엔',
-//         description: null,
-//       },
-//     },
-//     {
-//       id: 7,
-//       title: '갓갓',
-//       description: '거석',
-//       created_at: '2022-12-14T07:14:35.000Z',
-//       hits: 20,
-//       user: {
-//         id: 1,
-//         nickname: '피엔',
-//         description: null,
-//       },
-//     },
-//     {
-//       id: 8,
-//       title: '갓갓',
-//       description: '거석',
-//       created_at: '2022-12-14T07:14:36.000Z',
-//       hits: 50,
-//       user: {
-//         id: 1,
-//         nickname: '피엔',
-//         description: null,
-//       },
-//     },
-//   ],
-//   number: 7,
-// };
-
-interface AboutProps {
-  setPostNow: React.Dispatch<React.SetStateAction<number | null>>;
-}
-
-export default function Posts<AboutProps>({ setPostNow }: any) {
+export default function Posts() {
   const [posts, setPosts] = useState<PostDetail[]>();
   const [postNumber, setPostNumber] = useState<number>();
   const navigate = useNavigate();
 
+  console.log(posts);
+
   useEffect(() => {
-    const dateParsing = (date: string): string => {
+    const dateParsing = (date: string): [string, boolean] => {
       const theDate = new Date(date);
       const todayDate = new Date();
+      const oneDayPlus = new Date(date);
+      oneDayPlus.setDate(oneDayPlus.getDate() + 1);
       const strTheDate = theDate.toLocaleString();
       const strTodayDate = todayDate.toLocaleString();
+
+      const isItInOneDay = oneDayPlus >= todayDate;
 
       if (
         strTheDate.slice(0, strTheDate.indexOf('오') - 1) !==
         strTodayDate.slice(0, strTodayDate.indexOf('오') - 1)
       ) {
-        return `${theDate.getFullYear()}.${String(theDate.getMonth() + 1).padStart(2, '0')}.${String(
-          theDate.getDate(),
-        ).padStart(2, '0')}.`;
+        return [
+          `${theDate.getFullYear()}.${String(theDate.getMonth() + 1).padStart(2, '0')}.${String(
+            theDate.getDate(),
+          ).padStart(2, '0')}.`,
+          isItInOneDay,
+        ];
       }
-      return `${String(theDate.getHours()).padStart(2, '0')}:${String(theDate.getMinutes()).padStart(
-        2,
-        '0',
-      )}`;
+      return [
+        `${String(theDate.getHours()).padStart(2, '0')}:${String(theDate.getMinutes()).padStart(2, '0')}`,
+        isItInOneDay,
+      ];
     };
 
-    fetch(`http://192.168.50.135:4000/community?page=1&number=10`, {
+    fetch(`http://pien.kr:4000/community?page=1&number=10`, {
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
       },
@@ -131,7 +66,7 @@ export default function Posts<AboutProps>({ setPostNow }: any) {
       });
   }, []);
 
-  const goPost = (e: any) => {
+  const goPost = () => {
     navigate('/community/posting');
   };
 
@@ -153,23 +88,27 @@ export default function Posts<AboutProps>({ setPostNow }: any) {
           <TableHit>조회</TableHit>
         </TableTitles>
         <PostList>
-          {posts?.map((el) => (
+          {posts?.map((el, i) => (
             <Post key={el.id}>
               <LabelAndTitle>
                 <Label>{el.label}</Label>
                 <Title
-                  id={el.id}
-                  onClick={(e) => {
-                    if (e.target instanceof Element) {
-                      setPostNow(Number(e.target.id));
-                    }
-                  }}
+                  onClick={() =>
+                    navigate(`/community/${el.id}`, {
+                      state: {
+                        currentIndex: i,
+                        posts,
+                      },
+                    })
+                  }
                 >
                   {el.title}
+                  {el.repliesCount === 0 ? null : <RepliesCount>[{el.repliesCount}]</RepliesCount>}
+                  {el.created_at[1] ? <IsItNew>N</IsItNew> : null}
                 </Title>
               </LabelAndTitle>
               <User>{el.user.nickname}</User>
-              <DateInPost>{el.created_at}</DateInPost>
+              <DateInPost>{el.created_at[0]}</DateInPost>
               <Hits>{el.hits}</Hits>
             </Post>
           ))}
@@ -264,7 +203,7 @@ const Label = styled.div`
     text-decoration: underline;
   }
 `;
-const Title = styled.div<{ id: any }>`
+const Title = styled.div`
   display: flex;
   align-items: center;
 
@@ -272,6 +211,23 @@ const Title = styled.div<{ id: any }>`
     cursor: pointer;
     text-decoration: underline;
   }
+`;
+
+const RepliesCount = styled.div`
+  font-weight: bold;
+  margin-left: 5px;
+  color: ${(props) => props.theme.style.red};
+`;
+
+const IsItNew = styled.div`
+  ${(props) => props.theme.variables.flex()};
+  background-color: red;
+  width: 12px;
+  height: 12px;
+  font-size: 10px;
+  color: white;
+  border-radius: 100%;
+  margin-left: 5px;
 `;
 const User = styled.div`
   display: flex;
@@ -288,10 +244,12 @@ const DateInPost = styled.div`
   ${(props) => props.theme.variables.flex()}
   width: 66px;
   padding: 0px 7px;
+  font-weight: normal;
 `;
 const Hits = styled.div`
   ${(props) => props.theme.variables.flex()}
 
   width: 54px;
   padding: 0px 7px;
+  font-weight: normal;
 `;

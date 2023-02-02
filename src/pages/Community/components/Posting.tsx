@@ -1,14 +1,28 @@
-import { title } from 'process';
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router';
 import styled from 'styled-components';
 
 export default function Posting() {
+  const location = useLocation().state;
+
+  const editingData = location ? location.postData : null;
+
   const [userInput, setUserInput] = useState({
     title: '',
     description: '',
     label: '',
   });
+
+  useEffect(() => {
+    if (editingData) {
+      setUserInput({
+        ...userInput,
+        title: editingData.title,
+        label: editingData.label,
+        description: editingData.description,
+      });
+    }
+  }, []);
 
   const { title, description, label } = userInput;
 
@@ -22,21 +36,39 @@ export default function Posting() {
       alert('라벨을 선택하세요');
     }
     if (title.length >= 2 && description.length >= 2 && label !== '') {
-      fetch(`http://192.168.50.135:4000/community/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5NDYyMTQsImV4cCI6MTY3Mzk0ODAxNH0.h6ZtgWs1GUcCF5w2ceSXEAZiZqwe8zwplrG1sgmUuv4',
-        },
-        body: JSON.stringify(userInput),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.status === 'good') {
-            navigate('/community/lists');
-          }
-        });
+      if (editingData) {
+        fetch(`http://pien.kr:4000/community/${editingData.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json;charset=utf-8',
+            Authorization:
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5NDYyMTQsImV4cCI6MTY3Mzk0ODAxNH0.h6ZtgWs1GUcCF5w2ceSXEAZiZqwe8zwplrG1sgmUuv4',
+          },
+          body: JSON.stringify(userInput),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data) {
+              navigate(`/community/${editingData.id}`);
+            }
+          });
+      } else {
+        fetch(`http://pien.kr:4000/community/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json;charset=utf-8',
+            Authorization:
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5NDYyMTQsImV4cCI6MTY3Mzk0ODAxNH0.h6ZtgWs1GUcCF5w2ceSXEAZiZqwe8zwplrG1sgmUuv4',
+          },
+          body: JSON.stringify(userInput),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.status === 'good') {
+              navigate('/community/lists');
+            }
+          });
+      }
     }
   };
 
@@ -49,26 +81,33 @@ export default function Posting() {
       <HeaderBox>
         <h1>게시판 글쓰기</h1>
         <button type='button' onClick={postThis}>
-          등록
+          {editingData ? '수정' : '등록'}
         </button>
       </HeaderBox>
       <PostingBox>
-        <TitleBox>
+        <TitleBox optionColor={label}>
           <InputBox>
-            <input name='title' onChange={makingUserInput} placeholder='제목을 입력하세요.' />
+            <input name='title' onChange={makingUserInput} placeholder='제목을 입력하세요.' value={title} />
           </InputBox>
-          <select name='label' onChange={makingUserInput} required>
-            <option value='' disabled selected>
-              라벨을 선택하세요.
+          <select name='label' onChange={makingUserInput} required value={label}>
+            <option value='' disabled>
+              게시판을 선택하세요.
             </option>
-            <option value='질문'>질문</option>
+            <option value='질문' style={{ color: 'red' }}>
+              질문
+            </option>
             <option value='자랑'>자랑</option>
             <option value='공유'>공유</option>
             <option value='잡담'>잡담</option>
           </select>
         </TitleBox>
         <Description>
-          <textarea name='description' onChange={makingUserInput} placeholder='내용을 입력하세요.' />
+          <textarea
+            name='description'
+            onChange={makingUserInput}
+            placeholder='내용을 입력하세요.'
+            value={description}
+          />
         </Description>
       </PostingBox>
     </OuterBox>
@@ -114,7 +153,7 @@ const PostingBox = styled.div`
   width: 865px;
   padding-top: 12px;
 `;
-const TitleBox = styled.div`
+const TitleBox = styled.div<{ optionColor: string }>`
   display: flex;
 
   select {
@@ -129,6 +168,7 @@ const TitleBox = styled.div`
     }
   }
 `;
+
 const InputBox = styled.div`
   input {
     width: 592px;

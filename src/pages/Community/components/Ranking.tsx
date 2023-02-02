@@ -10,18 +10,18 @@ interface RankingUsers {
   incomeMoney: number;
 }
 
-// const UserList: UserList[] = [
-//   { id: 1, userId: 'goodjob123', rank: 1, returnRate: 145 },
-//   { id: 2, userId: 'rltjrWkdWkd', rank: 2, returnRate: 140 },
-//   { id: 3, userId: 'juwon123', rank: 3, returnRate: 135 },
-//   { id: 4, userId: 'nerdcloud09', rank: 4, returnRate: 130 },
-//   { id: 5, userId: 'icanwinthis123', rank: 5, returnRate: 125 },
-//   { id: 6, userId: 'hohoho', rank: 6, returnRate: 120 },
-//   { id: 7, userId: 'appleowner17', rank: 7, returnRate: 115 },
-//   { id: 8, userId: 'carsalerRich', rank: 8, returnRate: 110 },
-//   { id: 9, userId: 'youAneMe2233', rank: 9, returnRate: 105 },
-//   { id: 10, userId: 'yoonah95', rank: 10, returnRate: 100 },
-// ];
+const UserList: RankingUsers[] = [
+  { id: 1, nickname: 'goodjob123', ranking: 1, incomePercent: 145, incomeMoney: 1 },
+  { id: 2, nickname: 'rltjrWkdWkd', ranking: 2, incomePercent: 140, incomeMoney: 1 },
+  { id: 3, nickname: 'juwon123', ranking: 3, incomePercent: 135, incomeMoney: 1 },
+  { id: 4, nickname: 'nerdcloud09', ranking: 4, incomePercent: 130, incomeMoney: 1 },
+  { id: 5, nickname: 'icanwinthis123', ranking: 5, incomePercent: 125, incomeMoney: 1 },
+  { id: 6, nickname: 'hohoho', ranking: 6, incomePercent: 120, incomeMoney: 1 },
+  { id: 7, nickname: 'appleowner17', ranking: 7, incomePercent: 115, incomeMoney: 1 },
+  { id: 8, nickname: 'carsalerRich', ranking: 8, incomePercent: 110, incomeMoney: 1 },
+  { id: 9, nickname: 'youAneMe2233', ranking: 9, incomePercent: 105, incomeMoney: 1 },
+  { id: 10, nickname: 'yoonah95', ranking: 10, incomePercent: 100, incomeMoney: 1 },
+];
 
 export default function Ranking() {
   const [topTen, setTopTen] = useState<RankingUsers[]>();
@@ -44,7 +44,7 @@ export default function Ranking() {
         <ShowMyRank>내랭킹</ShowMyRank>
       </FilterTap>
       <RankBox>
-        {topTen?.map((el) => (
+        {UserList?.map((el) => (
           <Rank>
             <UserImg>
               <img src={user} alt='user' />
@@ -92,6 +92,7 @@ const ShowMyRank = styled.div`
 `;
 const RankBox = styled.div`
   padding: 5px 0;
+  border-bottom: 2px solid black;
 `;
 const UserNick = styled.div`
   margin-right: 5px;

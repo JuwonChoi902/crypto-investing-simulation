@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import user from '../images/user.png';
+import user from '../../images/user.png';
 
 interface RankingUsers {
   id: number;
@@ -23,7 +23,7 @@ const UserList: RankingUsers[] = [
   { id: 10, nickname: 'yoonah95', ranking: 10, incomePercent: 100, incomeMoney: 1 },
 ];
 
-export default function Ranking() {
+export default function RankingBox() {
   const [topTen, setTopTen] = useState<RankingUsers[]>();
 
   useEffect(() => {
@@ -67,7 +67,7 @@ const FilterTap = styled.div`
   display: flex;
   font-size: 14px;
   font-weight: bold;
-  padding: 10px 0px;
+  padding: 9px 0px;
   border-bottom: 1px solid #e5e5e5;
 `;
 const Following = styled.div`

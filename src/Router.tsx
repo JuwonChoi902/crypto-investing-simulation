@@ -8,7 +8,7 @@ import Wallet from './pages/Wallet/Wallet';
 import Community from './pages/Community/Community';
 import Nav from './components/Nav/Nav';
 import Footer from './components/Footer/Footer';
-import Posting from './pages/Community/components/Posting';
+import Posting from './pages/Community/components/postComponents/Posting';
 
 function Router() {
   return (

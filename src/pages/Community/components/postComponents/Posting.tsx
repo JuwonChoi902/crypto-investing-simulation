@@ -10,7 +10,7 @@ export default function Posting() {
   const [userInput, setUserInput] = useState({
     title: '',
     description: '',
-    label: '',
+    categoryId: 0,
   });
 
   useEffect(() => {
@@ -18,13 +18,13 @@ export default function Posting() {
       setUserInput({
         ...userInput,
         title: editingData.title,
-        label: editingData.label,
+        categoryId: editingData.categoryId,
         description: editingData.description,
       });
     }
   }, []);
 
-  const { title, description, label } = userInput;
+  const { title, description, categoryId } = userInput;
 
   const navigate = useNavigate();
 
@@ -32,10 +32,10 @@ export default function Posting() {
     if (title.length < 2 || description.length < 2) {
       alert('제목과 내용은 2글자 이상이어야 합니다.');
     }
-    if (label === '') {
+    if (categoryId === 0) {
       alert('라벨을 선택하세요');
     }
-    if (title.length >= 2 && description.length >= 2 && label !== '') {
+    if (title.length >= 2 && description.length >= 2 && categoryId !== 0) {
       if (editingData) {
         fetch(`http://pien.kr:4000/community/${editingData.id}`, {
           method: 'PATCH',
@@ -65,7 +65,7 @@ export default function Posting() {
           .then((res) => res.json())
           .then((data) => {
             if (data.status === 'good') {
-              navigate('/community/lists');
+              navigate(`/community/${data.postId}`);
             }
           });
       }
@@ -85,20 +85,18 @@ export default function Posting() {
         </button>
       </HeaderBox>
       <PostingBox>
-        <TitleBox optionColor={label}>
+        <TitleBox optionColor={categoryId}>
           <InputBox>
             <input name='title' onChange={makingUserInput} placeholder='제목을 입력하세요.' value={title} />
           </InputBox>
-          <select name='label' onChange={makingUserInput} required value={label}>
-            <option value='' disabled>
+          <select name='categoryId' onChange={makingUserInput} required value={categoryId}>
+            <option value={0} disabled>
               게시판을 선택하세요.
             </option>
-            <option value='질문' style={{ color: 'red' }}>
-              질문
-            </option>
-            <option value='자랑'>자랑</option>
-            <option value='공유'>공유</option>
-            <option value='잡담'>잡담</option>
+            <option value={1}>질문</option>
+            <option value={2}>자랑</option>
+            <option value={3}>공유</option>
+            <option value={4}>잡담</option>
           </select>
         </TitleBox>
         <Description>
@@ -153,7 +151,7 @@ const PostingBox = styled.div`
   width: 865px;
   padding-top: 12px;
 `;
-const TitleBox = styled.div<{ optionColor: string }>`
+const TitleBox = styled.div<{ optionColor: number }>`
   display: flex;
 
   select {

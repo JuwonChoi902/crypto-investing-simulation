@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import styled from 'styled-components';
-import star from './images/star.png';
-import Ranking from './components/Ranking';
-import Posts from './components/Posts';
-import Post from './components/Post';
+import PostBox2 from './components/postComponents/PostBox';
+import RankingBox from './components/otherComponents/RankingBox';
+import UserInfo from './components/userInfoComponents/UserInfo';
+import BoardsBox from './components/otherComponents/BoardsBox';
+import MenuBox from './components/otherComponents/MenuBox';
 
 export default function Community() {
   const [postNow, setPostNow] = useState<number | null>(null);
-  const [boardNow, setBoardNow] = useState<number>(2);
+  const [menuNow, setMenuNow] = useState<number>(2);
+  const [boardNow, setBoardNow] = useState<number | null>(0);
 
   const params = useParams();
 
@@ -22,26 +24,23 @@ export default function Community() {
 
   return (
     <OuterBox>
-      <FilterBox>
-        <Favorite id={1} boardNow={boardNow} onClick={() => setBoardNow(1)}>
-          <img src={star} alt='star' />
-        </Favorite>
-        <ShowPosts id={2} boardNow={boardNow} onClick={() => setBoardNow(2)}>
-          게시글 보기
-        </ShowPosts>
-        <MyPosting id={3} boardNow={boardNow} onClick={() => setBoardNow(3)}>
-          마이페이지
-        </MyPosting>
-      </FilterBox>
+      <MenuBox menuNow={menuNow} setMenuNow={setMenuNow} setBoardNow={setBoardNow} />
       <MainBox>
-        <MainLeft>
-          <Ranking />
-          <BoardsBox>
-            <ShowAll />
-            <BoardsRest />
-          </BoardsBox>
-        </MainLeft>
-        {postNow ? <Post setPostNow={setPostNow} /> : <Posts />}
+        <RankAndBoards>
+          <RankingBox />
+          <BoardsBox setPostNow={setPostNow} setBoardNow={setBoardNow} boardNow={boardNow} />
+        </RankAndBoards>
+        <Contents>
+          {menuNow === 2 ? (
+            <PostBox2
+              setPostNow={setPostNow}
+              setBoardNow={setBoardNow}
+              boardNow={boardNow}
+              postNow={postNow}
+            />
+          ) : null}
+          {menuNow === 3 ? <UserInfo /> : null}
+        </Contents>
       </MainBox>
     </OuterBox>
   );
@@ -54,44 +53,6 @@ const OuterBox = styled.div`
   background-color: white;
   margin-top: 100px;
 `;
-const FilterBox = styled.div`
-  width: 1040px;
-  display: flex;
-  padding: 10px 20px;
-  align-items: center;
-  font-size: 14px;
-  border: 1px solid #e5e5e5;
-  border-radius: 4px;
-  margin-bottom: 50px;
-`;
-const Favorite = styled.div<{ id: any; boardNow: number }>`
-  img {
-    width: 16px;
-  }
-
-  &:hover {
-    cursor: pointer;
-    color: ${(props) => props.theme.style.yellow};
-  }
-`;
-const ShowPosts = styled.div<{ id: any; boardNow: number }>`
-  padding-left: 16px;
-  color: ${(props) => (props.id === props.boardNow ? props.theme.style.yellow : 'black')};
-
-  &:hover {
-    cursor: pointer;
-    color: ${(props) => props.theme.style.yellow};
-  }
-`;
-const MyPosting = styled.div<{ id: any; boardNow: number }>`
-  padding-left: 16px;
-  color: ${(props) => (props.id === props.boardNow ? props.theme.style.yellow : 'black')};
-
-  &:hover {
-    cursor: pointer;
-    color: ${(props) => props.theme.style.yellow};
-  }
-`;
 const MainBox = styled.div`
   display: flex;
   justify-content: space-between;
@@ -99,7 +60,5 @@ const MainBox = styled.div`
   margin-top: 16px;
 `;
 
-const MainLeft = styled.div``;
-const BoardsBox = styled.div``;
-const ShowAll = styled.div``;
-const BoardsRest = styled.div``;
+const RankAndBoards = styled.div``;
+const Contents = styled.div``;

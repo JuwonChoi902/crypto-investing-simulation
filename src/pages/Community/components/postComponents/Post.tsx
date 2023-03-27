@@ -1,23 +1,33 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate, useLocation, useParams } from 'react-router';
-import user from '../images/user.png';
-import comment from '../images/comment.png';
-import likeFill from '../images/likeFill.png';
-import dislikeFill from '../images/dislikeFill.png';
-import write from '../images/write.png';
+import user from '../../images/user.png';
+import comment from '../../images/comment.png';
+import likeFill from '../../images/likeFill.png';
+import dislikeFill from '../../images/dislikeFill.png';
+import write from '../../images/write.png';
 
-type PostIdProps = {
+type PostProps = {
   setPostNow: React.Dispatch<React.SetStateAction<number | null>>;
+  setBoardNow: React.Dispatch<React.SetStateAction<number | null>>;
+};
+
+type ObjectType = {
+  [index: number]: number;
 };
 
 interface PostDetail {
   id: number;
   title: string;
   description: string;
-  created_at: string;
   hits: number;
-  label: string;
+  categoryId: number;
+  created_at: string;
+  repliesCount: number;
+  isLike: boolean;
+  likeCount: number;
+  unLikeCount: number;
+
   user: UserDetail;
 }
 
@@ -25,11 +35,6 @@ interface UserDetail {
   id: number;
   nickname: string;
   description: string | null;
-}
-
-interface Comments {
-  number: number;
-  reply: CommentDetail;
 }
 
 interface CommentDetail {
@@ -43,7 +48,9 @@ interface CommentDetail {
   user: UserDetail;
 }
 
-export default function Post({ setPostNow }: PostIdProps) {
+const PostCategory = ['전체글보기', '질문하기', '자랑하기', '공유하기', '잡담하기'];
+
+export default function Post({ setPostNow, setBoardNow }: PostProps) {
   const [postData, setPostData] = useState<PostDetail>();
   const [commentData, setCommentData] = useState<CommentDetail[]>();
   const [commentWrite, setCommentWrite] = useState<string>('');
@@ -53,6 +60,7 @@ export default function Post({ setPostNow }: PostIdProps) {
   const [replyComment, setReplyComment] = useState<string>();
   const [isURLCopied, setIsURLCopied] = useState<boolean>(false);
   const [commentCount, setCommentCount] = useState<number>(0);
+  console.log(postData);
 
   const commentWindowRef = useRef<HTMLDivElement>(null);
   const commentWindowY = commentWindowRef.current?.offsetTop;
@@ -103,7 +111,9 @@ export default function Post({ setPostNow }: PostIdProps) {
         },
       })
         .then((res) => res.json())
-        .then((data) => setPostData({ ...data, created_at: dateParsing(data.created_at)[0] }));
+        .then((data) => {
+          setPostData({ ...data, created_at: dateParsing(data.created_at)[0] });
+        });
 
       fetch(`http://pien.kr:4000/community/reply/${params.id}`, {
         headers: {
@@ -112,25 +122,33 @@ export default function Post({ setPostNow }: PostIdProps) {
       })
         .then((res) => res.json())
         .then((data) => {
-          console.log(data);
           let count = 0;
           const temp = [];
 
+          const obj: ObjectType = {};
+
           for (let i = 0; i < data.length; i += 1) {
-            if (data[i].replyId === data[i].id) {
-              if (data[i].deleted_at && !data[i + 1]?.deleted_at) {
-                if (data[i].replyId === data[i + 1]?.replyId) {
-                  temp.push(data[i]);
-                }
+            if (!data[i].deleted_at) {
+              if (obj[data[i].replyId]) {
+                obj[data[i].replyId] += 1;
+              } else {
+                obj[data[i].replyId] = 1;
               }
             }
+          }
+
+          for (let i = 0; i < data.length; i += 1) {
+            if (data[i].replyId === data[i].id) {
+              if (data[i].deleted_at && obj[data[i].replyId]) {
+                temp.push(data[i]);
+              }
+            }
+
             if (!data[i].deleted_at) {
               count += 1;
               temp.push(data[i]);
             }
           }
-
-          console.log(temp);
 
           setCommentCount(count);
           setCommentData(
@@ -196,14 +214,25 @@ export default function Post({ setPostNow }: PostIdProps) {
           let count = 0;
           const temp = [];
 
+          const obj: ObjectType = {};
+
           for (let i = 0; i < data.length; i += 1) {
-            if (data[i].replyId === data[i].id) {
-              if (data[i].deleted_at && !data[i + 1]?.deleted_at) {
-                if (data[i].replyId === data[i + 1]?.replyId) {
-                  temp.push(data[i]);
-                }
+            if (!data[i].deleted_at) {
+              if (obj[data[i].replyId]) {
+                obj[data[i].replyId] += 1;
+              } else {
+                obj[data[i].replyId] = 1;
               }
             }
+          }
+
+          for (let i = 0; i < data.length; i += 1) {
+            if (data[i].replyId === data[i].id) {
+              if (data[i].deleted_at && obj[data[i].replyId]) {
+                temp.push(data[i]);
+              }
+            }
+
             if (!data[i].deleted_at) {
               count += 1;
               temp.push(data[i]);
@@ -243,14 +272,25 @@ export default function Post({ setPostNow }: PostIdProps) {
           let count = 0;
           const temp = [];
 
+          const obj: ObjectType = {};
+
           for (let i = 0; i < data.length; i += 1) {
-            if (data[i].replyId === data[i].id) {
-              if (data[i].deleted_at && !data[i + 1]?.deleted_at) {
-                if (data[i].replyId === data[i + 1]?.replyId) {
-                  temp.push(data[i]);
-                }
+            if (!data[i].deleted_at) {
+              if (obj[data[i].replyId]) {
+                obj[data[i].replyId] += 1;
+              } else {
+                obj[data[i].replyId] = 1;
               }
             }
+          }
+
+          for (let i = 0; i < data.length; i += 1) {
+            if (data[i].replyId === data[i].id) {
+              if (data[i].deleted_at && obj[data[i].replyId]) {
+                temp.push(data[i]);
+              }
+            }
+
             if (!data[i].deleted_at) {
               count += 1;
               temp.push(data[i]);
@@ -272,7 +312,6 @@ export default function Post({ setPostNow }: PostIdProps) {
       setReplyComment('');
     }
   };
-  console.log(commentData);
 
   const editComment = (id: number) => {
     if (editingComment === '') {
@@ -301,14 +340,87 @@ export default function Post({ setPostNow }: PostIdProps) {
                 let count = 0;
                 const temp = [];
 
+                const obj: ObjectType = {};
+
                 for (let i = 0; i < data.length; i += 1) {
-                  if (data[i].replyId === data[i].id) {
-                    if (data[i].deleted_at && !data[i + 1]?.deleted_at) {
-                      if (data[i].replyId === data[i + 1]?.replyId) {
-                        temp.push(data[i]);
-                      }
+                  if (!data[i].deleted_at) {
+                    if (obj[data[i].replyId]) {
+                      obj[data[i].replyId] += 1;
+                    } else {
+                      obj[data[i].replyId] = 1;
                     }
                   }
+                }
+
+                for (let i = 0; i < data.length; i += 1) {
+                  if (data[i].replyId === data[i].id) {
+                    if (data[i].deleted_at && obj[data[i].replyId]) {
+                      temp.push(data[i]);
+                    }
+                  }
+
+                  if (!data[i].deleted_at) {
+                    count += 1;
+                    temp.push(data[i]);
+                  }
+                }
+                setCommentCount(count);
+                setCommentData(
+                  temp.map((el: CommentDetail) => ({
+                    ...el,
+                    created_at: dateParsing(el.created_at)[0],
+                    isItNew: dateParsing(el.created_at)[1],
+                    isThisOrigin: el.id === el.replyId,
+                  })),
+                );
+              });
+          }
+        });
+    }
+  };
+
+  const deleteComment = (id: number) => {
+    if (window.confirm('댓글을 삭제하시겠습니까?') === true) {
+      fetch(`http://pien.kr:4000/community/reply/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+          Authorization:
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.status === true) {
+            fetch(`http://pien.kr:4000/community/reply/${params.id}`, {
+              headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+              },
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                let count = 0;
+                const temp = [];
+
+                const obj: ObjectType = {};
+
+                for (let i = 0; i < data.length; i += 1) {
+                  if (!data[i].deleted_at) {
+                    if (obj[data[i].replyId]) {
+                      obj[data[i].replyId] += 1;
+                    } else {
+                      obj[data[i].replyId] = 1;
+                    }
+                  }
+                }
+
+                for (let i = 0; i < data.length; i += 1) {
+                  if (data[i].replyId === data[i].id) {
+                    if (data[i].deleted_at && obj[data[i].replyId]) {
+                      temp.push(data[i]);
+                    }
+                  }
+
                   if (!data[i].deleted_at) {
                     count += 1;
                     temp.push(data[i]);
@@ -328,73 +440,88 @@ export default function Post({ setPostNow }: PostIdProps) {
           }
         });
     }
+    return null;
+  };
+  const likeThisPost = () => {
+    if (postData?.isLike !== true) {
+      fetch(`http://pien.kr:4000/community/like/${params.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+          Authorization:
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
+        },
+        body: JSON.stringify({ isLike: true }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.status === true) setPostData({ ...data, created_at: dateParsing(data.created_at)[0] });
+        });
+    } else {
+      fetch(`http://pien.kr:4000/community/like/${params.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+          Authorization:
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.status === true) setPostData({ ...data, created_at: dateParsing(data.created_at)[0] });
+        });
+    }
   };
 
-  const deleteComment = (id: number) => {
-    fetch(`http://pien.kr:4000/community/reply/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json;charset=utf-8',
-        Authorization:
-          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.status === true) {
-          fetch(`http://pien.kr:4000/community/reply/${params.id}`, {
-            headers: {
-              'Content-Type': 'application/json;charset=utf-8',
-            },
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              let count = 0;
-              const temp = [];
-
-              for (let i = 0; i < data.length; i += 1) {
-                if (data[i].replyId === data[i].id) {
-                  if (data[i].deleted_at && !data[i + 1]?.deleted_at) {
-                    if (data[i].replyId === data[i + 1]?.replyId) {
-                      temp.push(data[i]);
-                    }
-                  }
-                }
-                if (!data[i].deleted_at) {
-                  count += 1;
-                  temp.push(data[i]);
-                }
-              }
-
-              setCommentCount(count);
-              setCommentData(
-                temp.map((el: CommentDetail) => ({
-                  ...el,
-                  created_at: dateParsing(el.created_at)[0],
-                  isItNew: dateParsing(el.created_at)[1],
-                  isThisOrigin: el.id === el.replyId,
-                })),
-              );
-            });
-        }
-      });
+  const dislikeThisPost = () => {
+    if (postData?.isLike !== false) {
+      fetch(`http://pien.kr:4000/community/like/${params.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+          Authorization:
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
+        },
+        body: JSON.stringify({ isLike: false }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log(data.status);
+        });
+    } else {
+      fetch(`http://pien.kr:4000/community/like/${params.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+          Authorization:
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log(data.status);
+        });
+    }
   };
 
   const deletePost = () => {
-    fetch(`http://pien.kr:4000/community/${params.id}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json;charset=utf-8',
-        Authorization:
-          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.status === true) {
-          setPostNow(null);
-        }
-      });
+    if (window.confirm('해당 게시글을 삭제하시겠습니까?') === true) {
+      fetch(`http://pien.kr:4000/community/${params.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+          Authorization:
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.status === true) {
+            setPostNow(null);
+          }
+        });
+    }
+    return null;
   };
 
   const copyURL = async (text: string) => {
@@ -475,7 +602,16 @@ export default function Post({ setPostNow }: PostIdProps) {
       </NavigateBox>
       <MainBox>
         <TitleBox>
-          <Label>{postData?.label}</Label>
+          <Board
+            onClick={() => {
+              if (postData) {
+                setPostNow(null);
+                setBoardNow(postData.categoryId);
+              }
+            }}
+          >
+            {postData ? PostCategory[postData.categoryId] : null}
+          </Board>
           <Title>{postData?.title}</Title>
         </TitleBox>
         <UserInfo>
@@ -521,14 +657,14 @@ export default function Post({ setPostNow }: PostIdProps) {
         </ShowMore>
         <LikeAndHateBox>
           <LikeAndHate>
-            <LikeBox>
+            <LikeBox isLiked={postData?.isLike} onClick={likeThisPost}>
               <div>추천</div>
-              <span>5</span>
-              <LikeImg src={likeFill} alt='like' />
+              <span>{postData?.likeCount}</span>
+              <LikeImg src={likeFill} alt='like' isLiked={postData?.isLike} />
             </LikeBox>
-            <DisLikeBox>
-              <DislikeImg src={dislikeFill} alt='dislike' />
-              <span>0</span>
+            <DisLikeBox isLiked={postData?.isLike} onClick={dislikeThisPost}>
+              <DislikeImg src={dislikeFill} alt='dislike' isLiked={postData?.isLike} />
+              <span>{postData?.unLikeCount}</span>
               <div>비추천</div>
             </DisLikeBox>
           </LikeAndHate>
@@ -802,11 +938,15 @@ const TitleBox = styled.div`
   margin-bottom: 12px;
 `;
 
-const Label = styled.div`
+const Board = styled.div`
   font-size: 13px;
   color: ${(props) => props.theme.style.yellow};
   margin-bottom: 7px;
   font-weight: bold;
+
+  &:hover {
+    cursor: pointer;
+  }
 `;
 const Title = styled.div`
   font-size: 26px;
@@ -870,6 +1010,7 @@ const DetailRank = styled.div`
 const AskChat = styled.button`
   background-color: #eff0f2;
   border: none;
+  border-radius: 4px;
   font-size: 11px;
   font-weight: bold;
 
@@ -970,40 +1111,52 @@ const LikeAndHate = styled.div`
   div {
     margin-right: 10px;
   }
-  img {
-    width: 16px;
-    margin-right: 10px;
-    opacity: 0.5;
-  }
   padding-bottom: 12px;
   border-bottom: 1px solid #e5e5e5;
 `;
-const LikeBox = styled.div`
+const LikeBox = styled.div<{ isLiked: any }>`
+  display: flex;
+  &:hover {
+    cursor: pointer;
+  }
+  div {
+    font-weight: ${(props) => (props.isLiked === true ? 'bold' : 'normal')};
+  }
+
+  span {
+    color: ${(props) => (props.isLiked === true ? 'black' : '#b7b7b7')};
+    margin-right: 10px;
+    font-weight: bold;
+  }
+`;
+const DisLikeBox = styled.div<{ isLiked: any }>`
   display: flex;
   &:hover {
     cursor: pointer;
   }
 
-  span {
-    color: #b7b7b7;
-    margin-right: 10px;
-    font-weight: bold;
-  }
-`;
-const DisLikeBox = styled.div`
-  display: flex;
-  &:hover {
-    cursor: pointer;
+  div {
+    font-weight: ${(props) => (props.isLiked === false ? 'bold' : 'normal')};
   }
 
   span {
-    color: #b7b7b7;
+    color: ${(props) => (props.isLiked === false ? 'black' : '#b7b7b7;')};
     margin-right: 10px;
     font-weight: bold;
   }
 `;
-const LikeImg = styled.img``;
-const DislikeImg = styled.img``;
+const LikeImg = styled.img<{ isLiked: any }>`
+  width: 16px;
+  margin-right: 10px;
+  opacity: ${(props) => (props.isLiked === true ? '1' : '0.5')};
+`;
+
+const DislikeImg = styled.img<{ isLiked: any }>`
+  width: 16px;
+  margin-right: 10px;
+  opacity: ${(props) => (props.isLiked === false ? '1' : '0.5')};
+`;
+
 const Report = styled.div`
   position: absolute;
   right: 0;

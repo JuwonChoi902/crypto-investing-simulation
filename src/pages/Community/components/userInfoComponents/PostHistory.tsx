@@ -21,7 +21,7 @@ interface UserDetail {
 }
 
 export default function PostHistory() {
-  const [checked, setChecked] = useState<string[]>([]);
+  const [checked, setChecked] = useState<number[]>([]);
   const [postsData, setPostsData] = useState<PostDetail[]>([]);
   const navigate = useNavigate();
 
@@ -64,24 +64,56 @@ export default function PostHistory() {
   }, []);
 
   const checkedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (checked.includes(event.target.id)) {
-      const temp = checked.filter((el) => el !== event.target.id);
+    if (checked.includes(Number(event.target.id))) {
+      const temp = checked.filter((el) => el !== Number(event.target.id));
       setChecked(temp);
     } else {
-      setChecked([...checked, event.target.id]);
+      setChecked([...checked, Number(event.target.id)]);
     }
   };
 
   const checkAll = () => {
     if (checked.length !== postsData.length) {
-      const temp: string[] = [];
+      const temp: number[] = [];
       postsData.forEach((el) => {
-        temp.push(String(el.id));
+        temp.push(el.id);
       });
       setChecked(temp);
     } else {
       setChecked([]);
     }
+  };
+
+  const deleteChecked = () => {
+    if (window.confirm('선택된 게시글을 삭제하시겠습니까?') === true) {
+      fetch(`http://pien.kr:4000/community/post`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+          Authorization:
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
+        },
+        body: JSON.stringify({ postId: checked }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.status === true) {
+            fetch(`http://pien.kr:4000/user/1/posts`, {
+              headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+              },
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                setPostsData(
+                  data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
+                );
+                setChecked([]);
+              });
+          }
+        });
+    }
+    return null;
   };
 
   return (
@@ -100,7 +132,7 @@ export default function PostHistory() {
                   <input
                     type='checkBox'
                     id={String(post.id)}
-                    checked={checked.includes(String(post.id))}
+                    checked={checked.includes(post.id)}
                     onChange={(event) => checkedChange(event)}
                   />
                 </CheckBox>
@@ -127,7 +159,7 @@ export default function PostHistory() {
           </CheckAll>
         </SelectAll>
         <DeleteAndWrite>
-          <DeleteBtn>삭제</DeleteBtn>
+          <DeleteBtn onClick={deleteChecked}>삭제</DeleteBtn>
           <WriteBtn onClick={() => navigate('/community/posting')}>글쓰기</WriteBtn>
         </DeleteAndWrite>
       </ButtonBox>

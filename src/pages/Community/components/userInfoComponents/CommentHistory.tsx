@@ -20,7 +20,7 @@ interface CommentDetail {
 
 export default function CommentHistory() {
   const [comments, setComments] = useState<CommentDetail[]>();
-  const [checked, setChecked] = useState<string[]>([]);
+  const [checked, setChecked] = useState<number[]>([]);
   const [commentCount, setCommentCount] = useState<number>(0);
 
   const navigate = useNavigate();
@@ -71,19 +71,19 @@ export default function CommentHistory() {
   }, []);
 
   const checkedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (checked.includes(event.target.id)) {
-      const temp = checked.filter((el) => el !== event.target.id);
+    if (checked.includes(Number(event.target.id))) {
+      const temp = checked.filter((el) => el !== Number(event.target.id));
       setChecked(temp);
     } else {
-      setChecked([...checked, event.target.id]);
+      setChecked([...checked, Number(event.target.id)]);
     }
   };
 
   const checkAll = () => {
     if (checked.length !== comments?.length) {
-      const temp: string[] = [];
+      const temp: number[] = [];
       comments?.forEach((el) => {
-        temp.push(String(el.id));
+        temp.push(el.id);
       });
       setChecked(temp);
     } else {
@@ -91,15 +91,16 @@ export default function CommentHistory() {
     }
   };
 
-  const deleteComment = (id: string[]) => {
+  const deleteComment = () => {
     if (window.confirm('댓글을 삭제하시겠습니까?') === true) {
-      fetch(`http://pien.kr:4000/user/1/replies/${id}`, {
+      fetch(`http://pien.kr:4000/community/reply/`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json;charset=utf-8',
           Authorization:
             'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
         },
+        body: JSON.stringify({ replyId: checked }),
       })
         .then((res) => res.json())
         .then((data) => {
@@ -129,6 +130,7 @@ export default function CommentHistory() {
                     isItNew: dateParsing(el.created_at)[1],
                   })),
                 );
+                setChecked([]);
               });
           }
         });
@@ -149,7 +151,7 @@ export default function CommentHistory() {
                 <input
                   type='checkBox'
                   id={String(el.id)}
-                  checked={checked.includes(String(el.id))}
+                  checked={checked.includes(el.id)}
                   onChange={(event) => checkedChange(event)}
                 />
               </CheckBox>
@@ -176,7 +178,7 @@ export default function CommentHistory() {
           </CheckAll>
         </SelectAll>
         <DeleteAndWrite>
-          <DeleteBtn>삭제</DeleteBtn>
+          <DeleteBtn onClick={deleteComment}>삭제</DeleteBtn>
           <WriteBtn onClick={() => navigate('/community/posting')}>글쓰기</WriteBtn>
         </DeleteAndWrite>
       </ButtonBox>

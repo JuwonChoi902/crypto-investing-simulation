@@ -42,7 +42,7 @@ export default function CommentHistory() {
   };
 
   useEffect(() => {
-    fetch(`http://pien.kr:4000/user/1/replies`, {
+    fetch(`http://pien.kr:4000/community/reply/user/1`, {
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
       },
@@ -105,7 +105,7 @@ export default function CommentHistory() {
         .then((res) => res.json())
         .then((data) => {
           if (data.status === true) {
-            fetch(`http://pien.kr:4000/user/1/replies`, {
+            fetch(`http://pien.kr:4000/community/user/1?page=1&number=10&categoryId=0`, {
               headers: {
                 'Content-Type': 'application/json;charset=utf-8',
               },
@@ -140,9 +140,13 @@ export default function CommentHistory() {
 
   return (
     <OuterBox>
-      <CommentCount>
-        <div>{commentCount}</div>개의 작성한 댓글이 있습니다.
-      </CommentCount>
+      {commentCount > 0 ? (
+        <CommentCount>
+          <div>{commentCount}</div>개의 작성한 댓글이 있습니다.
+        </CommentCount>
+      ) : (
+        <CommentCount>작성한 댓글이 없습니다.</CommentCount>
+      )}
       <List>
         {comments?.map((el) => (
           <CommentBox>

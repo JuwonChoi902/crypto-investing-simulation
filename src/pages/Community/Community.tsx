@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import styled from 'styled-components';
-import PostBox2 from './components/postComponents/PostBox';
+import PostBox from './components/postComponents/PostBox';
 import RankingBox from './components/otherComponents/RankingBox';
 import UserInfo from './components/userInfoComponents/UserInfo';
 import BoardsBox from './components/otherComponents/BoardsBox';
@@ -9,8 +9,10 @@ import MenuBox from './components/otherComponents/MenuBox';
 
 export default function Community() {
   const [postNow, setPostNow] = useState<number | null>(null);
-  const [menuNow, setMenuNow] = useState<number>(2);
+  const [menuNow, setMenuNow] = useState<number>(1);
   const [boardNow, setBoardNow] = useState<number | null>(0);
+  const [profileId, setProfileId] = useState<number>(1);
+  const [isItSearching, setIsItSearching] = useState<boolean>(false);
 
   const params = useParams();
 
@@ -24,22 +26,35 @@ export default function Community() {
 
   return (
     <OuterBox>
-      <MenuBox menuNow={menuNow} setMenuNow={setMenuNow} setBoardNow={setBoardNow} />
+      <MenuBox
+        menuNow={menuNow}
+        setMenuNow={setMenuNow}
+        setBoardNow={setBoardNow}
+        setIsItSearching={setIsItSearching}
+      />
       <MainBox>
         <RankAndBoards>
           <RankingBox />
-          <BoardsBox setPostNow={setPostNow} setBoardNow={setBoardNow} boardNow={boardNow} />
+          <BoardsBox
+            setPostNow={setPostNow}
+            setBoardNow={setBoardNow}
+            boardNow={boardNow}
+            setIsItSearching={setIsItSearching}
+          />
         </RankAndBoards>
         <Contents>
-          {menuNow === 2 ? (
-            <PostBox2
+          {menuNow === 1 ? (
+            <PostBox
               setPostNow={setPostNow}
               setBoardNow={setBoardNow}
               boardNow={boardNow}
               postNow={postNow}
+              setMenuNow={setMenuNow}
+              setIsItSearching={setIsItSearching}
+              isItSearching={isItSearching}
             />
           ) : null}
-          {menuNow === 3 ? <UserInfo /> : null}
+          {menuNow === 2 ? <UserInfo /> : null}
         </Contents>
       </MainBox>
     </OuterBox>

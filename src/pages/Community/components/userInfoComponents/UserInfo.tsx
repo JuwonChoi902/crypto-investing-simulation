@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 import styled from 'styled-components';
 import HeaderBox from './HeaderBox';
 import PostHistory from './PostHistory';
@@ -9,8 +10,12 @@ import IncomeInfo from './IncomeInfo';
 
 export default function UserInfo() {
   const [category, setCategory] = useState<number>(0);
+  const navigate = useNavigate();
 
-  const categories = ['작성글', '작성댓글', '댓글단 글', '좋아요한 글', '수익률'];
+  const categories: string[] = ['작성글', '작성댓글', '댓글단 글', '좋아요한 글', '수익률'];
+  useEffect(() => {
+    navigate(`/community/profile`);
+  }, [category]);
 
   return (
     <OuterBox>

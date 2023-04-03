@@ -6,38 +6,41 @@ import star from '../../images/star.png';
 type MenuBoxProps = {
   setMenuNow: React.Dispatch<React.SetStateAction<number>>;
   setBoardNow: React.Dispatch<React.SetStateAction<number | null>>;
+  setIsItSearching: React.Dispatch<React.SetStateAction<boolean>>;
   menuNow: number;
 };
 
-export default function MenuBox({ setMenuNow, setBoardNow, menuNow }: MenuBoxProps) {
+export default function MenuBox({ setMenuNow, setBoardNow, menuNow, setIsItSearching }: MenuBoxProps) {
   const navigate = useNavigate();
 
   return (
     <OuterBox>
-      <Favorite id={1} menuNow={menuNow} onClick={() => setMenuNow(1)}>
+      <Favorite id={0} menuNow={menuNow} onClick={() => setMenuNow(0)}>
         <img src={star} alt='star' />
       </Favorite>
       <ShowPosts
-        id={2}
+        id={1}
         menuNow={menuNow}
         onClick={() => {
-          setMenuNow(2);
+          setMenuNow(1);
           setBoardNow(0);
+          setIsItSearching(false);
           navigate(`/community/list`);
         }}
       >
         게시글 보기
       </ShowPosts>
       <MyPosting
-        id={3}
+        id={2}
         menuNow={menuNow}
         onClick={() => {
-          setMenuNow(3);
+          setMenuNow(2);
           setBoardNow(null);
+          setIsItSearching(false);
           navigate(`/community/profile`);
         }}
       >
-        마이페이지
+        유저페이지
       </MyPosting>
     </OuterBox>
   );

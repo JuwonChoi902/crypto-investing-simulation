@@ -45,7 +45,7 @@ export default function RankingBox() {
       </FilterTap>
       <RankBox>
         {UserList?.map((el) => (
-          <Rank>
+          <Rank key={el.id}>
             <UserImg>
               <img src={user} alt='user' />
             </UserImg>

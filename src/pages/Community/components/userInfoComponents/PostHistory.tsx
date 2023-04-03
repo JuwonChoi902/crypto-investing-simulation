@@ -52,7 +52,7 @@ export default function PostHistory() {
   };
 
   useEffect(() => {
-    fetch(`http://pien.kr:4000/user/1/posts`, {
+    fetch(`http://pien.kr:4000/community/post/user/1`, {
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
       },
@@ -98,7 +98,7 @@ export default function PostHistory() {
         .then((res) => res.json())
         .then((data) => {
           if (data.status === true) {
-            fetch(`http://pien.kr:4000/user/1/posts`, {
+            fetch(`http://pien.kr:4000/community/post/user/1`, {
               headers: {
                 'Content-Type': 'application/json;charset=utf-8',
               },

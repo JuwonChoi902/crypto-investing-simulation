@@ -8,6 +8,7 @@ import NavigateBox2 from './NavigateBox2';
 type PostProps = {
   setPostNow: React.Dispatch<React.SetStateAction<number | null>>;
   setBoardNow: React.Dispatch<React.SetStateAction<number | null>>;
+  setMenuNow: React.Dispatch<React.SetStateAction<number>>;
 };
 
 export interface PostDetail {
@@ -30,7 +31,7 @@ export interface UserDetail {
   description: string | null;
 }
 
-export default function Post({ setPostNow, setBoardNow }: PostProps) {
+export default function Post({ setPostNow, setBoardNow, setMenuNow }: PostProps) {
   const [postData, setPostData] = useState<PostDetail>();
   const [replying, setReplying] = useState<number | null>(null);
   const [commentCount, setCommentCount] = useState<number>(0);
@@ -48,6 +49,7 @@ export default function Post({ setPostNow, setBoardNow }: PostProps) {
           setReplying={setReplying}
           postData={postData}
           setPostData={setPostData}
+          setMenuNow={setMenuNow}
         />
         <CommentsBox
           commentWindowRef={commentWindowRef}

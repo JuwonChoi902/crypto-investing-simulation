@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
+import SearchBar from './SearchBar';
 import pageLeft from '../../images/pageLeft.png';
 import pageRight from '../../images/pageRight.png';
 import arrowDown from '../../images/arrowDown.png';
@@ -27,21 +28,27 @@ interface UserDetail {
 type PostsProps = {
   boardNow: number | null;
   setBoardNow: React.Dispatch<React.SetStateAction<number | null>>;
+  isItSearching: boolean;
+  setIsItSearching: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const Category: string[] = ['전체글보기', '질문하기', '자랑하기', '공유하기', '잡담하기'];
 
-export default function Posts({ boardNow, setBoardNow }: PostsProps) {
+export default function Posts({ boardNow, setBoardNow, isItSearching, setIsItSearching }: PostsProps) {
   const [posts, setPosts] = useState<PostDetail[]>();
   const [postNumber, setPostNumber] = useState<number>();
   const [postPage, setPostPage] = useState<number>(1);
   const [dropBox, setDropBox] = useState<number | null>(null);
   const [searchDropIsOpen, setSearchDropIsOpen] = useState<boolean>(false);
   const [searchFilterNow, setSearchFilterNow] = useState<string>('제목 + 내용');
-  // const [isItSearching, setIsItSearching] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState({
-    searchFilter: '',
+    searchFilter: 'content',
     searchString: '',
+  });
+  const [searchRes, setSearchRes] = useState({
+    filterRes: '',
+    stringRes: '',
+    boardRes: boardNow,
   });
 
   const { searchFilter, searchString } = searchInput;
@@ -77,19 +84,52 @@ export default function Posts({ boardNow, setBoardNow }: PostsProps) {
       isItInOneDay,
     ];
   };
+
   useEffect(() => {
-    setPostPage(1);
-    fetch(`http://pien.kr:4000/community?page=1&number=10&categoryId=${boardNow}`, {
-      headers: {
-        'Content-Type': 'application/json;charset=utf-8',
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setPostNumber(data.number);
-        setPosts(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
-      });
-  }, [boardNow]);
+    if (!isItSearching) {
+      setSearchRes({ stringRes: '', filterRes: '', boardRes: boardNow });
+      setPostPage(1);
+      fetch(`http://pien.kr:4000/community?page=1&number=10&categoryId=${boardNow}`, {
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setPostNumber(data.number);
+          setPosts(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
+        });
+    }
+  }, [boardNow, isItSearching]);
+
+  useEffect(() => {
+    if (isItSearching) {
+      fetch(
+        `http://pien.kr:4000/community?page=${postPage}&number=10&categoryId=${boardNow}&filter=${searchFilter}&search=${searchString}`,
+        {
+          headers: {
+            'Content-Type': 'application/json;charset=utf-8',
+          },
+        },
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          setPostNumber(data.number);
+          setPosts(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
+        });
+    } else {
+      fetch(`http://pien.kr:4000/community?page=${postPage}&number=10&categoryId=${boardNow}`, {
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setPostNumber(data.number);
+          setPosts(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
+        });
+    }
+  }, [postPage]);
 
   const makeSearchFilter = (event: any, str: string) => {
     setSearchInput({ ...searchInput, searchFilter: str });
@@ -137,12 +177,17 @@ export default function Posts({ boardNow, setBoardNow }: PostsProps) {
     if (event.key === 'Enter') search(event);
     setSearchInput({ ...searchInput, searchString: event.target.value });
   };
+
   const search = (e: any) => {
     e.preventDefault();
+
     if (!searchString) {
       alert('검색어를 입력해주세요');
       return;
     }
+
+    setSearchRes({ filterRes: searchFilter, stringRes: searchString, boardRes: boardNow });
+
     fetch(
       `http://pien.kr:4000/community?page=1&number=10&categoryId=${boardNow}&filter=${searchFilter}&search=${searchString}`,
       {
@@ -155,6 +200,7 @@ export default function Posts({ boardNow, setBoardNow }: PostsProps) {
       .then((data) => {
         setPostNumber(data.number);
         setPosts(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
+        setIsItSearching(true);
       });
   };
 
@@ -170,24 +216,38 @@ export default function Posts({ boardNow, setBoardNow }: PostsProps) {
           arrTemp = [];
         }
 
-        if (i === temp) arr.push(arrTemp);
+        if (i === temp && arrTemp.length) arr.push(arrTemp);
       }
     }
     return arr;
   };
+
   const pages = pagination(postNumber);
   const pageIndex = postPage % 3 ? Math.floor(postPage / 3) : postPage / 3 - 1;
 
-  const goPost = () => {
+  const goPosting = () => {
     navigate('/community/posting');
   };
 
   return (
     <OuterBox>
-      <WhatIsList>{boardNow ? Category[boardNow] : null}</WhatIsList>
+      {isItSearching ? (
+        <SearchBar
+          setBoardNow={setBoardNow}
+          setPostNumber={setPostNumber}
+          setPosts={setPosts}
+          searchRes={searchRes}
+          setSearchRes={setSearchRes}
+        />
+      ) : null}
+      {isItSearching ? (
+        <SearchResult>{`'${searchRes.stringRes}'의 검색 결과입니다.`}</SearchResult>
+      ) : (
+        <WhatIsList>{boardNow !== null ? Category[boardNow] : null}</WhatIsList>
+      )}
       <HowManyPosts>
         {postNumber}개의 글
-        <button type='button' onClick={goPost}>
+        <button type='button' onClick={goPosting}>
           글 작성하기
         </button>
       </HowManyPosts>
@@ -273,7 +333,7 @@ export default function Posts({ boardNow, setBoardNow }: PostsProps) {
           <SearchInputBox>
             <SearchInput placeholder='검색어를 입력해주세요' onKeyUp={makeSearchInput} />
           </SearchInputBox>
-          <SearchBtn type='button' onClick={search}>
+          <SearchBtn type='button' onClick={(e) => search(e)}>
             검색
           </SearchBtn>
         </SearchBox>
@@ -601,3 +661,5 @@ const Page = styled.div<{ postPage: number; id: any }>`
     cursor: pointer;
   }
 `;
+
+const SearchResult = styled.div``;

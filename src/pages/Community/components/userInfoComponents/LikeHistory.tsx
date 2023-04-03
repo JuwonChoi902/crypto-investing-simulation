@@ -119,7 +119,7 @@ export default function LikeHistory() {
           ))}
         </List>
       ) : (
-        <EmptyList>작성한 게시글이 없습니다.</EmptyList>
+        <EmptyList>좋아요한 게시글이 없습니다.</EmptyList>
       )}
       <ButtonBox>
         <SelectAll>

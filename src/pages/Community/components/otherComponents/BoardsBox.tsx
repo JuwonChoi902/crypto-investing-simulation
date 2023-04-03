@@ -7,10 +7,11 @@ const boardsNames: string[] = ['질문하기', '자랑하기', '공유하기', '
 type PostBoxProps = {
   setPostNow: React.Dispatch<React.SetStateAction<number | null>>;
   setBoardNow: React.Dispatch<React.SetStateAction<number | null>>;
+  setIsItSearching: React.Dispatch<React.SetStateAction<boolean>>;
   boardNow: number | null;
 };
 
-export default function BoardsBox({ boardNow, setPostNow, setBoardNow }: PostBoxProps) {
+export default function BoardsBox({ boardNow, setPostNow, setBoardNow, setIsItSearching }: PostBoxProps) {
   return (
     <OuterBox>
       <ShowAll
@@ -19,13 +20,23 @@ export default function BoardsBox({ boardNow, setPostNow, setBoardNow }: PostBox
         onClick={() => {
           setBoardNow(0);
           setPostNow(null);
+          setIsItSearching(false);
         }}
       >
         전체글보기
       </ShowAll>
       <BoardsRest>
         {boardsNames.map((boardName, i) => (
-          <Board id={i + 1} boardNow={boardNow} onClick={() => setBoardNow(i + 1)}>
+          <Board
+            key={boardName}
+            id={i + 1}
+            boardNow={boardNow}
+            onClick={() => {
+              setPostNow(null);
+              setIsItSearching(false);
+              setBoardNow(i + 1);
+            }}
+          >
             <img src={board} alt='board' />
             {boardName}
           </Board>

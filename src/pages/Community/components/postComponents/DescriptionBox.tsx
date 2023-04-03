@@ -34,6 +34,7 @@ type DescriptionBoxProps = {
   setPostNow: React.Dispatch<React.SetStateAction<number | null>>;
   setBoardNow: React.Dispatch<React.SetStateAction<number | null>>;
   setReplying: React.Dispatch<React.SetStateAction<number | null>>;
+  setMenuNow: React.Dispatch<React.SetStateAction<number>>;
 };
 
 const PostCategory: string[] = ['전체글보기', '질문하기', '자랑하기', '공유하기', '잡담하기'];
@@ -46,6 +47,7 @@ export default function DescriptionBox({
   setReplying,
   postData,
   setPostData,
+  setMenuNow,
 }: DescriptionBoxProps) {
   const [isURLCopied, setIsURLCopied] = useState<boolean>(false);
 
@@ -105,6 +107,7 @@ export default function DescriptionBox({
       })
         .then((res) => res.json())
         .then((data) => {
+          console.log(data);
           setPostData({ ...data, created_at: dateParsing(data.created_at)[0] });
         });
     } else {
@@ -188,7 +191,12 @@ export default function DescriptionBox({
       </TitleBox>
       <UserInfo>
         <UserDesc>
-          <UserImg>
+          <UserImg
+            id={postData?.user?.id}
+            onClick={() => {
+              setMenuNow(2);
+            }}
+          >
             <img src={user} alt='user' />
           </UserImg>
           <UserDetail>
@@ -221,7 +229,7 @@ export default function DescriptionBox({
       </UserInfo>
       <Description>{postData?.description}</Description>
       <ShowMore>
-        <UserImg>
+        <UserImg id={postData?.user.id}>
           <img src={user} alt='user' />
         </UserImg>
         <span>{postData?.user.nickname}</span>
@@ -230,14 +238,14 @@ export default function DescriptionBox({
       <LikeAndHateBox>
         <LikeAndHate>
           <LikeBox isLiked={postData?.isLike} onClick={likeThisPost}>
-            <div>추천</div>
+            <div>좋아요</div>
             <span>{postData?.likeCount}</span>
             <LikeImg src={likeFill} alt='like' isLiked={postData?.isLike} />
           </LikeBox>
           <DisLikeBox isLiked={postData?.isLike} onClick={dislikeThisPost}>
             <DislikeImg src={dislikeFill} alt='dislike' isLiked={postData?.isLike} />
             <span>{postData?.unLikeCount}</span>
-            <div>비추천</div>
+            <div>싫어요</div>
           </DisLikeBox>
         </LikeAndHate>
         <Report>신고</Report>
@@ -280,7 +288,7 @@ const UserDesc = styled.div`
   align-items: center;
 `;
 
-const UserImg = styled.div`
+const UserImg = styled.div<{ id: any }>`
   display: flex;
   justify-content: center;
   width: 34px;

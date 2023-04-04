@@ -8,7 +8,11 @@ import CommentedPost from './CommentedPost';
 import LikeHistory from './LikeHistory';
 import IncomeInfo from './IncomeInfo';
 
-export default function UserInfo() {
+type UserInfoProps = {
+  profileId: number | undefined;
+};
+
+export default function UserInfo({ profileId }: UserInfoProps) {
   const [category, setCategory] = useState<number>(0);
   const navigate = useNavigate();
 
@@ -36,7 +40,7 @@ export default function UserInfo() {
           </CategoryRight>
         </CategoryBox>
         <ListBox>
-          {category === 0 ? <PostHistory /> : null}
+          {category === 0 ? <PostHistory profileId={profileId} /> : null}
           {category === 1 ? <CommentHistory /> : null}
           {category === 2 ? <CommentedPost /> : null}
           {category === 3 ? <LikeHistory /> : null}

@@ -30,6 +30,8 @@ type CommentsBoxProps = {
   setReplying: React.Dispatch<React.SetStateAction<number | null>>;
   commentCount: number;
   setCommentCount: React.Dispatch<React.SetStateAction<number>>;
+  setProfileId: React.Dispatch<React.SetStateAction<number | undefined>>;
+  setMenuNow: React.Dispatch<React.SetStateAction<number>>;
 };
 
 export default function CommentsBox({
@@ -38,6 +40,8 @@ export default function CommentsBox({
   setReplying,
   commentCount,
   setCommentCount,
+  setProfileId,
+  setMenuNow,
 }: CommentsBoxProps) {
   const [commentData, setCommentData] = useState<CommentDetail[]>();
   const [commentWrite, setCommentWrite] = useState<string>('');
@@ -451,7 +455,12 @@ export default function CommentsBox({
               </ReplyToReplyBox>
             ) : (
               <Comment index={i} key={el.id} isThisOrigin={el.isThisOrigin} isThisDeleted={el.deleted_at}>
-                <UserImg>
+                <UserImg
+                  onClick={() => {
+                    setProfileId(el.user.id);
+                    setMenuNow(2);
+                  }}
+                >
                   <img src={user} alt='user' />
                 </UserImg>
                 <CommentTextBox>

@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router';
+import { useOnClickOutside } from 'usehooks-ts';
 import styled from 'styled-components';
-import SearchBar from './SearchBar';
+import SearchBarTop from './SearchBarTop';
+import SearchBarUnder from './SearchBarUnder';
 import pageLeft from '../../images/pageLeft.png';
 import pageRight from '../../images/pageRight.png';
-import arrowDown from '../../images/arrowDown.png';
-import arrowUp from '../../images/arrowUp.png';
 
 interface PostDetail {
   id: number;
@@ -30,32 +30,40 @@ type PostsProps = {
   setBoardNow: React.Dispatch<React.SetStateAction<number | null>>;
   isItSearching: boolean;
   setIsItSearching: React.Dispatch<React.SetStateAction<boolean>>;
+  setProfileId: React.Dispatch<React.SetStateAction<number | undefined>>;
+  setMenuNow: React.Dispatch<React.SetStateAction<number>>;
 };
 
 const Category: string[] = ['전체글보기', '질문하기', '자랑하기', '공유하기', '잡담하기'];
 
-export default function Posts({ boardNow, setBoardNow, isItSearching, setIsItSearching }: PostsProps) {
+export default function Posts({
+  boardNow,
+  setBoardNow,
+  isItSearching,
+  setIsItSearching,
+  setProfileId,
+  setMenuNow,
+}: PostsProps) {
   const [posts, setPosts] = useState<PostDetail[]>();
   const [postNumber, setPostNumber] = useState<number>();
   const [postPage, setPostPage] = useState<number>(1);
   const [dropBox, setDropBox] = useState<number | null>(null);
-  const [searchDropIsOpen, setSearchDropIsOpen] = useState<boolean>(false);
-  const [searchFilterNow, setSearchFilterNow] = useState<string>('제목 + 내용');
-  const [searchInput, setSearchInput] = useState({
-    searchFilter: 'content',
-    searchString: '',
-  });
   const [searchRes, setSearchRes] = useState({
     filterRes: '',
     stringRes: '',
     boardRes: boardNow,
   });
 
-  const { searchFilter, searchString } = searchInput;
+  const { stringRes, filterRes, boardRes } = searchRes;
 
   const navigate = useNavigate();
-  const dropBoxRef = useRef<null[] | HTMLDivElement[]>([]);
-  const searchDropRef = useRef<HTMLDivElement>(null);
+  const dropBoxRef = useRef<HTMLDivElement>(null);
+
+  const handleClickOutside = () => {
+    setDropBox(null);
+  };
+
+  useOnClickOutside(dropBoxRef, handleClickOutside);
 
   const dateParsing = (date: string): [string, boolean] => {
     const theDate = new Date(date);
@@ -105,7 +113,7 @@ export default function Posts({ boardNow, setBoardNow, isItSearching, setIsItSea
   useEffect(() => {
     if (isItSearching) {
       fetch(
-        `http://pien.kr:4000/community?page=${postPage}&number=10&categoryId=${boardNow}&filter=${searchFilter}&search=${searchString}`,
+        `http://pien.kr:4000/community?page=${postPage}&number=10&categoryId=${boardRes}&filter=${filterRes}&search=${stringRes}`,
         {
           headers: {
             'Content-Type': 'application/json;charset=utf-8',
@@ -130,79 +138,6 @@ export default function Posts({ boardNow, setBoardNow, isItSearching, setIsItSea
         });
     }
   }, [postPage]);
-
-  const makeSearchFilter = (event: any, str: string) => {
-    setSearchInput({ ...searchInput, searchFilter: str });
-  };
-
-  useEffect(() => {
-    if (searchFilter === 'content') setSearchFilterNow('제목 + 내용');
-    if (searchFilter === 'nickname') setSearchFilterNow('작성자');
-    if (searchFilter === 'reply') setSearchFilterNow('댓글내용');
-  }, [searchFilter]);
-
-  useEffect(() => {
-    const changeDropState = (e: any) => {
-      if (searchDropRef.current !== null && !searchDropRef.current?.contains(e.target)) {
-        setSearchDropIsOpen((cur) => !cur);
-      }
-    };
-
-    if (searchDropIsOpen) {
-      window.addEventListener('click', changeDropState);
-    }
-
-    return () => {
-      window.removeEventListener('click', changeDropState);
-    };
-  }, [searchDropIsOpen]);
-
-  // useEffect(() => {
-  //   const changeDropState = (e: any) => {
-  //     if (dropBoxRef.current !== null && !dropBoxRef.current?.contains(e.target)) {
-  //       setDropBox(null);
-  //     }
-  //   };
-
-  //   if (dropBox) {
-  //     window.addEventListener('click', changeDropState);
-  //   }
-
-  //   return () => {
-  //     window.removeEventListener('click', changeDropState);
-  //   };
-  // }, [dropBox]);
-
-  const makeSearchInput = (event: any) => {
-    if (event.key === 'Enter') search(event);
-    setSearchInput({ ...searchInput, searchString: event.target.value });
-  };
-
-  const search = (e: any) => {
-    e.preventDefault();
-
-    if (!searchString) {
-      alert('검색어를 입력해주세요');
-      return;
-    }
-
-    setSearchRes({ filterRes: searchFilter, stringRes: searchString, boardRes: boardNow });
-
-    fetch(
-      `http://pien.kr:4000/community?page=1&number=10&categoryId=${boardNow}&filter=${searchFilter}&search=${searchString}`,
-      {
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
-        },
-      },
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        setPostNumber(data.number);
-        setPosts(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
-        setIsItSearching(true);
-      });
-  };
 
   const pagination = (number: number | undefined) => {
     const temp = number ? Math.ceil(number / 10) : undefined;
@@ -232,7 +167,7 @@ export default function Posts({ boardNow, setBoardNow, isItSearching, setIsItSea
   return (
     <OuterBox>
       {isItSearching ? (
-        <SearchBar
+        <SearchBarTop
           setBoardNow={setBoardNow}
           setPostNumber={setPostNumber}
           setPosts={setPosts}
@@ -288,14 +223,19 @@ export default function Posts({ boardNow, setBoardNow, isItSearching, setIsItSea
                   onClick={() => {
                     setDropBox(i);
                   }}
-                  // ref={(element: never) => {
-                  //   if (element) dropBoxRef.current?.push(element);
-                  // }}
                 >
                   {el.user.nickname}
-                  <UserDropBox id={i} dropBox={dropBox}>
+                  <UserDropBox id={i} dropBox={dropBox} ref={dropBoxRef}>
                     <ul>
-                      <li>프로필보기</li>
+                      <li
+                        role='presentation'
+                        onClick={() => {
+                          setProfileId(el.user.id);
+                          setMenuNow(2);
+                        }}
+                      >
+                        프로필보기
+                      </li>
                       <li>1:1 채팅</li>
                       <li>쪽지보내기</li>
                     </ul>
@@ -310,39 +250,17 @@ export default function Posts({ boardNow, setBoardNow, isItSearching, setIsItSea
         </PostList>
       </PostsBox>
       <SearchAndPages>
-        <SearchBox>
-          <SearchSelect
-            ref={searchDropRef}
-            isItClicked={searchDropIsOpen}
-            onClick={() => setSearchDropIsOpen((current) => !current)}
-          >
-            {searchFilterNow}
-            <img src={searchDropIsOpen ? arrowUp : arrowDown} alt='arrow' />
-            <ul>
-              <li role='presentation' onClick={(e) => makeSearchFilter(e, 'content')}>
-                제목 + 내용
-              </li>
-              <li role='presentation' onClick={(e) => makeSearchFilter(e, 'nickname')}>
-                작성자
-              </li>
-              <li role='presentation' onClick={(e) => makeSearchFilter(e, 'reply')}>
-                댓글내용
-              </li>
-            </ul>
-          </SearchSelect>
-          <SearchInputBox>
-            <SearchInput placeholder='검색어를 입력해주세요' onKeyUp={makeSearchInput} />
-          </SearchInputBox>
-          <SearchBtn type='button' onClick={(e) => search(e)}>
-            검색
-          </SearchBtn>
-        </SearchBox>
-
+        <SearchBarUnder
+          setPosts={setPosts}
+          setPostNumber={setPostNumber}
+          setSearchRes={setSearchRes}
+          setIsItSearching={setIsItSearching}
+          boardNow={boardNow}
+        />
         <Pages>
           <PageLeft pageIndex={pageIndex} onClick={() => setPostPage((pageIndex - 1) * 3 + 1)}>
             <img src={pageLeft} alt='pageLeft' />
           </PageLeft>
-
           {pages[pageIndex]?.map((el) => (
             <Page postPage={postPage} id={el} onClick={() => setPostPage(el)}>
               {el}
@@ -534,86 +452,6 @@ const Hits = styled.div`
 const SearchAndPages = styled.div`
   display: flex;
   justify-content: end;
-`;
-
-const SearchBox = styled.div`
-  display: flex;
-  margin-top: 30px;
-  font-size: 12px;
-  margin-right: 70px;
-`;
-const SearchSelect = styled.div<{ isItClicked: boolean }>`
-  display: flex;
-  align-items: center;
-  width: 120px;
-  height: 34px;
-  border: 1px solid #e5e5e5;
-  border-radius: 0;
-  position: relative;
-  font-size: 12px;
-  font-weight: normal;
-  padding: 0 12px;
-
-  &:hover {
-    cursor: pointer;
-  }
-
-  img {
-    width: 13px;
-    height: 13px;
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-  }
-
-  ul {
-    display: ${(props) => (props.isItClicked ? 'block' : 'none')};
-    position: absolute;
-    top: 100%;
-    left: -1px;
-    border: 1px solid #e5e5e5;
-  }
-
-  li {
-    padding: 0 12px;
-    width: 120px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-
-    &:hover {
-      cursor: pointer;
-      background-color: #feeaa3;
-    }
-  }
-`;
-const SearchInputBox = styled.div`
-  display: flex;
-  border: 1px solid #e5e5e5;
-  border-right: none;
-  align-items: center;
-  width: 199px;
-  margin-left: 10px;
-`;
-const SearchInput = styled.input`
-  height: 34px;
-  width: 98%;
-  padding: 0 12px;
-  border: none;
-`;
-const SearchBtn = styled.button`
-  ${(props) => props.theme.variables.flex()}
-  width: 56px;
-  height: 36px;
-  color: black;
-  /* font-weight: bold; */
-  background-color: ${(props) => props.theme.style.buttonYellow};
-  border: none;
-
-  &:hover {
-    cursor: pointer;
-  }
 `;
 
 const Pages = styled.div`

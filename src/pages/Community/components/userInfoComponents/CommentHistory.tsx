@@ -42,7 +42,7 @@ export default function CommentHistory() {
   };
 
   useEffect(() => {
-    fetch(`http://pien.kr:4000/community/reply/user/1`, {
+    fetch(`http://pien.kr:4000/community/reply/user/1?page=1&number=15`, {
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
       },

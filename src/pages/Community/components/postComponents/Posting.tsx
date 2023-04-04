@@ -4,6 +4,7 @@ import styled from 'styled-components';
 
 export default function Posting() {
   const location = useLocation().state;
+  window.scrollTo(0, 0);
 
   const editingData = location ? location.postData : null;
 

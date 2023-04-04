@@ -35,6 +35,7 @@ type DescriptionBoxProps = {
   setBoardNow: React.Dispatch<React.SetStateAction<number | null>>;
   setReplying: React.Dispatch<React.SetStateAction<number | null>>;
   setMenuNow: React.Dispatch<React.SetStateAction<number>>;
+  setProfileId: React.Dispatch<React.SetStateAction<number | undefined>>;
 };
 
 const PostCategory: string[] = ['전체글보기', '질문하기', '자랑하기', '공유하기', '잡담하기'];
@@ -48,6 +49,7 @@ export default function DescriptionBox({
   postData,
   setPostData,
   setMenuNow,
+  setProfileId,
 }: DescriptionBoxProps) {
   const [isURLCopied, setIsURLCopied] = useState<boolean>(false);
 
@@ -107,7 +109,6 @@ export default function DescriptionBox({
       })
         .then((res) => res.json())
         .then((data) => {
-          console.log(data);
           setPostData({ ...data, created_at: dateParsing(data.created_at)[0] });
         });
     } else {
@@ -194,6 +195,7 @@ export default function DescriptionBox({
           <UserImg
             id={postData?.user?.id}
             onClick={() => {
+              setProfileId(postData?.user?.id);
               setMenuNow(2);
             }}
           >
@@ -228,7 +230,12 @@ export default function DescriptionBox({
         <IsCopied isURLCopied={isURLCopied}>URL이 복사되었습니다.</IsCopied>
       </UserInfo>
       <Description>{postData?.description}</Description>
-      <ShowMore>
+      <ShowMore
+        onClick={() => {
+          setProfileId(postData?.user?.id);
+          setMenuNow(2);
+        }}
+      >
         <UserImg id={postData?.user.id}>
           <img src={user} alt='user' />
         </UserImg>

@@ -9,6 +9,7 @@ type PostProps = {
   setPostNow: React.Dispatch<React.SetStateAction<number | null>>;
   setBoardNow: React.Dispatch<React.SetStateAction<number | null>>;
   setMenuNow: React.Dispatch<React.SetStateAction<number>>;
+  setProfileId: React.Dispatch<React.SetStateAction<number | undefined>>;
 };
 
 export interface PostDetail {
@@ -31,7 +32,7 @@ export interface UserDetail {
   description: string | null;
 }
 
-export default function Post({ setPostNow, setBoardNow, setMenuNow }: PostProps) {
+export default function Post({ setPostNow, setBoardNow, setMenuNow, setProfileId }: PostProps) {
   const [postData, setPostData] = useState<PostDetail>();
   const [replying, setReplying] = useState<number | null>(null);
   const [commentCount, setCommentCount] = useState<number>(0);
@@ -50,6 +51,7 @@ export default function Post({ setPostNow, setBoardNow, setMenuNow }: PostProps)
           postData={postData}
           setPostData={setPostData}
           setMenuNow={setMenuNow}
+          setProfileId={setProfileId}
         />
         <CommentsBox
           commentWindowRef={commentWindowRef}
@@ -57,6 +59,8 @@ export default function Post({ setPostNow, setBoardNow, setMenuNow }: PostProps)
           setReplying={setReplying}
           commentCount={commentCount}
           setCommentCount={setCommentCount}
+          setProfileId={setProfileId}
+          setMenuNow={setMenuNow}
         />
       </MainBox>
       <NavigateBox2 setPostNow={setPostNow} />

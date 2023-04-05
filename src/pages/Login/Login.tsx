@@ -26,8 +26,27 @@ export default function Login() {
           </LineBox>
           <GoogleApple>
             <GoogleBtn>
-              <img src={google} alt='google' />
-              <div>Google</div>
+              {/* <img src={google} alt='google' />
+              <div>Google</div> */}
+              <div
+                id='g_id_onload'
+                data-client_id='126645320385-715mi7o4d3jrbl3m89qv3ju68ak3cepd.apps.googleusercontent.com'
+                data-context='signup'
+                data-ux_mode='redirect'
+                data-login_uri='http://localhost:3000/login'
+                data-auto_prompt='false'
+              />
+
+              <div
+                className='g_id_signin'
+                data-type='standard'
+                data-shape='rectangular'
+                data-theme='outline'
+                data-text='signup_with'
+                data-size='large'
+                data-locale='ko'
+                data-logo_alignment='left'
+              />
             </GoogleBtn>
             <AppleBtn>
               <img src={apple} alt='apple' />

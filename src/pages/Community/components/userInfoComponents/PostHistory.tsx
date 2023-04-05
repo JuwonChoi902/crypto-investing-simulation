@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
-import pageLeft from '../../images/pageLeft.png';
-import pageRight from '../../images/pageRight.png';
+import Pages from '../otherComponents/Pages';
 
 interface PostDetail {
   id: number;
@@ -30,7 +29,7 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
   const [checked, setChecked] = useState<number[]>([]);
   const [postsData, setPostsData] = useState<PostDetail[]>([]);
   const [postNumber, setPostNumber] = useState<number>();
-  const [pageNow, setPageNow] = useState<number>(1);
+  const [page, setPage] = useState<number>(1);
 
   const navigate = useNavigate();
 
@@ -61,7 +60,7 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
   };
 
   useEffect(() => {
-    fetch(`http://pien.kr:4000/community/post/user/${profileId}?page=${pageNow}&number=15`, {
+    fetch(`http://pien.kr:4000/community/post/user/${profileId}?page=${page}&number=15`, {
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
       },
@@ -71,28 +70,8 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
         setPostNumber(data.number);
         setPostsData(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
       });
-  }, [pageNow]);
+  }, [page]);
 
-  const pagination = (number: number | undefined) => {
-    const temp = number ? Math.ceil(number / 15) : undefined;
-    const arr = [];
-    if (temp) {
-      let arrTemp: number[] = [];
-      for (let i = 1; i <= temp; i += 1) {
-        arrTemp.push(i);
-        if (arrTemp.length === 3) {
-          arr.push(arrTemp);
-          arrTemp = [];
-        }
-
-        if (i === temp && arrTemp.length) arr.push(arrTemp);
-      }
-    }
-    return arr;
-  };
-
-  const pages = pagination(postNumber);
-  const pageIndex = pageNow % 3 ? Math.floor(pageNow / 3) : pageNow / 3 - 1;
   const checkedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (checked.includes(Number(event.target.id))) {
       const temp = checked.filter((el) => el !== Number(event.target.id));
@@ -128,7 +107,7 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
         .then((res) => res.json())
         .then((data) => {
           if (data.status === true) {
-            fetch(`http://pien.kr:4000/community/post/user/${profileId}?page=${pageNow}&number=15`, {
+            fetch(`http://pien.kr:4000/community/post/user/${profileId}?page=${page}&number=15`, {
               headers: {
                 'Content-Type': 'application/json;charset=utf-8',
               },
@@ -189,24 +168,7 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
             <div>전체선택</div>
           </CheckAll>
         </SelectAll>
-        <Pages>
-          <PageLeft pageIndex={pageIndex} onClick={() => setPageNow((pageIndex - 1) * 3 + 1)}>
-            <img src={pageLeft} alt='pageLeft' />
-          </PageLeft>
-
-          {pages[pageIndex]?.map((el) => (
-            <Page pageNow={pageNow} id={el} onClick={() => setPageNow(el)}>
-              {el}
-            </Page>
-          ))}
-          <PageRight
-            pagesLength={pages.length}
-            pageIndex={pageIndex}
-            onClick={() => setPageNow((pageIndex + 1) * 3 + 1)}
-          >
-            <img src={pageRight} alt='pageRight' />
-          </PageRight>
-        </Pages>
+        <Pages setPage={setPage} page={page} postNumber={postNumber} limit={15} />
         <DeleteAndWrite>
           <DeleteBtn onClick={deleteChecked}>삭제</DeleteBtn>
           <WriteBtn onClick={() => navigate('/community/posting')}>글쓰기</WriteBtn>
@@ -339,52 +301,6 @@ const CheckAll = styled.div`
     margin-left: 8px;
     margin-right: 12px;
   }
-
-  &:hover {
-    cursor: pointer;
-  }
-`;
-
-const Pages = styled.div`
-  margin-top: 30px;
-  margin-right: 25px;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-`;
-
-const PageLeft = styled.div<{ pageIndex: number }>`
-  display: ${(props) => (props.pageIndex === 0 ? 'none' : 'flex')};
-
-  img {
-    width: 10px;
-    height: 10px;
-
-    &:hover {
-      cursor: pointer;
-    }
-  }
-`;
-const PageRight = styled.div<{ pageIndex: number; pagesLength: number }>`
-  display: ${(props) => (props.pageIndex === props.pagesLength - 1 ? 'none' : 'flex')};
-
-  img {
-    width: 10px;
-    height: 10px;
-    margin-left: 30px;
-
-    &:hover {
-      cursor: pointer;
-    }
-  }
-`;
-
-const Page = styled.div<{ pageNow: number; id: any }>`
-  font-weight: ${(props) => (props.pageNow === props.id ? 'bold' : 'normal')};
-  margin-left: 25px;
-  border: ${(props) => (props.pageNow === props.id ? '1px solid #e5e5e5' : 'none')};
-  padding: 0 5px;
-  color: ${(props) => (props.pageNow === props.id ? props.theme.style.yellow : 'black')};
 
   &:hover {
     cursor: pointer;

@@ -11,18 +11,18 @@ import { CandleData, CandleDataDetail, CandleData2 } from '../../typing/type';
 export default function Detail() {
   const [kline, setKline] = useState<CandleData | undefined>();
 
-  const socket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@kline_1d');
+  // const socket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@kline_1d');
 
-  socket.addEventListener('message', (message) => {
-    setKline(JSON.parse(message.data));
-  });
+  // socket.addEventListener('message', (message) => {
+  //   setKline(JSON.parse(message.data));
+  // });
 
   return (
     <OuterBox>
       <CoinDetail>
         <LeftBox>
           <TradeDetail>
-            <Overview candleData={kline} />
+            <Overview />
             <TradeBox>
               <CallBox candleData={kline} />
               <ChartBox>

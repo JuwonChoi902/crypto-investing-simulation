@@ -33,7 +33,6 @@ for (let i = 1; i <= 17; i += 1) {
 const price = 17020.01;
 
 export default function CallBox({ candleData }: CandleData2) {
-  console.log(candleData);
   return (
     <OuterBox>
       <SwitchBox>

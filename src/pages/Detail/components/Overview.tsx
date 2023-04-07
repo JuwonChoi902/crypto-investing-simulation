@@ -1,44 +1,84 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { CandleData, CandleData2, CandleDataDetail } from '../../../typing/type';
+import { SymbolTickerTypes } from '../../../typing/type';
 
-export default function Overview({ candleData }: CandleData2) {
+export default function Overview() {
   const [priceColor, setPriceColor] = useState<string>('');
-  const [priceNow, setPriceNow] = useState<string | undefined>();
+  const [symbolTicker, setSymbolTicker] = useState<SymbolTickerTypes | undefined>();
+
+  const newSocket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@ticker');
+
+  newSocket.addEventListener('message', (message) => {
+    setSymbolTicker(JSON.parse(message.data));
+  });
+  const price = Number(symbolTicker?.c);
+  const ref = useRef<number>();
 
   useEffect(() => {
-    setPriceNow((prev) => prev);
-  }, [candleData]);
+    ref.current = price;
+  });
+
+  const prev = ref.current;
+
+  useEffect(() => {
+    if (price && prev && price > prev) setPriceColor('green');
+    if (price && prev && price < prev) setPriceColor('red');
+  }, [price]);
+
   return (
     <OuterBox>
       <CoinTitle>BTC/BUSD</CoinTitle>
       <CoinOverview>
         <MarketPrice>
-          <Price1>{Number(candleData?.k.c).toFixed(2).toLocaleString()}</Price1>
-          <Price2>${Number(candleData?.k.c).toFixed(2).toLocaleString()}</Price2>
+          <Price1 prev={prev} price={price} priceColor={priceColor}>
+            {Number(symbolTicker?.c).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </Price1>
+          <Price2>
+            $
+            {Number(symbolTicker?.c).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </Price2>
         </MarketPrice>
         <OverViewMenu>
           <MenuTitle>24시간 변동</MenuTitle>
-          <MenuIndex>
-            <span>-289.09</span>
-            <span>-1.63%</span>
-          </MenuIndex>
+          <ChangeInADay whatColor={symbolTicker?.p}>
+            <span>{Number(symbolTicker?.p).toLocaleString()}</span>
+            <span>
+              {Number(symbolTicker?.P) >= 0 ? '+' : null}
+              {Number(symbolTicker?.P).toFixed(2)}%
+            </span>
+          </ChangeInADay>
         </OverViewMenu>
         <OverViewMenu>
           <MenuTitle>24시간 최고가</MenuTitle>
-          <MenuIndex>{Number(candleData?.k.h).toFixed(2).toLocaleString()}</MenuIndex>
+          <MenuIndex>{Number(symbolTicker?.h).toLocaleString()}</MenuIndex>
         </OverViewMenu>
         <OverViewMenu>
           <MenuTitle>24시간 최저가</MenuTitle>
-          <MenuIndex>{Number(candleData?.k.l).toFixed(2).toLocaleString()}</MenuIndex>
+          <MenuIndex>{Number(symbolTicker?.l).toLocaleString()}</MenuIndex>
         </OverViewMenu>
         <OverViewMenu>
           <MenuTitle>24시간 거래량(BTC)</MenuTitle>
-          <MenuIndex>128,259.33</MenuIndex>
+          <MenuIndex>
+            {Number(symbolTicker?.v).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </MenuIndex>
         </OverViewMenu>
         <OverViewMenu>
           <MenuTitle>24시간 거래량(BUSD)</MenuTitle>
-          <MenuIndex>2,243,339,938.56</MenuIndex>
+          <MenuIndex>
+            {Number(symbolTicker?.q).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </MenuIndex>
         </OverViewMenu>
       </CoinOverview>
     </OuterBox>
@@ -48,6 +88,7 @@ export default function Overview({ candleData }: CandleData2) {
 const OuterBox = styled.div`
   display: flex;
   align-items: center;
+  width: 870px;
   height: 48px;
   padding: 10px 16px;
   border-bottom: 1px solid #edf0f2;
@@ -67,11 +108,12 @@ const CoinOverview = styled.div`
   display: flex;
 `;
 const MarketPrice = styled.div`
+  width: 72px;
   padding-right: 32px;
 `;
-const Price1 = styled.div`
+const Price1 = styled.div<{ prev: number | undefined; price: number | undefined; priceColor: string }>`
   font-size: 16px;
-  color: ${(props) => props.theme.style.green};
+  color: ${(props) => props.priceColor};
   font-weight: 600;
   margin-bottom: 5px;
 `;
@@ -86,11 +128,6 @@ const OverViewMenu = styled.div`
   font-size: 12px;
   padding-right: 32px;
   font-weight: 600;
-
-  span {
-    color: ${(props) => props.theme.style.red};
-    margin-right: 5px;
-  }
 `;
 const MenuTitle = styled.div`
   color: ${(props) => props.theme.style.grey};
@@ -98,3 +135,10 @@ const MenuTitle = styled.div`
 `;
 
 const MenuIndex = styled.div``;
+const ChangeInADay = styled.div<{ whatColor: string | undefined }>`
+  color: ${(props) => (Number(props.whatColor) >= 0 ? props.theme.style.green : props.theme.style.red)};
+
+  span {
+    margin-right: 5px;
+  }
+`;

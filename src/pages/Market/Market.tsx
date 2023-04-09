@@ -37,11 +37,12 @@ const TitleBox = styled.div`
 const Title = styled.div`
   font-size: 28px;
   font-weight: 600;
+  margin-left: 60px;
 `;
 const Overview = styled.div`
   display: flex;
   align-items: center;
-
+  margin-right: 60px;
   img {
     width: 20px;
   }

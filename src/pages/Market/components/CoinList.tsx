@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from 'react';
+import React, { PropsWithChildren, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import styled from 'styled-components';
@@ -126,7 +126,14 @@ const CoinData: Coin[] = [
 ];
 
 export default function CoinList() {
+  const [tickers, setTickers] = useState();
   const navigate = useNavigate();
+
+  const newSocket = new WebSocket('wss://stream.binance.com:9443/ws/!miniTicker@arr');
+
+  newSocket.addEventListener('message', (message) => {
+    setTickers(JSON.parse(message.data));
+  });
 
   return (
     <OuterBox>

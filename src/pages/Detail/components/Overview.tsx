@@ -6,11 +6,14 @@ export default function Overview() {
   const [priceColor, setPriceColor] = useState<string>('');
   const [symbolTicker, setSymbolTicker] = useState<SymbolTickerTypes | undefined>();
 
-  const newSocket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@ticker');
+  useEffect(() => {
+    const newSocket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@ticker');
 
-  newSocket.addEventListener('message', (message) => {
-    setSymbolTicker(JSON.parse(message.data));
-  });
+    newSocket.addEventListener('message', (message) => {
+      setSymbolTicker(JSON.parse(message.data));
+    });
+  }, []);
+
   const price = Number(symbolTicker?.c);
   const ref = useRef<number>();
 
@@ -47,7 +50,12 @@ export default function Overview() {
         <OverViewMenu>
           <MenuTitle>24시간 변동</MenuTitle>
           <ChangeInADay whatColor={symbolTicker?.p}>
-            <span>{Number(symbolTicker?.p).toLocaleString()}</span>
+            <span>
+              {Number(symbolTicker?.p).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </span>
             <span>
               {Number(symbolTicker?.P) >= 0 ? '+' : null}
               {Number(symbolTicker?.P).toFixed(2)}%

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { CandleData2 } from '../../../typing/type';
 import switchBoth from '../images/switchBoth.png';
@@ -33,6 +33,18 @@ for (let i = 1; i <= 17; i += 1) {
 const price = 17020.01;
 
 export default function CallBox({ candleData }: CandleData2) {
+  const [book, setBook] = useState();
+
+  useEffect(() => {
+    const newSocket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@depth20');
+
+    newSocket.addEventListener('message', (message) => {
+      setBook(JSON.parse(message.data));
+    });
+  }, []);
+
+  console.log(book);
+
   return (
     <OuterBox>
       <SwitchBox>

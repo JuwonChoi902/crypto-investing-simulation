@@ -15,6 +15,8 @@ interface PostDetail {
   hits: number;
   label: string;
   categoryId: number;
+  prevPostId: number | null;
+  nextPostId: number | null;
   user: UserDetail;
 }
 

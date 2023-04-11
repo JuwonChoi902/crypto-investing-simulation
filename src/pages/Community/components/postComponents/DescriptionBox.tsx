@@ -17,6 +17,8 @@ interface PostDetail {
   isLike: boolean;
   likeCount: number;
   unLikeCount: number;
+  prevPostId: number | null;
+  nextPostId: number | null;
   user: UserDetail;
 }
 

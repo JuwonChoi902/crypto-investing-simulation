@@ -20,7 +20,7 @@ export default function HeaderBox() {
         </NickBox>
         <Info>
           {headerText.map((el) => (
-            <InfoDetail>
+            <InfoDetail key={el[0]}>
               <DetailText>{el[0]}</DetailText>
               <DetailCount>{el[1]}</DetailCount>
             </InfoDetail>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
+import Pages from '../otherComponents/Pages';
 
 interface UserDetail {
   id: number;
@@ -15,6 +16,21 @@ interface CommentDetail {
   deleted_at: string;
   isItNew: boolean;
   replyId: number;
+  post: PostDetail;
+  user: UserDetail;
+}
+
+interface PostDetail {
+  id: number;
+  title: string;
+  description: string;
+  created_at: string;
+  repliesCount: number;
+  hits: number;
+  label: string;
+  categoryId: number;
+  prevPostId: number | null;
+  nextPostId: number | null;
   user: UserDetail;
 }
 
@@ -22,6 +38,7 @@ export default function CommentHistory() {
   const [comments, setComments] = useState<CommentDetail[]>();
   const [checked, setChecked] = useState<number[]>([]);
   const [commentCount, setCommentCount] = useState<number>(0);
+  const [page, setPage] = useState<number>(1);
 
   const navigate = useNavigate();
 
@@ -42,33 +59,23 @@ export default function CommentHistory() {
   };
 
   useEffect(() => {
-    fetch(`http://pien.kr:4000/community/reply/user/1?page=1&number=15`, {
+    fetch(`http://pien.kr:4000/community/reply/user/1?page=${page}&number=15`, {
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
       },
     })
       .then((res) => res.json())
       .then((data) => {
-        let count = 0;
-        const temp = [];
-
-        for (let i = 0; i < data.length; i += 1) {
-          if (!data[i].deleted_at) {
-            count += 1;
-            temp.push(data[i]);
-          }
-        }
-
-        setCommentCount(count);
+        setCommentCount(data.number);
         setComments(
-          temp.map((el: CommentDetail) => ({
+          data.replies.map((el: CommentDetail) => ({
             ...el,
             created_at: dateParsing(el.created_at)[0],
             isItNew: dateParsing(el.created_at)[1],
           })),
         );
       });
-  }, []);
+  }, [page]);
 
   const checkedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (checked.includes(Number(event.target.id))) {
@@ -105,26 +112,16 @@ export default function CommentHistory() {
         .then((res) => res.json())
         .then((data) => {
           if (data.status === true) {
-            fetch(`http://pien.kr:4000/community/user/1?page=1&number=10&categoryId=0`, {
+            fetch(`http://pien.kr:4000/community/reply/user/1?page=${page}&number=15`, {
               headers: {
                 'Content-Type': 'application/json;charset=utf-8',
               },
             })
               .then((res) => res.json())
               .then((data) => {
-                let count = 0;
-                const temp = [];
-
-                for (let i = 0; i < data.length; i += 1) {
-                  if (!data[i].deleted_at) {
-                    count += 1;
-                    temp.push(data[i]);
-                  }
-                }
-
-                setCommentCount(count);
+                setCommentCount(data.number);
                 setComments(
-                  temp.map((el: CommentDetail) => ({
+                  data.replies.map((el: CommentDetail) => ({
                     ...el,
                     created_at: dateParsing(el.created_at)[0],
                     isItNew: dateParsing(el.created_at)[1],
@@ -149,7 +146,7 @@ export default function CommentHistory() {
       )}
       <List>
         {comments?.map((el) => (
-          <CommentBox>
+          <CommentBox key={el.id}>
             <CommentInner>
               <CheckBox>
                 <input
@@ -157,6 +154,7 @@ export default function CommentHistory() {
                   id={String(el.id)}
                   checked={checked.includes(el.id)}
                   onChange={(event) => checkedChange(event)}
+                  readOnly
                 />
               </CheckBox>
               <Comment>
@@ -166,7 +164,7 @@ export default function CommentHistory() {
                 </CommentDesc>
                 <CommentDate>{el.created_at}</CommentDate>
                 <PostTitle>
-                  안녕하십니까
+                  {el.post ? el.post.title : <span>삭제된 게시글</span>}
                   <PostCommentCnt>[5]</PostCommentCnt>
                 </PostTitle>
               </Comment>
@@ -177,10 +175,11 @@ export default function CommentHistory() {
       <ButtonBox>
         <SelectAll>
           <CheckAll onClick={checkAll}>
-            <input type='checkBox' checked={checked.length === comments?.length} />
+            <input type='checkBox' checked={checked.length === comments?.length} readOnly />
             <div>전체선택</div>
           </CheckAll>
         </SelectAll>
+        <Pages page={page} setPage={setPage} postNumber={commentCount} limit={15} />
         <DeleteAndWrite>
           <DeleteBtn onClick={deleteComment}>삭제</DeleteBtn>
           <WriteBtn onClick={() => navigate('/community/posting')}>글쓰기</WriteBtn>
@@ -255,6 +254,10 @@ const PostTitle = styled.div`
   display: flex;
   color: #878787;
   margin-top: 6px;
+
+  span {
+    font-style: italic;
+  }
 `;
 
 const PostCommentCnt = styled.div`

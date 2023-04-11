@@ -416,9 +416,11 @@ export default function CommentsBox({
       <Comments>
         {commentData?.map((el, i) => (
           <>
-            <DeletedOrigin isThisDeleted={el.deleted_at} index={i}>
-              삭제된 댓글입니다.
-            </DeletedOrigin>
+            {el.deleted_at ? (
+              <DeletedOrigin index={i} key={el.id}>
+                삭제된 댓글입니다.
+              </DeletedOrigin>
+            ) : null}
             {editing === el.id ? (
               <ReplyToReplyBox id={el.id} isLastOne={i === commentData.length - 1}>
                 <RTRPosting>
@@ -589,9 +591,9 @@ const IsItNew = styled.div`
 
 const Comments = styled.div``;
 
-const DeletedOrigin = styled.div<{ isThisDeleted: string; index: number }>`
+const DeletedOrigin = styled.div<{ index: number }>`
   font-size: 13px;
-  display: ${(props) => (props.isThisDeleted ? 'flex' : 'none')};
+  display: flex;
   border-top: ${(props) => (props.index === 0 ? 'none' : '1px solid #e5e5e5')};
   padding: 15px 0 15px 0;
 `;

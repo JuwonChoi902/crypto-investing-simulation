@@ -136,7 +136,7 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
       {postsData.length ? (
         <List>
           {postsData.map((post) => (
-            <Post>
+            <Post key={post.id}>
               <PostTitleBox>
                 <CheckBox>
                   <input
@@ -144,6 +144,7 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
                     id={String(post.id)}
                     checked={checked.includes(post.id)}
                     onChange={(event) => checkedChange(event)}
+                    readOnly
                   />
                 </CheckBox>
                 <PostId>{post.id}</PostId>
@@ -163,8 +164,8 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
       )}
       <ButtonAndPageBox>
         <SelectAll>
-          <CheckAll onClick={checkAll}>
-            <input type='checkBox' checked={checked.length === postsData.length} />
+          <CheckAll onChange={checkAll}>
+            <input type='checkBox' checked={checked.length === postsData.length} readOnly />
             <div>전체선택</div>
           </CheckAll>
         </SelectAll>

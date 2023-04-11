@@ -51,16 +51,18 @@ export default function CommentedPost() {
   };
 
   useEffect(() => {
-    fetch(`http://pien.kr:4000/user/1/posts`, {
+    fetch(`http://pien.kr:4000/community/reply/user/1`, {
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
       },
     })
       .then((res) => res.json())
       .then((data) => {
-        setPostsData(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
+        setPostsData(data.replies.filter((el: any) => el.post).map((el: any) => el.post));
+        // setPostsData(data.replies.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
       });
   }, []);
+  console.log(postsData);
 
   return (
     <OuterBox>

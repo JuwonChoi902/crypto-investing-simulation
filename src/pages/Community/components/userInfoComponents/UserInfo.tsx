@@ -28,7 +28,7 @@ export default function UserInfo({ profileId }: UserInfoProps) {
         <CategoryBox>
           <CategoryLeft>
             {categories.map((c, i) => (
-              <Category id={i} category={category} onClick={() => setCategory(i)}>
+              <Category id={i} category={category} onClick={() => setCategory(i)} key={c}>
                 {c}
               </Category>
             ))}

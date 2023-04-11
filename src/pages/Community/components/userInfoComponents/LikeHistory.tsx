@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
+import Pages from '../otherComponents/Pages';
 
 interface PostDetail {
   id: number;
@@ -22,7 +23,9 @@ interface UserDetail {
 
 export default function LikeHistory() {
   const [postsData, setPostsData] = useState<PostDetail[]>([]);
+  const [postNumber, setPostNumber] = useState<number>(0);
   const [checked, setChecked] = useState<string[]>([]);
+  const [page, setPage] = useState<number>(1);
   const navigate = useNavigate();
 
   const dateParsing = (date: string): [string, boolean] => {
@@ -52,16 +55,17 @@ export default function LikeHistory() {
   };
 
   useEffect(() => {
-    fetch(`http://pien.kr:4000/user/1/posts`, {
+    fetch(`http://pien.kr:4000/community/like/user/1?page=${page}&number=15`, {
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
       },
     })
       .then((res) => res.json())
       .then((data) => {
+        setPostNumber(data.number);
         setPostsData(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
       });
-  }, []);
+  }, [page]);
 
   const checkedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (checked.includes(event.target.id)) {
@@ -95,7 +99,7 @@ export default function LikeHistory() {
       {postsData.length ? (
         <List>
           {postsData.map((post) => (
-            <Post>
+            <Post key={post.id}>
               <PostTitleBox>
                 <CheckBox>
                   <input
@@ -103,6 +107,7 @@ export default function LikeHistory() {
                     id={String(post.id)}
                     checked={checked.includes(String(post.id))}
                     onChange={(event) => checkedChange(event)}
+                    readOnly
                   />
                 </CheckBox>
                 <PostId>{post.id}</PostId>
@@ -124,10 +129,11 @@ export default function LikeHistory() {
       <ButtonBox>
         <SelectAll>
           <CheckAll onClick={checkAll}>
-            <input type='checkBox' checked={checked.length === postsData.length} />
+            <input type='checkBox' checked={checked.length === postsData.length} readOnly />
             <div>전체선택</div>
           </CheckAll>
         </SelectAll>
+        <Pages page={page} setPage={setPage} postNumber={postNumber} limit={15} />
         <DeleteAndWrite>
           <DeleteBtn>삭제</DeleteBtn>
           <WriteBtn onClick={() => navigate('/community/posting')}>글쓰기</WriteBtn>

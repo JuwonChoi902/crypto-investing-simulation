@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useOnClickOutside } from 'usehooks-ts';
 import styled from 'styled-components';
+import { ObjectType } from 'typescript';
 
 interface PostDetail {
   id: number;
@@ -12,6 +13,8 @@ interface PostDetail {
   hits: number;
   label: string;
   categoryId: number;
+  prevPostId: number | null;
+  nextPostId: number | null;
   user: UserDetail;
 }
 
@@ -64,11 +67,40 @@ export default function PostList({
 
   const { stringRes, filterRes, boardRes } = searchRes;
 
-  const handleClickOutside = () => {
-    setDropBox(null);
-  };
+  // const refs = useRef<any>(Array.from({ length: 10 }, () => React.createRef()));
+  const refs = useRef<any>(Array.from({ length: 10 }, () => React.createRef()));
 
-  useOnClickOutside(dropBoxRef, handleClickOutside);
+  // console.log(refs);
+
+  // // useEffect(() => {
+  // //   refs.current[0].current.focus();
+  // // }, []);
+
+  // const handleClickOutside = () => {
+  //   setDropBox(null);
+  // };
+
+  // useEffect(() => {
+  //   const changeDropState = (e: any) => {
+  //     if (refs.current[dropBox].current !== null && !refs.current[dropBox].current.contains(e.target)) {
+  //       setDropBox(null);
+  //     }
+  //   };
+
+  //   if (dropBox) {
+  //     window.addEventListener('click', changeDropState);
+  //   }
+
+  //   return () => {
+  //     window.removeEventListener('click', changeDropState);
+  //   };
+  // }, [dropBox]);
+
+  // useEffect(() => {
+  //   if (dropBox) {
+  //     useOnClickOutside(refs[dropBox as keyof number], handleClickOutside);
+  //   }
+  // }, [dropBox]);
 
   const dateParsing = (date: string): [string, boolean] => {
     const theDate = new Date(date);
@@ -174,7 +206,7 @@ export default function PostList({
               }}
             >
               {el.user.nickname}
-              <UserDropBox id={i} dropBox={dropBox} ref={dropBoxRef}>
+              <UserDropBox id={i} dropBox={dropBox} ref={refs.current[i]}>
                 <ul>
                   <li
                     role='presentation'

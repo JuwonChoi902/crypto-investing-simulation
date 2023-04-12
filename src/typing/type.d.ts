@@ -1,7 +1,3 @@
-export interface CandleData2 {
-  candleData: CandleData | undefined;
-}
-
 export interface CandleData {
   e: string; // Event type
   E: number; // Event time

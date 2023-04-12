@@ -58,11 +58,21 @@ export default function Overview({ symbolTicker }: OverviewProps) {
         </OverViewMenu>
         <OverViewMenu>
           <MenuTitle>24시간 최고가</MenuTitle>
-          <MenuIndex>{Number(symbolTicker?.h).toLocaleString()}</MenuIndex>
+          <MenuIndex>
+            {Number(symbolTicker?.h).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </MenuIndex>
         </OverViewMenu>
         <OverViewMenu>
           <MenuTitle>24시간 최저가</MenuTitle>
-          <MenuIndex>{Number(symbolTicker?.l).toLocaleString()}</MenuIndex>
+          <MenuIndex>
+            {Number(symbolTicker?.l).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </MenuIndex>
         </OverViewMenu>
         <OverViewMenu>
           <MenuTitle>24시간 거래량(BTC)</MenuTitle>

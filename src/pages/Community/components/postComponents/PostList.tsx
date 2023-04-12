@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useOnClickOutside } from 'usehooks-ts';
 import styled from 'styled-components';
-import { ObjectType } from 'typescript';
 
 interface PostDetail {
   id: number;
@@ -141,6 +139,7 @@ export default function PostList({
       })
         .then((res) => res.json())
         .then((data) => {
+          console.log(data);
           setPostNumber(data.number);
           setPosts(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
         });
@@ -175,6 +174,8 @@ export default function PostList({
         });
     }
   }, [page]);
+
+  console.log(posts);
 
   return (
     <OuterBox>

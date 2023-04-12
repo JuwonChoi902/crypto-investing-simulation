@@ -49,7 +49,7 @@ export default function Posting() {
         })
           .then((res) => res.json())
           .then((data) => {
-            if (data) {
+            if (data.status === 'good') {
               navigate(`/community/${editingData.id}`);
             }
           });

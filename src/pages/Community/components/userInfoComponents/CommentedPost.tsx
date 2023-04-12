@@ -59,10 +59,8 @@ export default function CommentedPost() {
       .then((res) => res.json())
       .then((data) => {
         setPostsData(data.replies.filter((el: any) => el.post).map((el: any) => el.post));
-        // setPostsData(data.replies.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
       });
   }, []);
-  console.log(postsData);
 
   return (
     <OuterBox>

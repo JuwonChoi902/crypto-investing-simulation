@@ -1,34 +1,41 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
+import { TradeDataTypes } from '../../../typing/type';
 
-interface CallsData {
-  id: number;
-  price: number;
-  amount: number;
-  time: string;
-}
+type MarketTradeBoxProps = {
+  price: number | undefined;
+};
 
-const CallsDataUp: CallsData[] = [];
-const CallsDataDown: CallsData[] = [];
-for (let i = 1; i <= 17; i += 1) {
-  CallsDataUp.push({
-    id: i,
-    price: 17021 + i,
-    amount: i,
-    time: '10:15:30',
+export default function MarketTradeBox({ price }: MarketTradeBoxProps) {
+  const [tradeData, setTradeData] = useState<TradeDataTypes>();
+
+  useEffect(() => {
+    const newSocket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@aggTrade');
+
+    newSocket.addEventListener('message', (message) => {
+      setTradeData(JSON.parse(message.data));
+    });
+  }, []);
+
+  const ref = useRef<TradeDataTypes[]>([]);
+
+  useEffect(() => {
+    if (tradeData && ref.current.length < 20) ref.current.unshift(tradeData);
+    if (tradeData && ref.current.length >= 20) {
+      ref.current.pop();
+      ref.current.unshift(tradeData);
+    }
   });
 
-  CallsDataDown.push({
-    id: i,
-    price: 17021 - i,
-    amount: i,
-    time: '10:15:30',
-  });
-}
+  const dateParsing = (num: number): string => {
+    const date = new Date(num);
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const seconds = date.getSeconds();
 
-const price = 17020.01;
+    return `${hours}:${minutes}:${seconds}`;
+  };
 
-export default function MarketTrade() {
   return (
     <OuterBox>
       <TitleBox>
@@ -38,27 +45,20 @@ export default function MarketTrade() {
       <CallTitle>
         <TitlePrice>가격(BUSD)</TitlePrice>
         <TitleAmount>수량(BTC)</TitleAmount>
-        <TitleTotal>총액</TitleTotal>
+        <TradeTime>시간</TradeTime>
       </CallTitle>
       <Calls>
-        <HighCalls>
-          {CallsDataUp.map((el) => (
+        <Trades>
+          {ref.current.map((el) => (
             <Call>
-              <CallPrice whatColor={el.price}>{el.price}</CallPrice>
-              <CallAmount>{el.amount}</CallAmount>
-              <CallTotal>{el.time}</CallTotal>
+              <CallPrice price={price} traded={Number(el.p)}>
+                {Number(el.p).toFixed(2)}
+              </CallPrice>
+              <CallAmount>{Number(el.q).toFixed(5)}</CallAmount>
+              <CallTotal>{dateParsing(el.T)}</CallTotal>
             </Call>
           ))}
-        </HighCalls>
-        <LowCalls>
-          {CallsDataDown.map((el) => (
-            <Call>
-              <CallPrice whatColor={el.price}>{el.price}</CallPrice>
-              <CallAmount>{el.amount}</CallAmount>
-              <CallTotal>{el.time}</CallTotal>
-            </Call>
-          ))}
-        </LowCalls>
+        </Trades>
       </Calls>
     </OuterBox>
   );
@@ -110,13 +110,13 @@ const TitleAmount = styled.div`
   justify-content: end;
   width: 100%;
 `;
-const TitleTotal = styled.div`
+const TradeTime = styled.div`
   display: flex;
   justify-content: end;
   width: 100%;
 `;
 const Calls = styled.div``;
-const HighCalls = styled.div``;
+const Trades = styled.div``;
 const Call = styled.div`
   display: flex;
   align-items: center;
@@ -124,8 +124,9 @@ const Call = styled.div`
   font-weight: 600;
   height: 20px;
 `;
-const CallPrice = styled.div<{ whatColor: number }>`
-  color: ${(props) => (props.whatColor > price ? props.theme.style.red : props.theme.style.green)};
+const CallPrice = styled.div<{ price: number | undefined; traded: number }>`
+  color: ${(props) =>
+    props.price && props.traded >= props.price ? props.theme.style.red : props.theme.style.green};
   width: 100%;
 `;
 
@@ -141,21 +142,3 @@ const CallTotal = styled.div`
   color: #474d57;
   width: 100%;
 `;
-
-const MarketPrice = styled.div`
-  display: flex;
-  align-items: center;
-  height: 35px;
-
-  div {
-    font-size: 20px;
-    color: ${(props) => props.theme.style.red};
-    margin-right: 4px;
-    font-weight: 600;
-  }
-  span {
-    font-size: 12px;
-    color: ${(props) => props.theme.style.grey};
-  }
-`;
-const LowCalls = styled.div``;

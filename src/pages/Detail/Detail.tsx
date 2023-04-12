@@ -6,25 +6,29 @@ import MarketTrade from './components/MarketTrade';
 import Chart from './components/Chart';
 import BidAndBuy from './components/BidAndBuy';
 import OrderInfo from './components/OrderInfo';
-import { CandleData, CandleDataDetail, CandleData2 } from '../../typing/type';
+import { SymbolTickerTypes } from '../../typing/type';
 
 export default function Detail() {
-  const [kline, setKline] = useState<CandleData | undefined>();
+  const [symbolTicker, setSymbolTicker] = useState<SymbolTickerTypes | undefined>();
 
-  // const socket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@kline_1d');
+  useEffect(() => {
+    const newSocket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@ticker');
 
-  // socket.addEventListener('message', (message) => {
-  //   setKline(JSON.parse(message.data));
-  // });
+    newSocket.addEventListener('message', (message) => {
+      setSymbolTicker(JSON.parse(message.data));
+    });
+  }, []);
+
+  const price = Number(symbolTicker?.c);
 
   return (
     <OuterBox>
       <CoinDetail>
         <LeftBox>
           <TradeDetail>
-            <Overview />
+            <Overview symbolTicker={symbolTicker} />
             <TradeBox>
-              <CallBox candleData={kline} />
+              <CallBox price={price} />
               <ChartBox>
                 <Chart />
                 <BidAndBuy />
@@ -33,7 +37,7 @@ export default function Detail() {
           </TradeDetail>
         </LeftBox>
         <RightBox>
-          <MarketTrade />
+          <MarketTrade price={price} />
         </RightBox>
       </CoinDetail>
       <OrderInfo />

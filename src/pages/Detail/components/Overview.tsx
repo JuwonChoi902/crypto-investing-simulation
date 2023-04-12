@@ -2,25 +2,15 @@ import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { SymbolTickerTypes } from '../../../typing/type';
 
-export default function Overview() {
+type OverviewProps = {
+  symbolTicker: SymbolTickerTypes | undefined;
+};
+
+export default function Overview({ symbolTicker }: OverviewProps) {
   const [priceColor, setPriceColor] = useState<string>('');
-  const [symbolTicker, setSymbolTicker] = useState<SymbolTickerTypes | undefined>();
-
-  useEffect(() => {
-    const newSocket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@ticker');
-
-    newSocket.addEventListener('message', (message) => {
-      setSymbolTicker(JSON.parse(message.data));
-    });
-  }, []);
 
   const price = Number(symbolTicker?.c);
   const ref = useRef<number>();
-
-  useEffect(() => {
-    ref.current = price;
-  });
-
   const prev = ref.current;
 
   useEffect(() => {
@@ -28,12 +18,16 @@ export default function Overview() {
     if (price && prev && price < prev) setPriceColor('red');
   }, [price]);
 
+  useEffect(() => {
+    ref.current = price;
+  });
+
   return (
     <OuterBox>
       <CoinTitle>BTC/BUSD</CoinTitle>
       <CoinOverview>
         <MarketPrice>
-          <Price1 prev={prev} price={price} priceColor={priceColor}>
+          <Price1 priceColor={priceColor}>
             {Number(symbolTicker?.c).toLocaleString(undefined, {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
@@ -119,7 +113,7 @@ const MarketPrice = styled.div`
   width: 72px;
   padding-right: 32px;
 `;
-const Price1 = styled.div<{ prev: number | undefined; price: number | undefined; priceColor: string }>`
+const Price1 = styled.div<{ priceColor: string }>`
   font-size: 16px;
   color: ${(props) => props.priceColor};
   font-weight: 600;

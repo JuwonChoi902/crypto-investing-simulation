@@ -29,7 +29,7 @@ export default function Chart() {
   // }, []);
 
   useEffect(() => {
-    fetch('https://binance.com/api/v3/klines?symbol=BTCUSDT', { mode: 'no-cors' })
+    fetch('https://binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h', { mode: 'no-cors' })
       .then((res) => res.json())
       .then((data) => console.log(data));
   }, []);
@@ -57,7 +57,7 @@ export default function Chart() {
     const sizeHandler = () => {
       chart.applyOptions({ width: input.clientWidth });
     };
-  }, [initialData]);
+  }, []);
   return <OuterBox ref={chartRef} />;
 }
 

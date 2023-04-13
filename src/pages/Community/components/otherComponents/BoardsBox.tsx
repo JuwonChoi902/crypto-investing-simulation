@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router';
 import styled from 'styled-components';
 import board from '../../images/board.png';
 
@@ -8,16 +9,25 @@ type PostBoxProps = {
   setPostNow: React.Dispatch<React.SetStateAction<number | null>>;
   setBoardNow: React.Dispatch<React.SetStateAction<number | null>>;
   setIsItSearching: React.Dispatch<React.SetStateAction<boolean>>;
+  setMenuNow: React.Dispatch<React.SetStateAction<number>>;
   boardNow: number | null;
 };
 
-export default function BoardsBox({ boardNow, setPostNow, setBoardNow, setIsItSearching }: PostBoxProps) {
+export default function BoardsBox({
+  boardNow,
+  setPostNow,
+  setBoardNow,
+  setIsItSearching,
+  setMenuNow,
+}: PostBoxProps) {
+  const navigate = useNavigate();
   return (
     <OuterBox>
       <ShowAll
         id={0}
         boardNow={boardNow}
         onClick={() => {
+          navigate('/community/list');
           setBoardNow(0);
           setPostNow(null);
           setIsItSearching(false);
@@ -32,6 +42,7 @@ export default function BoardsBox({ boardNow, setPostNow, setBoardNow, setIsItSe
             id={i + 1}
             boardNow={boardNow}
             onClick={() => {
+              navigate('/community/list');
               setPostNow(null);
               setIsItSearching(false);
               setBoardNow(i + 1);

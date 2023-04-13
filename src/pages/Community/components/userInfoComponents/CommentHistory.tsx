@@ -157,7 +157,10 @@ export default function CommentHistory() {
                   readOnly
                 />
               </CheckBox>
-              <Comment>
+              <Comment
+                onClick={() => (el.post ? navigate(`/community/${el.post.id}`) : null)}
+                isTherePost={el.post}
+              >
                 <CommentDesc>
                   {el.comment}
                   {el.isItNew ? <IsItNew>N</IsItNew> : null}
@@ -165,7 +168,7 @@ export default function CommentHistory() {
                 <CommentDate>{el.created_at}</CommentDate>
                 <PostTitle>
                   {el.post ? el.post.title : <span>삭제된 게시글</span>}
-                  <PostCommentCnt>[5]</PostCommentCnt>
+                  <PostCommentCnt>{`[${el.post?.repliesCount}]`}</PostCommentCnt>
                 </PostTitle>
               </Comment>
             </CommentInner>
@@ -223,9 +226,9 @@ const CheckBox = styled.div`
     height: 14px;
   }
 `;
-const Comment = styled.div`
+const Comment = styled.div<{ isTherePost: PostDetail | undefined }>`
   &:hover {
-    cursor: pointer;
+    cursor: ${(props) => (props.isTherePost ? 'pointer' : null)};
     text-decoration: underline;
   }
 `;

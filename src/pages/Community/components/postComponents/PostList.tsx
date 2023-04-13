@@ -99,7 +99,7 @@ export default function PostList({
   //     useOnClickOutside(refs[dropBox as keyof number], handleClickOutside);
   //   }
   // }, [dropBox]);
-
+  console.log(posts);
   const dateParsing = (date: string): [string, boolean] => {
     const theDate = new Date(date);
     const todayDate = new Date();

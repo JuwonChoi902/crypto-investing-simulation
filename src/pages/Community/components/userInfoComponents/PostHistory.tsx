@@ -148,7 +148,11 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
                   />
                 </CheckBox>
                 <PostId>{post.id}</PostId>
-                <PostTitle>
+                <PostTitle
+                  onClick={() => {
+                    navigate(`/community/${post.id}`);
+                  }}
+                >
                   {post.title}
                   {post.repliesCount === 0 ? null : <RepliesCount>[{post.repliesCount}]</RepliesCount>}
                   {post.created_at[1] ? <IsItNew>N</IsItNew> : null}

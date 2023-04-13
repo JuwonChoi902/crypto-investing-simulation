@@ -9,9 +9,7 @@ interface PostDetail {
   created_at: string;
   repliesCount: number;
   hits: number;
-  label: string;
   categoryId: number;
-  user: UserDetail;
 }
 
 interface UserDetail {
@@ -20,8 +18,19 @@ interface UserDetail {
   description: string | null;
 }
 
+interface CommentDetail {
+  id: number;
+  comment: string;
+  created_at: string;
+  deleted_at: string;
+  isItNew: boolean;
+  replyId: number;
+  post: PostDetail;
+  user: UserDetail;
+}
+
 export default function CommentedPost() {
-  const [postsData, setPostsData] = useState<PostDetail[]>([]);
+  const [postsData, setPostsData] = useState<[PostDetail, UserDetail][]>([]);
   const navigate = useNavigate();
 
   const dateParsing = (date: string): [string, boolean] => {
@@ -51,14 +60,26 @@ export default function CommentedPost() {
   };
 
   useEffect(() => {
-    fetch(`http://pien.kr:4000/community/reply/user/1`, {
+    fetch(`http://pien.kr:4000/community/reply/user/1?page=1&number=${1000}`, {
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
       },
     })
       .then((res) => res.json())
       .then((data) => {
-        setPostsData(data.replies.filter((el: any) => el.post).map((el: any) => el.post));
+        const temp: [PostDetail, UserDetail][] = [];
+        data.replies.forEach((comments: CommentDetail): void => {
+          if (comments.post) temp.push([comments.post, comments.user]);
+        });
+        setPostsData(
+          temp.map((el: [PostDetail, UserDetail]) => [
+            {
+              ...el[0],
+              created_at: dateParsing(el[0].created_at)[0],
+            },
+            el[1],
+          ]),
+        );
       });
   }, []);
 
@@ -72,19 +93,19 @@ export default function CommentedPost() {
       </ListCategories>
       {postsData.length ? (
         <List>
-          {postsData.map((post) => (
-            <Post>
+          {postsData.map((data) => (
+            <Post key={data[0].id}>
               <PostTitleBox>
-                <PostId>{post.id}</PostId>
+                <PostId>{data[0].id}</PostId>
                 <PostTitle>
-                  {post.title}
-                  {post.repliesCount === 0 ? null : <RepliesCount>[{post.repliesCount}]</RepliesCount>}
-                  {post.created_at[1] ? <IsItNew>N</IsItNew> : null}
+                  {data[0].title}
+                  {data[0].repliesCount === 0 ? null : <RepliesCount>[{data[0].repliesCount}]</RepliesCount>}
+                  {data[0].created_at[1] ? <IsItNew>N</IsItNew> : null}
                 </PostTitle>
               </PostTitleBox>
-              <PostNick>{post.user.nickname}</PostNick>
-              <PostDate>{post.created_at}</PostDate>
-              <PostHit>{post.hits}</PostHit>
+              <PostNick>{data[1].nickname}</PostNick>
+              <PostDate>{data[0].created_at}</PostDate>
+              <PostHit>{data[0].hits}</PostHit>
             </Post>
           ))}
         </List>

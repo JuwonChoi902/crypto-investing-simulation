@@ -16,7 +16,6 @@ export default function Nav() {
         <NavMenuBtn>구매하기</NavMenuBtn>
         <NavMenuBtn>커뮤니티</NavMenuBtn>
       </NavButtonBox>
-
       <MenuButtonBox>
         <NavMenuBtn>로그인</NavMenuBtn>
         <NavMenuBtnForRegister>회원가입</NavMenuBtnForRegister>

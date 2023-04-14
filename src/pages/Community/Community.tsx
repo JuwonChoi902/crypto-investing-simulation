@@ -23,6 +23,9 @@ export default function Community() {
     } else if (params.id === 'profile') {
       setPostNow(null);
       setMenuNow(2);
+    } else if (params.id === 'favorite') {
+      setPostNow(null);
+      setMenuNow(0);
     } else {
       setMenuNow(1);
       setPostNow(Number(params.id));
@@ -45,7 +48,6 @@ export default function Community() {
             setBoardNow={setBoardNow}
             boardNow={boardNow}
             setIsItSearching={setIsItSearching}
-            setMenuNow={setMenuNow}
           />
         </RankAndBoards>
         <Contents>

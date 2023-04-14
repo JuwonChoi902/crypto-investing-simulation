@@ -73,7 +73,7 @@ export default function CommentsBox({
   const replyTextArea = useRef<HTMLTextAreaElement>(null);
   const editTextArea = useRef<HTMLTextAreaElement>(null);
 
-  const TextAreaHandler = (event: any) => {
+  const TextAreaHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (textarea.current) {
       textarea.current.style.height = 'auto';
       textarea.current.style.height = `${textarea.current.scrollHeight}px`;
@@ -82,7 +82,7 @@ export default function CommentsBox({
     setCommentWrite(event.target.value);
   };
 
-  const replyTextAreaHandler = (event: any) => {
+  const replyTextAreaHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (replyTextArea.current) {
       replyTextArea.current.style.height = 'auto';
       replyTextArea.current.style.height = `${replyTextArea.current.scrollHeight}px`;
@@ -91,7 +91,7 @@ export default function CommentsBox({
     setReplyComment(event.target.value);
   };
 
-  const editTextAreaHandler = (event: any) => {
+  const editTextAreaHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (editTextArea.current) {
       editTextArea.current.style.height = 'auto';
       editTextArea.current.style.height = `${editTextArea.current.scrollHeight}px`;
@@ -101,55 +101,57 @@ export default function CommentsBox({
   };
 
   useEffect(() => {
-    fetch(`http://pien.kr:4000/community/reply/${params.id}`, {
-      headers: {
-        'Content-Type': 'application/json;charset=utf-8',
-        Authorization:
-          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        let count = 0;
-        const temp = [];
+    if (params.id !== 'list' && params.id !== 'favorite' && params.id !== 'profile') {
+      fetch(`http://pien.kr:4000/community/reply/${params.id}`, {
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+          Authorization:
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          let count = 0;
+          const temp = [];
 
-        const obj: ObjectType = {};
+          const obj: ObjectType = {};
 
-        for (let i = 0; i < data.length; i += 1) {
-          if (!data[i].deleted_at) {
-            if (obj[data[i].replyId]) {
-              obj[data[i].replyId] += 1;
-            } else {
-              obj[data[i].replyId] = 1;
+          for (let i = 0; i < data.length; i += 1) {
+            if (!data[i].deleted_at) {
+              if (obj[data[i].replyId]) {
+                obj[data[i].replyId] += 1;
+              } else {
+                obj[data[i].replyId] = 1;
+              }
             }
           }
-        }
 
-        for (let i = 0; i < data.length; i += 1) {
-          if (data[i].replyId === data[i].id) {
-            if (data[i].deleted_at && obj[data[i].replyId]) {
+          for (let i = 0; i < data.length; i += 1) {
+            if (data[i].replyId === data[i].id) {
+              if (data[i].deleted_at && obj[data[i].replyId]) {
+                temp.push(data[i]);
+              }
+            }
+
+            if (!data[i].deleted_at) {
+              count += 1;
               temp.push(data[i]);
             }
           }
 
-          if (!data[i].deleted_at) {
-            count += 1;
-            temp.push(data[i]);
-          }
-        }
+          setCommentCount(count);
+          setCommentData(
+            temp.map((el: CommentDetail) => ({
+              ...el,
+              created_at: dateParsing(el.created_at)[0],
+              isItNew: dateParsing(el.created_at)[1],
+              isThisOrigin: el.id === el.replyId,
+            })),
+          );
+        });
 
-        setCommentCount(count);
-        setCommentData(
-          temp.map((el: CommentDetail) => ({
-            ...el,
-            created_at: dateParsing(el.created_at)[0],
-            isItNew: dateParsing(el.created_at)[1],
-            isThisOrigin: el.id === el.replyId,
-          })),
-        );
-      });
-
-    setReplying(null);
+      setReplying(null);
+    }
   }, [params.id]);
 
   const makeComment = () => {
@@ -415,14 +417,10 @@ export default function CommentsBox({
       </CommentHeader>
       <Comments>
         {commentData?.map((el, i) => (
-          <>
-            {el.deleted_at ? (
-              <DeletedOrigin index={i} key={el.id}>
-                삭제된 댓글입니다.
-              </DeletedOrigin>
-            ) : null}
+          <CommentBox key={el.id}>
+            {el.deleted_at ? <DeletedOrigin index={i}>삭제된 댓글입니다.</DeletedOrigin> : null}
             {editing === el.id ? (
-              <ReplyToReplyBox id={el.id} isLastOne={i === commentData.length - 1}>
+              <ReplyToReplyBox id={String(el.id)} isLastOne={i === commentData.length - 1}>
                 <RTRPosting>
                   <NickAndLength>
                     <RTRNick>피엔</RTRNick>
@@ -430,7 +428,7 @@ export default function CommentsBox({
                   </NickAndLength>
                   <RTRDescription
                     ref={editTextArea}
-                    onInput={editTextAreaHandler}
+                    onChange={editTextAreaHandler}
                     value={editingComment}
                     placeholder='댓글을 남겨보세요'
                   />
@@ -456,7 +454,7 @@ export default function CommentsBox({
                 </RTRPosting>
               </ReplyToReplyBox>
             ) : (
-              <Comment index={i} key={el.id} isThisOrigin={el.isThisOrigin} isThisDeleted={el.deleted_at}>
+              <Comment index={i} isThisOrigin={el.isThisOrigin} isThisDeleted={el.deleted_at}>
                 <UserImg
                   onClick={() => {
                     setProfileId(el.user.id);
@@ -488,7 +486,6 @@ export default function CommentsBox({
                       setEditing(el.id);
                       setEditingComment(el.comment);
                     }}
-                    id={el.id}
                   >
                     수정
                   </Edit>
@@ -497,7 +494,7 @@ export default function CommentsBox({
               </Comment>
             )}
             {replying === el.id ? (
-              <ReplyToReplyBox id={el.id} isLastOne={i === commentData.length - 1}>
+              <ReplyToReplyBox id={String(el.id)} isLastOne={i === commentData.length - 1}>
                 <RTRPosting>
                   <NickAndLength>
                     <RTRNick>피엔</RTRNick>
@@ -507,7 +504,7 @@ export default function CommentsBox({
                   <RTRDescription
                     ref={replyTextArea}
                     placeholder={`${el.user.nickname}님께 답글쓰기`}
-                    onInput={replyTextAreaHandler}
+                    onChange={replyTextAreaHandler}
                     value={replyComment}
                   />
                   <RTRBtns>
@@ -532,7 +529,7 @@ export default function CommentsBox({
                 </RTRPosting>
               </ReplyToReplyBox>
             ) : null}
-          </>
+          </CommentBox>
         ))}
       </Comments>
       <CommentPosting>
@@ -543,7 +540,7 @@ export default function CommentsBox({
         <CommentPostingDesc
           ref={textarea}
           placeholder='댓글을 남겨보세요'
-          onInput={TextAreaHandler}
+          onChange={TextAreaHandler}
           value={commentWrite}
         />
         <CommentPostingBtns>
@@ -590,6 +587,7 @@ const IsItNew = styled.div`
 `;
 
 const Comments = styled.div``;
+const CommentBox = styled.div``;
 
 const DeletedOrigin = styled.div<{ index: number }>`
   font-size: 13px;
@@ -641,7 +639,7 @@ const DeleteOrEdit = styled.div`
   position: absolute;
   right: 0;
 `;
-const Edit = styled.button<{ id: any }>`
+const Edit = styled.button`
   background-color: white;
   border: none;
   color: #979797;
@@ -666,7 +664,7 @@ const Delete = styled.button`
   }
 `;
 
-const ReplyToReplyBox = styled.div<{ id: any; isLastOne: any }>`
+const ReplyToReplyBox = styled.div<{ isLastOne: boolean }>`
   flex-direction: column;
   padding: 12px 0;
   border-top: 1px solid #e5e5e5;
@@ -769,14 +767,14 @@ const CancleWriting = styled.button`
   }
 `;
 
-const PostThisComment = styled.button<{ isThisValid: any }>`
+const PostThisComment = styled.button<{ isThisValid: number | undefined }>`
   width: 46px;
   height: 34px;
   border: none;
   font-weight: bold;
   font-size: 13px;
-  color: ${(props) => (props.isThisValid > 0 ? 'black' : '#b7b7b7;')};
-  background-color: ${(props) => (props.isThisValid > 0 ? '#feeaa3' : 'white')};
+  color: ${(props) => (props.isThisValid && props.isThisValid > 0 ? 'black' : '#b7b7b7;')};
+  background-color: ${(props) => (props.isThisValid && props.isThisValid > 0 ? '#feeaa3' : 'white')};
   border-radius: 5px;
 
   &:hover {

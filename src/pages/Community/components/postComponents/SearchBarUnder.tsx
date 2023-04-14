@@ -72,7 +72,7 @@ export default function SearchBarUnder({
     if (searchFilter === 'reply') setSearchFilterNow('댓글내용');
   }, [searchFilter]);
 
-  const makeSearchFilter = (event: any, str: string) => {
+  const makeSearchFilter = (str: string) => {
     setSearchInput({ ...searchInput, searchFilter: str });
   };
 
@@ -105,22 +105,22 @@ export default function SearchBarUnder({
   };
 
   useEffect(() => {
-    const changeDropState = (e: any) => {
-      if (searchDropRef.current !== null && !searchDropRef.current?.contains(e.target)) {
+    const changeDropState = (e: CustomEvent<MouseEvent>) => {
+      if (searchDropRef.current && !searchDropRef.current?.contains(e.target as Node)) {
         setSearchDropIsOpen((cur) => !cur);
       }
     };
 
     if (searchDropIsOpen) {
-      window.addEventListener('click', changeDropState);
+      window.addEventListener('click', changeDropState as EventListener);
     }
 
     return () => {
-      window.removeEventListener('click', changeDropState);
+      window.removeEventListener('click', changeDropState as EventListener);
     };
   }, [searchDropIsOpen]);
 
-  const search = (e: any) => {
+  const search = (e: React.MouseEvent | React.KeyboardEvent) => {
     e.preventDefault();
 
     if (!searchString) {
@@ -146,8 +146,7 @@ export default function SearchBarUnder({
       });
   };
 
-  const makeSearchInput = (event: any) => {
-    if (event.key === 'Enter') search(event);
+  const makeSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput({ ...searchInput, searchString: event.target.value });
   };
 
@@ -162,7 +161,7 @@ export default function SearchBarUnder({
         <img src={searchDropIsOpen ? arrowUp : arrowDown} alt='arrow' />
         <ul>
           {filters.map((el) => (
-            <li role='presentation' onClick={(e) => makeSearchFilter(e, el[1])} key={el[0]}>
+            <li role='presentation' onClick={() => makeSearchFilter(el[1])} key={el[0]}>
               {el[0]}
             </li>
           ))}

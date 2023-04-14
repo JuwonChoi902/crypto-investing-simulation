@@ -60,46 +60,35 @@ export default function PostList({
   searchRes,
 }: PostListProps) {
   const [dropBox, setDropBox] = useState<number | null>(null);
-  const dropBoxRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   const { stringRes, filterRes, boardRes } = searchRes;
 
-  // const refs = useRef<any>(Array.from({ length: 10 }, () => React.createRef()));
-  const refs = useRef<any>(Array.from({ length: 10 }, () => React.createRef()));
+  const refs = useRef(Array.from({ length: 10 }, () => React.createRef<HTMLDivElement>()));
+  const nickRefs = useRef(Array.from({ length: 10 }, () => React.createRef<HTMLDivElement>()));
 
-  // console.log(refs);
+  useEffect(() => {
+    const changeDropState = (e: CustomEvent<MouseEvent>) => {
+      if (
+        dropBox !== null &&
+        nickRefs.current[dropBox].current &&
+        refs.current[dropBox].current &&
+        !refs.current[dropBox].current?.contains(e.target as Node) &&
+        !nickRefs.current[dropBox].current?.contains(e.target as Node)
+      ) {
+        setDropBox(null);
+      }
+    };
 
-  // // useEffect(() => {
-  // //   refs.current[0].current.focus();
-  // // }, []);
+    if (dropBox !== null) {
+      window.addEventListener('click', changeDropState as EventListener);
+    }
 
-  // const handleClickOutside = () => {
-  //   setDropBox(null);
-  // };
+    return () => {
+      window.removeEventListener('click', changeDropState as EventListener);
+    };
+  }, [dropBox]);
 
-  // useEffect(() => {
-  //   const changeDropState = (e: any) => {
-  //     if (refs.current[dropBox].current !== null && !refs.current[dropBox].current.contains(e.target)) {
-  //       setDropBox(null);
-  //     }
-  //   };
-
-  //   if (dropBox) {
-  //     window.addEventListener('click', changeDropState);
-  //   }
-
-  //   return () => {
-  //     window.removeEventListener('click', changeDropState);
-  //   };
-  // }, [dropBox]);
-
-  // useEffect(() => {
-  //   if (dropBox) {
-  //     useOnClickOutside(refs[dropBox as keyof number], handleClickOutside);
-  //   }
-  // }, [dropBox]);
-  console.log(posts);
   const dateParsing = (date: string): [string, boolean] => {
     const theDate = new Date(date);
     const todayDate = new Date();
@@ -139,7 +128,6 @@ export default function PostList({
       })
         .then((res) => res.json())
         .then((data) => {
-          console.log(data);
           setPostNumber(data.number);
           setPosts(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
         });
@@ -175,8 +163,6 @@ export default function PostList({
     }
   }, [page]);
 
-  console.log(posts);
-
   return (
     <OuterBox>
       {posts?.length === 0 ? (
@@ -201,27 +187,25 @@ export default function PostList({
                 {el.created_at[1] ? <IsItNew>N</IsItNew> : null}
               </Title>
             </LabelAndTitle>
-            <User
-              onClick={() => {
-                setDropBox(i);
-              }}
-            >
+            <User ref={nickRefs.current[i]} onClick={() => setDropBox(i)}>
               {el.user.nickname}
-              <UserDropBox id={i} dropBox={dropBox} ref={refs.current[i]}>
-                <ul>
-                  <li
-                    role='presentation'
-                    onClick={() => {
-                      setProfileId(el.user.id);
-                      setMenuNow(2);
-                    }}
-                  >
-                    프로필보기
-                  </li>
-                  <li>1:1 채팅</li>
-                  <li>쪽지보내기</li>
-                </ul>
-              </UserDropBox>
+              {i === dropBox ? (
+                <UserDropBox ref={refs.current[i]}>
+                  <ul>
+                    <li
+                      role='presentation'
+                      onClick={() => {
+                        setProfileId(el.user.id);
+                        setMenuNow(2);
+                      }}
+                    >
+                      프로필보기
+                    </li>
+                    <li>1:1 채팅</li>
+                    <li>쪽지보내기</li>
+                  </ul>
+                </UserDropBox>
+              ) : null}
             </User>
 
             <DateInPost>{el.created_at[0]}</DateInPost>
@@ -305,8 +289,8 @@ const User = styled.div`
   }
 `;
 
-const UserDropBox = styled.div<{ dropBox: number | null; id: any }>`
-  display: ${(props) => (props.id === props.dropBox ? 'block' : 'none')};
+const UserDropBox = styled.div`
+  display: block;
   position: absolute;
   width: 113px;
   top: 23px;

@@ -13,7 +13,7 @@ type UserInfoProps = {
 };
 
 export default function UserInfo({ profileId }: UserInfoProps) {
-  const [category, setCategory] = useState<number>(0);
+  const [category, setCategory] = useState<string>('0');
   const navigate = useNavigate();
 
   const categories: string[] = ['작성글', '작성댓글', '댓글단 글', '좋아요한 글', '수익률'];
@@ -28,23 +28,23 @@ export default function UserInfo({ profileId }: UserInfoProps) {
         <CategoryBox>
           <CategoryLeft>
             {categories.map((c, i) => (
-              <Category id={i} category={category} onClick={() => setCategory(i)} key={c}>
+              <Category id={String(i)} category={category} onClick={() => setCategory(String(i))} key={c}>
                 {c}
               </Category>
             ))}
           </CategoryLeft>
           <CategoryRight>
-            <Category id={5} category={category} onClick={() => setCategory(5)}>
+            <Category id={String(5)} category={category} onClick={() => setCategory(String(5))}>
               삭제한 게시글
             </Category>
           </CategoryRight>
         </CategoryBox>
         <ListBox>
-          {category === 0 ? <PostHistory profileId={profileId} /> : null}
-          {category === 1 ? <CommentHistory /> : null}
-          {category === 2 ? <CommentedPost /> : null}
-          {category === 3 ? <LikeHistory /> : null}
-          {category === 4 ? <IncomeInfo /> : null}
+          {category === '0' ? <PostHistory profileId={profileId} /> : null}
+          {category === '1' ? <CommentHistory /> : null}
+          {category === '2' ? <CommentedPost /> : null}
+          {category === '3' ? <LikeHistory /> : null}
+          {category === '4' ? <IncomeInfo /> : null}
         </ListBox>
       </Main>
     </OuterBox>
@@ -65,7 +65,7 @@ const CategoryLeft = styled.div`
   display: flex;
 `;
 const CategoryRight = styled.div``;
-const Category = styled.div<{ id: any; category: number }>`
+const Category = styled.div<{ id: string; category: string }>`
   margin-right: 16px;
   padding-bottom: 5px;
   border-bottom: ${(props) =>

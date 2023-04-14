@@ -70,16 +70,15 @@ export default function SearchBarTop({
   const [boardsDropIsOpen, setBoardDropIsOpen] = useState<boolean>(false);
   const { searchFilter, searchString, searchBoard } = searchInput;
 
-  const makeSearchInput = (event: any) => {
-    if (event.key === 'Enter') search(event);
+  const makeSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput({ ...searchInput, searchString: event.target.value });
   };
 
-  const makeSearchFilter = (event: any, str: string) => {
+  const makeSearchFilter = (str: string) => {
     setSearchInput({ ...searchInput, searchFilter: str });
   };
 
-  const makeBoardFilter = (event: any, index: number) => {
+  const makeBoardFilter = (index: number) => {
     setSearchInput({ ...searchInput, searchBoard: index });
   };
 
@@ -98,34 +97,34 @@ export default function SearchBarTop({
   }, [searchRes]);
 
   useEffect(() => {
-    const changeDropState = (e: any) => {
-      if (searchDropRef.current !== null && !searchDropRef.current?.contains(e.target)) {
+    const changeDropState = (e: CustomEvent<MouseEvent>) => {
+      if (searchDropRef.current !== null && !searchDropRef.current?.contains(e.target as Node)) {
         setSearchDropIsOpen((cur) => !cur);
       }
     };
 
     if (searchDropIsOpen) {
-      window.addEventListener('click', changeDropState);
+      window.addEventListener('click', changeDropState as EventListener);
     }
 
     return () => {
-      window.removeEventListener('click', changeDropState);
+      window.removeEventListener('click', changeDropState as EventListener);
     };
   }, [searchDropIsOpen]);
 
   useEffect(() => {
-    const changeDropState = (e: any) => {
-      if (boardsDropRef.current !== null && !boardsDropRef.current?.contains(e.target)) {
+    const changeDropState = (e: CustomEvent<MouseEvent>) => {
+      if (boardsDropRef.current !== null && !boardsDropRef.current?.contains(e.target as Node)) {
         setBoardDropIsOpen((cur) => !cur);
       }
     };
 
     if (boardsDropIsOpen) {
-      window.addEventListener('click', changeDropState);
+      window.addEventListener('click', changeDropState as EventListener);
     }
 
     return () => {
-      window.removeEventListener('click', changeDropState);
+      window.removeEventListener('click', changeDropState as EventListener);
     };
   }, [boardsDropIsOpen]);
 
@@ -157,7 +156,7 @@ export default function SearchBarTop({
     ];
   };
 
-  const search = (e: any) => {
+  const search = (e: React.MouseEvent | React.KeyboardEvent) => {
     e.preventDefault();
     if (!searchString) {
       alert('검색어를 입력해주세요');
@@ -192,7 +191,7 @@ export default function SearchBarTop({
           <img src={boardsDropIsOpen ? arrowUp : arrowDown} alt='arrow' />
           <ul>
             {boards.map((el, i) => (
-              <li role='presentation' onClick={(e) => makeBoardFilter(e, i)} key={el}>
+              <li role='presentation' onClick={() => makeBoardFilter(i)} key={el}>
                 {el}
               </li>
             ))}
@@ -207,7 +206,7 @@ export default function SearchBarTop({
           <img src={searchDropIsOpen ? arrowUp : arrowDown} alt='arrow' />
           <ul>
             {filters.map((el) => (
-              <li role='presentation' onClick={(e) => makeSearchFilter(e, el[1])} key={el[0]}>
+              <li role='presentation' onClick={() => makeSearchFilter(el[1])} key={el[0]}>
                 {el[0]}
               </li>
             ))}

@@ -6,10 +6,16 @@ interface PostDetail {
   id: number;
   title: string;
   description: string;
-  created_at: string;
-  repliesCount: number;
   hits: number;
   categoryId: number;
+  created_at: string;
+  repliesCount: number;
+  isLike: boolean;
+  likeCount: number;
+  unLikeCount: number;
+  prevPostId: number | null;
+  nextPostId: number | null;
+  user: UserDetail;
 }
 
 interface UserDetail {

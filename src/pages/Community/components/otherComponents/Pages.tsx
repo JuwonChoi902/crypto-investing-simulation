@@ -38,7 +38,7 @@ export default function Pages({ page, setPage, postNumber, limit }: PagesProps) 
         <img src={pageLeft} alt='pageLeft' />
       </PageLeft>
       {pages[pageIndex]?.map((el) => (
-        <Page page={page} id={el} onClick={() => setPage(el)} key={el}>
+        <Page page={page} id={String(el)} onClick={() => setPage(el)} key={el}>
           {el}
         </Page>
       ))}
@@ -87,12 +87,12 @@ const PageRight = styled.div<{ pageIndex: number; pagesLength: number }>`
   }
 `;
 
-const Page = styled.div<{ page: number; id: any }>`
-  font-weight: ${(props) => (props.page === props.id ? 'bold' : 'normal')};
+const Page = styled.div<{ page: number; id: string }>`
+  font-weight: ${(props) => (props.page === Number(props.id) ? 'bold' : 'normal')};
   margin-left: 25px;
-  border: ${(props) => (props.page === props.id ? '1px solid #e5e5e5' : 'none')};
+  border: ${(props) => (props.page === Number(props.id) ? '1px solid #e5e5e5' : 'none')};
   padding: 0 5px;
-  color: ${(props) => (props.page === props.id ? props.theme.style.yellow : 'black')};
+  color: ${(props) => (props.page === Number(props.id) ? props.theme.style.yellow : 'black')};
 
   &:hover {
     cursor: pointer;

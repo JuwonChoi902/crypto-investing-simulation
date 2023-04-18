@@ -12,6 +12,7 @@ interface PostDetail {
   hits: number;
   label: string;
   categoryId: number;
+  isPublished: boolean;
   user: UserDetail;
 }
 
@@ -111,8 +112,8 @@ export default function LikeHistory() {
                   />
                 </CheckBox>
                 <PostId>{post.id}</PostId>
-                <PostTitle>
-                  {post.title}
+                <PostTitle isPublished={post.isPublished}>
+                  {post.isPublished ? post.title : <span>삭제된 게시물입니다.</span>}
                   {post.repliesCount === 0 ? null : <RepliesCount>[{post.repliesCount}]</RepliesCount>}
                   {post.created_at[1] ? <IsItNew>N</IsItNew> : null}
                 </PostTitle>
@@ -210,12 +211,17 @@ const PostId = styled.div`
   font-size: 11px;
   margin-right: 6px;
 `;
-const PostTitle = styled.div`
+const PostTitle = styled.div<{ isPublished: boolean }>`
   ${(props) => props.theme.variables.flex()}
   font-size: 13px;
 
+  span {
+    font-style: italic;
+    color: #878787;
+  }
+
   &:hover {
-    cursor: pointer;
+    cursor: ${(props) => (props.isPublished ? 'pointer' : null)};
     text-decoration: underline;
   }
 `;

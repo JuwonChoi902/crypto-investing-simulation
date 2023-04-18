@@ -12,6 +12,7 @@ interface PostDetail {
   repliesCount: number;
   isLike: boolean;
   likeCount: number;
+  isPublished: boolean;
   unLikeCount: number;
   prevPostId: number | null;
   nextPostId: number | null;
@@ -74,8 +75,12 @@ export default function CommentedPost() {
       .then((res) => res.json())
       .then((data) => {
         const temp: [PostDetail, UserDetail][] = [];
-        data.replies.forEach((comments: CommentDetail): void => {
-          if (comments.post) temp.push([comments.post, comments.user]);
+        const filtered = data.replies.filter(
+          (reply: CommentDetail, index: number) =>
+            index === data.replies.findIndex((reply2: CommentDetail) => reply.post.id === reply2.post.id),
+        );
+        filtered.forEach((comments: CommentDetail): void => {
+          temp.push([comments.post, comments.user]);
         });
         setPostsData(
           temp.map((el: [PostDetail, UserDetail]) => [
@@ -103,8 +108,8 @@ export default function CommentedPost() {
             <Post key={data[0].id}>
               <PostTitleBox>
                 <PostId>{data[0].id}</PostId>
-                <PostTitle>
-                  {data[0].title}
+                <PostTitle isPublished={data[0].isPublished}>
+                  {data[0].isPublished ? data[0].title : <span>삭제된 게시물입니다.</span>}
                   {data[0].repliesCount === 0 ? null : <RepliesCount>[{data[0].repliesCount}]</RepliesCount>}
                   {data[0].created_at[1] ? <IsItNew>N</IsItNew> : null}
                 </PostTitle>
@@ -182,12 +187,17 @@ const PostId = styled.div`
   font-size: 11px;
   margin-right: 15px;
 `;
-const PostTitle = styled.div`
+const PostTitle = styled.div<{ isPublished: boolean }>`
   ${(props) => props.theme.variables.flex()}
   font-size: 13px;
 
+  span {
+    font-style: italic;
+    color: #878787;
+  }
+
   &:hover {
-    cursor: pointer;
+    cursor: ${(props) => (props.isPublished ? 'pointer' : null)};
     text-decoration: underline;
   }
 `;

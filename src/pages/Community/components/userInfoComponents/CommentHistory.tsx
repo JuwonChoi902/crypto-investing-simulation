@@ -29,6 +29,7 @@ interface PostDetail {
   hits: number;
   label: string;
   categoryId: number;
+  isPublished: boolean;
   prevPostId: number | null;
   nextPostId: number | null;
   user: UserDetail;
@@ -158,8 +159,8 @@ export default function CommentHistory() {
                 />
               </CheckBox>
               <Comment
-                onClick={() => (el.post ? navigate(`/community/${el.post.id}`) : null)}
-                isTherePost={el.post}
+                onClick={() => (el.post.isPublished ? navigate(`/community/${el.post.id}`) : null)}
+                isPublished={el.post.isPublished}
               >
                 <CommentDesc>
                   {el.comment}
@@ -167,7 +168,7 @@ export default function CommentHistory() {
                 </CommentDesc>
                 <CommentDate>{el.created_at}</CommentDate>
                 <PostTitle>
-                  {el.post ? el.post.title : <span>삭제된 게시글</span>}
+                  {el.post.isPublished ? el.post.title : <span>삭제된 게시글</span>}
                   <PostCommentCnt>{`[${el.post?.repliesCount}]`}</PostCommentCnt>
                 </PostTitle>
               </Comment>
@@ -226,9 +227,9 @@ const CheckBox = styled.div`
     height: 14px;
   }
 `;
-const Comment = styled.div<{ isTherePost: PostDetail | undefined }>`
+const Comment = styled.div<{ isPublished: boolean }>`
   &:hover {
-    cursor: ${(props) => (props.isTherePost ? 'pointer' : null)};
+    cursor: ${(props) => (props.isPublished ? 'pointer' : null)};
     text-decoration: underline;
   }
 `;

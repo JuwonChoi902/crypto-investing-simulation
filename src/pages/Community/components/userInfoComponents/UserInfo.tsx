@@ -7,6 +7,7 @@ import CommentHistory from './CommentHistory';
 import CommentedPost from './CommentedPost';
 import LikeHistory from './LikeHistory';
 import IncomeInfo from './IncomeInfo';
+import DeletedHistory from './DeletedHistory';
 
 type UserInfoProps = {
   profileId: number | undefined;
@@ -45,6 +46,7 @@ export default function UserInfo({ profileId }: UserInfoProps) {
           {category === '2' ? <CommentedPost /> : null}
           {category === '3' ? <LikeHistory /> : null}
           {category === '4' ? <IncomeInfo /> : null}
+          {category === '5' ? <DeletedHistory /> : null}
         </ListBox>
       </Main>
     </OuterBox>

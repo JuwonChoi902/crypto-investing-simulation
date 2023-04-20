@@ -112,7 +112,10 @@ export default function LikeHistory() {
                   />
                 </CheckBox>
                 <PostId>{post.id}</PostId>
-                <PostTitle isPublished={post.isPublished}>
+                <PostTitle
+                  isPublished={post.isPublished}
+                  onClick={() => (post.isPublished ? navigate(`/community/${post.id}`) : null)}
+                >
                   {post.isPublished ? post.title : <span>삭제된 게시물입니다.</span>}
                   {post.repliesCount === 0 ? null : <RepliesCount>[{post.repliesCount}]</RepliesCount>}
                   {post.created_at[1] ? <IsItNew>N</IsItNew> : null}

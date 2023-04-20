@@ -53,6 +53,7 @@ export default function NavigateBox({ setPostNow, postData }: NavigateBoxProps) 
     }
     return null;
   };
+  console.log(postData);
 
   return (
     <OuterBox>

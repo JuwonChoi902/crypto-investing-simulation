@@ -5,31 +5,19 @@ import present from './images/present.png';
 import userImg from './images/user.png';
 
 interface UserType {
-  aud: string;
-  azp: string;
   email: string;
-  email_verified: boolean;
-  exp: number;
-  family_name: string;
-  given_name: string;
-  iat: number;
-  iss: string;
-  jti: string;
   name: string;
-  nbf: number;
   picture: string;
-  sub: string;
 }
 
 export default function Login() {
-  const [userInfo, setUserInfo] = useState<UserType | unknown>();
+  const [userInfo, setUserInfo] = useState<unknown>();
 
   function handleCredentialResponse(response: any) {
     const userData = jwtDecode(response.credential);
     setUserInfo(userData);
   }
 
-  console.log(userInfo);
   useEffect(() => {
     /* global google */
     if (google)
@@ -41,6 +29,22 @@ export default function Login() {
     if ($signInBtn && google)
       google.accounts.id.renderButton($signInBtn, { type: 'standard', theme: 'outline', size: 'large' });
   }, []);
+  console.log(userInfo);
+  const { email, name, picture } = userInfo as UserType;
+
+  useEffect(() => {
+    if (userInfo)
+      fetch(`http://pien.kr:4000/user/social`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log(data);
+        });
+  }, [userInfo]);
 
   return (
     <OuterBox>

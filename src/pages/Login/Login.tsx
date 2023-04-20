@@ -1,11 +1,47 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import jwtDecode from 'jwt-decode';
 import present from './images/present.png';
-import user from './images/user.png';
-import google from './images/google.png';
-import apple from './images/apple.png';
+import userImg from './images/user.png';
+
+interface UserType {
+  aud: string;
+  azp: string;
+  email: string;
+  email_verified: boolean;
+  exp: number;
+  family_name: string;
+  given_name: string;
+  iat: number;
+  iss: string;
+  jti: string;
+  name: string;
+  nbf: number;
+  picture: string;
+  sub: string;
+}
 
 export default function Login() {
+  const [userInfo, setUserInfo] = useState<UserType | unknown>();
+
+  function handleCredentialResponse(response: any) {
+    const userData = jwtDecode(response.credential);
+    setUserInfo(userData);
+  }
+
+  console.log(userInfo);
+  useEffect(() => {
+    /* global google */
+    if (google)
+      google.accounts.id.initialize({
+        client_id: '126645320385-715mi7o4d3jrbl3m89qv3ju68ak3cepd.apps.googleusercontent.com',
+        callback: handleCredentialResponse,
+      });
+    const $signInBtn = document.getElementById('signInBtn');
+    if ($signInBtn && google)
+      google.accounts.id.renderButton($signInBtn, { type: 'standard', theme: 'outline', size: 'large' });
+  }, []);
+
   return (
     <OuterBox>
       <LoginBox>
@@ -16,8 +52,8 @@ export default function Login() {
             <div>간편 회원가입으로 가상거래 즐기기</div>
           </TradeForFree>
           <YellowBox>
-            <img src={user} alt='user' />
-            <div>이메일 또는 휴대폰번호로 가입하기</div>
+            <img src={userImg} alt='userImg' />
+            <div>구글로 간편가입 후 1억을 받으세요</div>
           </YellowBox>
           <LineBox>
             <Line />
@@ -25,33 +61,10 @@ export default function Login() {
             <Line />
           </LineBox>
           <GoogleApple>
-            <GoogleBtn>
+            <GoogleBtn id='signInBtn'>
               {/* <img src={google} alt='google' />
               <div>Google</div> */}
-              <div
-                id='g_id_onload'
-                data-client_id='126645320385-715mi7o4d3jrbl3m89qv3ju68ak3cepd.apps.googleusercontent.com'
-                data-context='signup'
-                data-ux_mode='redirect'
-                data-login_uri='http://localhost:3000/login'
-                data-auto_prompt='false'
-              />
-
-              <div
-                className='g_id_signin'
-                data-type='standard'
-                data-shape='rectangular'
-                data-theme='outline'
-                data-text='signup_with'
-                data-size='large'
-                data-locale='ko'
-                data-logo_alignment='left'
-              />
             </GoogleBtn>
-            <AppleBtn>
-              <img src={apple} alt='apple' />
-              <div>Apple</div>
-            </AppleBtn>
           </GoogleApple>
         </LoginForm>
       </LoginBox>
@@ -101,7 +114,6 @@ const YellowBox = styled.div`
   }
 
   &:hover {
-    cursor: pointer;
     background-color: #fdd950;
   }
 `;
@@ -126,8 +138,7 @@ const Line = styled.div`
 const GoogleApple = styled.div`
   width: 384px;
   display: flex;
-  justify-content: space-between;
-
+  justify-content: center;
   img {
     width: 16px;
     margin-right: 11px;
@@ -136,23 +147,11 @@ const GoogleApple = styled.div`
 const GoogleBtn = styled.div`
   ${(props) => props.theme.variables.flex()}
   font-weight: 600;
-  width: 180px;
+  width: 210px;
   height: 48px;
   border-radius: 4px;
   background-color: #eaecef;
 
-  &:hover {
-    cursor: pointer;
-    background-color: #e9ecef;
-  }
-`;
-const AppleBtn = styled.div`
-  ${(props) => props.theme.variables.flex()}
-  font-weight:600;
-  width: 180px;
-  height: 48px;
-  border-radius: 4px;
-  background-color: #eaecef;
   &:hover {
     cursor: pointer;
     background-color: #e9ecef;

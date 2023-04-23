@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import jwtDecode from 'jwt-decode';
+import { useNavigate } from 'react-router';
 import present from './images/present.png';
 import userImg from './images/user.png';
 
@@ -8,14 +9,17 @@ interface UserType {
   email: string;
   name: string;
   picture: string;
+  nickname: string;
 }
 
 export default function Login() {
-  const [userInfo, setUserInfo] = useState<unknown>();
+  const [userInfo, setUserInfo] = useState<UserType>();
+  const navigate = useNavigate();
 
   function handleCredentialResponse(response: any) {
     const userData = jwtDecode(response.credential);
-    setUserInfo(userData);
+    const { email, name, picture } = userData as UserType;
+    setUserInfo({ email, name, picture, nickname: '' });
   }
 
   useEffect(() => {
@@ -29,8 +33,6 @@ export default function Login() {
     if ($signInBtn && google)
       google.accounts.id.renderButton($signInBtn, { type: 'standard', theme: 'outline', size: 'large' });
   }, []);
-  console.log(userInfo);
-  const { email, name, picture } = userInfo as UserType;
 
   useEffect(() => {
     if (userInfo)
@@ -39,10 +41,15 @@ export default function Login() {
         headers: {
           'Content-Type': 'application/json;charset=utf-8',
         },
+        body: JSON.stringify(userInfo),
       })
         .then((res) => res.json())
         .then((data) => {
-          console.log(data);
+          if (data.statusCode === 400) {
+            navigate('/login/nick', { state: userInfo });
+          } else {
+            console.log('login success');
+          }
         });
   }, [userInfo]);
 

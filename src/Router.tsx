@@ -8,6 +8,7 @@ import Wallet from './pages/Wallet/Wallet';
 import Community from './pages/Community/Community';
 import Nav from './components/Nav/Nav';
 import Footer from './components/Footer/Footer';
+import NickNameInput from './pages/Login/components/NickNameInput';
 import Posting from './pages/Community/components/postComponents/Posting';
 
 function Router() {
@@ -17,6 +18,7 @@ function Router() {
       <Routes>
         <Route path='/main/' element={<Main />} />
         <Route path='/login/' element={<Login />} />
+        <Route path='/login/nick' element={<NickNameInput />} />
         <Route path='/market/' element={<Market />} />
         <Route path='/wallet/' element={<Wallet />} />
         <Route path='/community/:id' element={<Community />} />

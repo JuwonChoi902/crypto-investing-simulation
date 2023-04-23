@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import styled from 'styled-components';
 
 export interface PostDetail {
@@ -13,6 +13,8 @@ export interface PostDetail {
   isLike: boolean;
   likeCount: number;
   unLikeCount: number;
+  prevPostId: number | null;
+  nextPostId: number | null;
   user: UserDetail;
 }
 
@@ -27,22 +29,9 @@ type NavigateBoxProps = {
   postData: PostDetail | undefined;
 };
 
-interface Location {
-  currentIndex: number;
-  posts: PostDetail[];
-}
-
 export default function NavigateBox({ setPostNow, postData }: NavigateBoxProps) {
   const navigate = useNavigate();
   const params = useParams();
-  const location = useLocation().state;
-
-  const postsLength = ((obj: Location) => {
-    if (obj) {
-      return obj.posts.length - 1;
-    }
-    return null;
-  })(location);
 
   const deletePost = () => {
     if (window.confirm('해당 게시글을 삭제하시겠습니까?') === true) {
@@ -64,6 +53,7 @@ export default function NavigateBox({ setPostNow, postData }: NavigateBoxProps) 
     }
     return null;
   };
+  console.log(postData);
 
   return (
     <OuterBox>
@@ -82,33 +72,13 @@ export default function NavigateBox({ setPostNow, postData }: NavigateBoxProps) 
         <DeletePost onClick={deletePost}>삭제</DeletePost>
       </NavigateLeft>
       <NavigateRight>
-        {location?.currentIndex === 0 ? null : (
-          <Previous
-            type='button'
-            onClick={() =>
-              navigate(`/community/${location?.posts[location.currentIndex - 1].id}`, {
-                state: {
-                  currentIndex: location.currentIndex - 1,
-                  posts: location.posts,
-                },
-              })
-            }
-          >
+        {!postData?.prevPostId ? null : (
+          <Previous type='button' onClick={() => navigate(`/community/${postData.prevPostId}`)}>
             이전글
           </Previous>
         )}
-        {location?.currentIndex === postsLength ? null : (
-          <Next
-            type='button'
-            onClick={() =>
-              navigate(`/community/${location?.posts[location.currentIndex + 1].id}`, {
-                state: {
-                  currentIndex: location.currentIndex + 1,
-                  posts: location.posts,
-                },
-              })
-            }
-          >
+        {!postData?.nextPostId ? null : (
+          <Next type='button' onClick={() => navigate(`/community/${postData.nextPostId}`)}>
             다음글
           </Next>
         )}

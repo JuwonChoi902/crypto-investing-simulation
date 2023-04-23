@@ -4,6 +4,7 @@ import styled from 'styled-components';
 
 export default function Posting() {
   const location = useLocation().state;
+  window.scrollTo(0, 0);
 
   const editingData = location ? location.postData : null;
 
@@ -48,7 +49,7 @@ export default function Posting() {
         })
           .then((res) => res.json())
           .then((data) => {
-            if (data) {
+            if (data.status === 'good') {
               navigate(`/community/${editingData.id}`);
             }
           });
@@ -72,8 +73,10 @@ export default function Posting() {
     }
   };
 
-  const makingUserInput = (event: any) => {
-    setUserInput({ ...userInput, [event?.target.name]: event.target.value });
+  const makingUserInput = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) => {
+    setUserInput({ ...userInput, [event.target?.name]: event.target.value });
   };
 
   return (
@@ -87,7 +90,12 @@ export default function Posting() {
       <PostingBox>
         <TitleBox optionColor={categoryId}>
           <InputBox>
-            <input name='title' onChange={makingUserInput} placeholder='제목을 입력하세요.' value={title} />
+            <input
+              name='title'
+              onChange={(e) => makingUserInput(e)}
+              placeholder='제목을 입력하세요.'
+              value={title}
+            />
           </InputBox>
           <select name='categoryId' onChange={makingUserInput} required value={categoryId}>
             <option value={0} disabled>
@@ -102,7 +110,7 @@ export default function Posting() {
         <Description>
           <textarea
             name='description'
-            onChange={makingUserInput}
+            onChange={(e) => makingUserInput(e)}
             placeholder='내용을 입력하세요.'
             value={description}
           />

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import styled from 'styled-components';
 import user from '../../images/user.png';
@@ -17,6 +17,8 @@ interface PostDetail {
   isLike: boolean;
   likeCount: number;
   unLikeCount: number;
+  prevPostId: number | null;
+  nextPostId: number | null;
   user: UserDetail;
 }
 
@@ -35,6 +37,7 @@ type DescriptionBoxProps = {
   setBoardNow: React.Dispatch<React.SetStateAction<number | null>>;
   setReplying: React.Dispatch<React.SetStateAction<number | null>>;
   setMenuNow: React.Dispatch<React.SetStateAction<number>>;
+  setProfileId: React.Dispatch<React.SetStateAction<number | undefined>>;
 };
 
 const PostCategory: string[] = ['전체글보기', '질문하기', '자랑하기', '공유하기', '잡담하기'];
@@ -48,11 +51,15 @@ export default function DescriptionBox({
   postData,
   setPostData,
   setMenuNow,
+  setProfileId,
 }: DescriptionBoxProps) {
   const [isURLCopied, setIsURLCopied] = useState<boolean>(false);
+  const [dropBoxIsOpen, setDropBoxIsOpen] = useState<boolean>(false);
 
   const params = useParams();
   const commentWindowY = commentWindowRef.current?.offsetTop;
+  const dropBoxRef = useRef<HTMLDivElement>(null);
+  const nickBoxRef = useRef<HTMLDivElement>(null);
 
   const dateParsing = (date: string): [string, boolean] => {
     const theDate = new Date(date);
@@ -73,9 +80,7 @@ export default function DescriptionBox({
   };
 
   useEffect(() => {
-    if (params.id === 'list') {
-      setPostNow(null);
-    } else {
+    if (params.id !== 'list' && params.id !== 'favorite' && params.id !== 'profile') {
       setPostNow(Number(params.id));
 
       fetch(`http://pien.kr:4000/community/${params.id}`, {
@@ -107,7 +112,6 @@ export default function DescriptionBox({
       })
         .then((res) => res.json())
         .then((data) => {
-          console.log(data);
           setPostData({ ...data, created_at: dateParsing(data.created_at)[0] });
         });
     } else {
@@ -174,6 +178,27 @@ export default function DescriptionBox({
     return () => clearTimeout(popUpTimeOut);
   }, [isURLCopied]);
 
+  useEffect(() => {
+    const changeDropState = (e: CustomEvent<MouseEvent>) => {
+      if (
+        dropBoxRef.current &&
+        nickBoxRef &&
+        !nickBoxRef.current?.contains(e.target as Node) &&
+        !dropBoxRef.current?.contains(e.target as Node)
+      ) {
+        setDropBoxIsOpen((cur) => !cur);
+      }
+    };
+
+    if (dropBoxIsOpen) {
+      window.addEventListener('click', changeDropState as EventListener);
+    }
+
+    return () => {
+      window.removeEventListener('click', changeDropState as EventListener);
+    };
+  }, [dropBoxIsOpen]);
+
   return (
     <OuterBox>
       <TitleBox>
@@ -192,8 +217,8 @@ export default function DescriptionBox({
       <UserInfo>
         <UserDesc>
           <UserImg
-            id={postData?.user?.id}
             onClick={() => {
+              setProfileId(postData?.user?.id);
               setMenuNow(2);
             }}
           >
@@ -201,7 +226,26 @@ export default function DescriptionBox({
           </UserImg>
           <UserDetail>
             <DetailNickBox>
-              <DetailNick>{postData?.user?.nickname}</DetailNick>
+              <DetailNick ref={nickBoxRef} onClick={() => setDropBoxIsOpen((current) => !current)}>
+                {postData?.user?.nickname}
+                {dropBoxIsOpen ? (
+                  <UserDropBox ref={dropBoxRef}>
+                    <ul>
+                      <li
+                        role='presentation'
+                        onClick={() => {
+                          setProfileId(postData?.user.id);
+                          setMenuNow(2);
+                        }}
+                      >
+                        프로필보기
+                      </li>
+                      <li>1:1 채팅</li>
+                      <li>쪽지보내기</li>
+                    </ul>
+                  </UserDropBox>
+                ) : null}
+              </DetailNick>
               <DetailRank>132위</DetailRank>
               <AskChat>1:1 채팅</AskChat>
             </DetailNickBox>
@@ -228,8 +272,13 @@ export default function DescriptionBox({
         <IsCopied isURLCopied={isURLCopied}>URL이 복사되었습니다.</IsCopied>
       </UserInfo>
       <Description>{postData?.description}</Description>
-      <ShowMore>
-        <UserImg id={postData?.user.id}>
+      <ShowMore
+        onClick={() => {
+          setProfileId(postData?.user?.id);
+          setMenuNow(2);
+        }}
+      >
+        <UserImg>
           <img src={user} alt='user' />
         </UserImg>
         <span>{postData?.user.nickname}</span>
@@ -265,6 +314,7 @@ const Board = styled.div`
   color: ${(props) => props.theme.style.yellow};
   margin-bottom: 7px;
   font-weight: bold;
+  width: 60px;
 
   &:hover {
     cursor: pointer;
@@ -288,7 +338,7 @@ const UserDesc = styled.div`
   align-items: center;
 `;
 
-const UserImg = styled.div<{ id: any }>`
+const UserImg = styled.div`
   display: flex;
   justify-content: center;
   width: 34px;
@@ -319,12 +369,37 @@ const DetailNickBox = styled.div`
 const DetailNick = styled.div`
   font-weight: bold;
   margin-right: 6px;
+  position: relative;
 
   &:hover {
     cursor: pointer;
     text-decoration: underline;
   }
 `;
+
+const UserDropBox = styled.div`
+  display: block;
+  position: absolute;
+  width: 113px;
+  top: 23px;
+  left: 7px;
+  font-size: 12px;
+  z-index: 1;
+  font-weight: bold;
+  background-color: white;
+  border: 1px solid #e5e5e5;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+
+  li {
+    padding: 11px 15px;
+
+    &:hover {
+      cursor: pointer;
+      background-color: #feeaa3;
+    }
+  }
+`;
+
 const DetailRank = styled.div`
   margin-right: 6px;
   color: #676767;
@@ -386,7 +461,7 @@ const GoShare = styled.div`
   }
 `;
 
-const IsCopied = styled.div<{ isURLCopied: any }>`
+const IsCopied = styled.div<{ isURLCopied: boolean }>`
   ${(props) => props.theme.variables.flex()}
   opacity:${(props) => (props.isURLCopied ? '100' : '0')};
   position: absolute;
@@ -436,7 +511,7 @@ const LikeAndHate = styled.div`
   padding-bottom: 12px;
   border-bottom: 1px solid #e5e5e5;
 `;
-const LikeBox = styled.div<{ isLiked: any }>`
+const LikeBox = styled.div<{ isLiked: boolean | null | undefined }>`
   display: flex;
   &:hover {
     cursor: pointer;
@@ -451,7 +526,7 @@ const LikeBox = styled.div<{ isLiked: any }>`
     font-weight: bold;
   }
 `;
-const DisLikeBox = styled.div<{ isLiked: any }>`
+const DisLikeBox = styled.div<{ isLiked: boolean | null | undefined }>`
   display: flex;
   &:hover {
     cursor: pointer;
@@ -467,13 +542,13 @@ const DisLikeBox = styled.div<{ isLiked: any }>`
     font-weight: bold;
   }
 `;
-const LikeImg = styled.img<{ isLiked: any }>`
+const LikeImg = styled.img<{ isLiked: boolean | null | undefined }>`
   width: 16px;
   margin-right: 10px;
   opacity: ${(props) => (props.isLiked === true ? '1' : '0.5')};
 `;
 
-const DislikeImg = styled.img<{ isLiked: any }>`
+const DislikeImg = styled.img<{ isLiked: boolean | null | undefined }>`
   width: 16px;
   margin-right: 10px;
   opacity: ${(props) => (props.isLiked === false ? '1' : '0.5')};

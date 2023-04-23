@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
+import Pages from '../otherComponents/Pages';
 
 interface PostDetail {
   id: number;
@@ -25,19 +26,10 @@ interface UserDetail {
   description: string | null;
 }
 
-interface CommentDetail {
-  id: number;
-  comment: string;
-  created_at: string;
-  deleted_at: string;
-  isItNew: boolean;
-  replyId: number;
-  post: PostDetail;
-  user: UserDetail;
-}
-
 export default function CommentedPost() {
-  const [postsData, setPostsData] = useState<[PostDetail, UserDetail][]>([]);
+  const [postsData, setPostsData] = useState<PostDetail[]>([]);
+  const [page, setPage] = useState<number>(1);
+
   const navigate = useNavigate();
 
   const dateParsing = (date: string): [string, boolean] => {
@@ -67,30 +59,16 @@ export default function CommentedPost() {
   };
 
   useEffect(() => {
-    fetch(`http://pien.kr:4000/community/reply/user/1?page=1&number=${1000}`, {
+    fetch(`http://pien.kr:4000/user/posts`, {
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
+        Authorization:
+          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
       },
     })
       .then((res) => res.json())
       .then((data) => {
-        const temp: [PostDetail, UserDetail][] = [];
-        const filtered = data.replies.filter(
-          (reply: CommentDetail, index: number) =>
-            index === data.replies.findIndex((reply2: CommentDetail) => reply.post.id === reply2.post.id),
-        );
-        filtered.forEach((comments: CommentDetail): void => {
-          temp.push([comments.post, comments.user]);
-        });
-        setPostsData(
-          temp.map((el: [PostDetail, UserDetail]) => [
-            {
-              ...el[0],
-              created_at: dateParsing(el[0].created_at)[0],
-            },
-            el[1],
-          ]),
-        );
+        setPostsData(data.map((post: PostDetail) => ({ ...post, created_at: dateParsing(post.created_at) })));
       });
   }, []);
 
@@ -104,34 +82,31 @@ export default function CommentedPost() {
       </ListCategories>
       {postsData.length ? (
         <List>
-          {postsData.map((data) => (
-            <Post key={data[0].id}>
+          {postsData.map((post) => (
+            <Post key={post.id}>
               <PostTitleBox>
-                <PostId>{data[0].id}</PostId>
-                <PostTitle
-                  isPublished={data[0].isPublished}
-                  onClick={() => (data[0].isPublished ? navigate(`/community/${data[0].id}`) : null)}
-                >
-                  {data[0].isPublished ? data[0].title : <span>삭제된 게시물입니다.</span>}
-                  {data[0].repliesCount === 0 ? null : <RepliesCount>[{data[0].repliesCount}]</RepliesCount>}
-                  {data[0].created_at[1] ? <IsItNew>N</IsItNew> : null}
+                <PostId>{post.id}</PostId>
+                <PostTitle onClick={() => (post.isPublished ? navigate(`/community/${post.id}`) : null)}>
+                  {post.title}
+                  {post.repliesCount === 0 ? null : <RepliesCount>[{post.repliesCount}]</RepliesCount>}
+                  {post.created_at[1] ? <IsItNew>N</IsItNew> : null}
                 </PostTitle>
               </PostTitleBox>
-              <PostNick>{data[1].nickname}</PostNick>
-              <PostDate>{data[0].created_at}</PostDate>
-              <PostHit>{data[0].hits}</PostHit>
+              <PostNick>기석</PostNick>
+              <PostDate>{post.created_at}</PostDate>
+              <PostHit>{post.hits}</PostHit>
             </Post>
           ))}
         </List>
       ) : (
-        <EmptyList>작성한 게시글이 없습니다.</EmptyList>
+        <EmptyList>삭제한 게시글이 없습니다.</EmptyList>
       )}
-      <ButtonBox>
+      {/* <ButtonBox>
         <SelectAll />
         <DeleteAndWrite>
           <WriteBtn onClick={() => navigate('/community/posting')}>글쓰기</WriteBtn>
         </DeleteAndWrite>
-      </ButtonBox>
+      </ButtonBox> */}
     </OuterBox>
   );
 }
@@ -190,7 +165,7 @@ const PostId = styled.div`
   font-size: 11px;
   margin-right: 15px;
 `;
-const PostTitle = styled.div<{ isPublished: boolean }>`
+const PostTitle = styled.div`
   ${(props) => props.theme.variables.flex()}
   font-size: 13px;
 
@@ -200,7 +175,6 @@ const PostTitle = styled.div<{ isPublished: boolean }>`
   }
 
   &:hover {
-    cursor: ${(props) => (props.isPublished ? 'pointer' : null)};
     text-decoration: underline;
   }
 `;
@@ -211,10 +185,6 @@ const PostNick = styled.div`
   font-size: 13px;
   width: 122px;
   padding: 2px 7px;
-
-  &:hover {
-    cursor: pointer;
-  }
 `;
 
 const RepliesCount = styled.div`

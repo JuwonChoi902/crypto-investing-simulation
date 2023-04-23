@@ -12,6 +12,8 @@ interface PostDetail {
   hits: number;
   label: string;
   categoryId: number;
+  prevPostId: number | null;
+  nextPostId: number | null;
   user: UserDetail;
 }
 
@@ -48,7 +50,7 @@ const filters: string[][] = [
   ['댓글내용', 'reply'],
 ];
 
-export default function SearchBar({
+export default function SearchBarTop({
   setPostNumber,
   setPosts,
   searchRes,
@@ -68,16 +70,15 @@ export default function SearchBar({
   const [boardsDropIsOpen, setBoardDropIsOpen] = useState<boolean>(false);
   const { searchFilter, searchString, searchBoard } = searchInput;
 
-  const makeSearchInput = (event: any) => {
-    if (event.key === 'Enter') search(event);
+  const makeSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput({ ...searchInput, searchString: event.target.value });
   };
 
-  const makeSearchFilter = (event: any, str: string) => {
+  const makeSearchFilter = (str: string) => {
     setSearchInput({ ...searchInput, searchFilter: str });
   };
 
-  const makeBoardFilter = (event: any, index: number) => {
+  const makeBoardFilter = (index: number) => {
     setSearchInput({ ...searchInput, searchBoard: index });
   };
 
@@ -94,6 +95,38 @@ export default function SearchBar({
       searchBoard: searchRes.boardRes,
     });
   }, [searchRes]);
+
+  useEffect(() => {
+    const changeDropState = (e: CustomEvent<MouseEvent>) => {
+      if (searchDropRef.current !== null && !searchDropRef.current?.contains(e.target as Node)) {
+        setSearchDropIsOpen((cur) => !cur);
+      }
+    };
+
+    if (searchDropIsOpen) {
+      window.addEventListener('click', changeDropState as EventListener);
+    }
+
+    return () => {
+      window.removeEventListener('click', changeDropState as EventListener);
+    };
+  }, [searchDropIsOpen]);
+
+  useEffect(() => {
+    const changeDropState = (e: CustomEvent<MouseEvent>) => {
+      if (boardsDropRef.current !== null && !boardsDropRef.current?.contains(e.target as Node)) {
+        setBoardDropIsOpen((cur) => !cur);
+      }
+    };
+
+    if (boardsDropIsOpen) {
+      window.addEventListener('click', changeDropState as EventListener);
+    }
+
+    return () => {
+      window.removeEventListener('click', changeDropState as EventListener);
+    };
+  }, [boardsDropIsOpen]);
 
   const dateParsing = (date: string): [string, boolean] => {
     const theDate = new Date(date);
@@ -123,7 +156,7 @@ export default function SearchBar({
     ];
   };
 
-  const search = (e: any) => {
+  const search = (e: React.MouseEvent | React.KeyboardEvent) => {
     e.preventDefault();
     if (!searchString) {
       alert('검색어를 입력해주세요');
@@ -158,7 +191,7 @@ export default function SearchBar({
           <img src={boardsDropIsOpen ? arrowUp : arrowDown} alt='arrow' />
           <ul>
             {boards.map((el, i) => (
-              <li role='presentation' onClick={(e) => makeBoardFilter(e, i)}>
+              <li role='presentation' onClick={() => makeBoardFilter(i)} key={el}>
                 {el}
               </li>
             ))}
@@ -173,7 +206,7 @@ export default function SearchBar({
           <img src={searchDropIsOpen ? arrowUp : arrowDown} alt='arrow' />
           <ul>
             {filters.map((el) => (
-              <li role='presentation' onClick={(e) => makeSearchFilter(e, el[1])}>
+              <li role='presentation' onClick={() => makeSearchFilter(el[1])} key={el[0]}>
                 {el[0]}
               </li>
             ))}

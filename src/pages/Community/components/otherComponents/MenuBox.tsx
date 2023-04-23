@@ -15,11 +15,20 @@ export default function MenuBox({ setMenuNow, setBoardNow, menuNow, setIsItSearc
 
   return (
     <OuterBox>
-      <Favorite id={0} menuNow={menuNow} onClick={() => setMenuNow(0)}>
+      <Favorite
+        id={String(0)}
+        menuNow={menuNow}
+        onClick={() => {
+          setMenuNow(0);
+          setBoardNow(null);
+          setIsItSearching(false);
+          navigate('/community/favorite');
+        }}
+      >
         <img src={star} alt='star' />
       </Favorite>
       <ShowPosts
-        id={1}
+        id={String(1)}
         menuNow={menuNow}
         onClick={() => {
           setMenuNow(1);
@@ -31,7 +40,7 @@ export default function MenuBox({ setMenuNow, setBoardNow, menuNow, setIsItSearc
         게시글 보기
       </ShowPosts>
       <MyPosting
-        id={2}
+        id={String(2)}
         menuNow={menuNow}
         onClick={() => {
           setMenuNow(2);
@@ -57,7 +66,7 @@ const OuterBox = styled.div`
   margin-bottom: 30px;
 `;
 
-const Favorite = styled.div<{ id: any; menuNow: number }>`
+const Favorite = styled.div<{ id: string; menuNow: number }>`
   img {
     width: 16px;
   }
@@ -67,18 +76,18 @@ const Favorite = styled.div<{ id: any; menuNow: number }>`
     color: ${(props) => props.theme.style.yellow};
   }
 `;
-const ShowPosts = styled.div<{ id: any; menuNow: number }>`
+const ShowPosts = styled.div<{ id: string; menuNow: number }>`
   padding-left: 16px;
-  color: ${(props) => (props.id === props.menuNow ? props.theme.style.yellow : 'black')};
+  color: ${(props) => (Number(props.id) === props.menuNow ? props.theme.style.yellow : 'black')};
 
   &:hover {
     cursor: pointer;
     color: ${(props) => props.theme.style.yellow};
   }
 `;
-const MyPosting = styled.div<{ id: any; menuNow: number }>`
+const MyPosting = styled.div<{ id: string; menuNow: number }>`
   padding-left: 16px;
-  color: ${(props) => (props.id === props.menuNow ? props.theme.style.yellow : 'black')};
+  color: ${(props) => (Number(props.id) === props.menuNow ? props.theme.style.yellow : 'black')};
 
   &:hover {
     cursor: pointer;

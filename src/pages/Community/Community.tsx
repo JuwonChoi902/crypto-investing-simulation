@@ -11,7 +11,7 @@ export default function Community() {
   const [postNow, setPostNow] = useState<number | null>(null);
   const [menuNow, setMenuNow] = useState<number>(1);
   const [boardNow, setBoardNow] = useState<number | null>(0);
-  const [profileId, setProfileId] = useState<number>(1);
+  const [profileId, setProfileId] = useState<number | undefined>(1);
   const [isItSearching, setIsItSearching] = useState<boolean>(false);
 
   const params = useParams();
@@ -19,7 +19,15 @@ export default function Community() {
   useEffect(() => {
     if (params.id === 'list') {
       setPostNow(null);
+      setMenuNow(1);
+    } else if (params.id === 'profile') {
+      setPostNow(null);
+      setMenuNow(2);
+    } else if (params.id === 'favorite') {
+      setPostNow(null);
+      setMenuNow(0);
     } else {
+      setMenuNow(1);
       setPostNow(Number(params.id));
     }
   }, [params.id]);
@@ -52,9 +60,10 @@ export default function Community() {
               setMenuNow={setMenuNow}
               setIsItSearching={setIsItSearching}
               isItSearching={isItSearching}
+              setProfileId={setProfileId}
             />
           ) : null}
-          {menuNow === 2 ? <UserInfo /> : null}
+          {menuNow === 2 ? <UserInfo profileId={profileId} /> : null}
         </Contents>
       </MainBox>
     </OuterBox>

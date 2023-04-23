@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
+import Pages from '../otherComponents/Pages';
 
 interface PostDetail {
   id: number;
@@ -20,9 +21,16 @@ interface UserDetail {
   description: string | null;
 }
 
-export default function PostHistory() {
+type PostHistoryProps = {
+  profileId: number | undefined;
+};
+
+export default function PostHistory({ profileId }: PostHistoryProps) {
   const [checked, setChecked] = useState<number[]>([]);
   const [postsData, setPostsData] = useState<PostDetail[]>([]);
+  const [postNumber, setPostNumber] = useState<number>();
+  const [page, setPage] = useState<number>(1);
+
   const navigate = useNavigate();
 
   const dateParsing = (date: string): [string, boolean] => {
@@ -52,16 +60,17 @@ export default function PostHistory() {
   };
 
   useEffect(() => {
-    fetch(`http://pien.kr:4000/community/post/user/1`, {
+    fetch(`http://pien.kr:4000/community/post/user/${profileId}?page=${page}&number=15`, {
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
       },
     })
       .then((res) => res.json())
       .then((data) => {
+        setPostNumber(data.number);
         setPostsData(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
       });
-  }, []);
+  }, [page]);
 
   const checkedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (checked.includes(Number(event.target.id))) {
@@ -98,13 +107,14 @@ export default function PostHistory() {
         .then((res) => res.json())
         .then((data) => {
           if (data.status === true) {
-            fetch(`http://pien.kr:4000/community/post/user/1`, {
+            fetch(`http://pien.kr:4000/community/post/user/${profileId}?page=${page}&number=15`, {
               headers: {
                 'Content-Type': 'application/json;charset=utf-8',
               },
             })
               .then((res) => res.json())
               .then((data) => {
+                setPostNumber(data.number);
                 setPostsData(
                   data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
                 );
@@ -126,7 +136,7 @@ export default function PostHistory() {
       {postsData.length ? (
         <List>
           {postsData.map((post) => (
-            <Post>
+            <Post key={post.id}>
               <PostTitleBox>
                 <CheckBox>
                   <input
@@ -134,10 +144,15 @@ export default function PostHistory() {
                     id={String(post.id)}
                     checked={checked.includes(post.id)}
                     onChange={(event) => checkedChange(event)}
+                    readOnly
                   />
                 </CheckBox>
                 <PostId>{post.id}</PostId>
-                <PostTitle>
+                <PostTitle
+                  onClick={() => {
+                    navigate(`/community/${post.id}`);
+                  }}
+                >
                   {post.title}
                   {post.repliesCount === 0 ? null : <RepliesCount>[{post.repliesCount}]</RepliesCount>}
                   {post.created_at[1] ? <IsItNew>N</IsItNew> : null}
@@ -151,18 +166,19 @@ export default function PostHistory() {
       ) : (
         <EmptyList>작성한 게시글이 없습니다.</EmptyList>
       )}
-      <ButtonBox>
+      <ButtonAndPageBox>
         <SelectAll>
-          <CheckAll onClick={checkAll}>
-            <input type='checkBox' checked={checked.length === postsData.length} />
+          <CheckAll onChange={checkAll}>
+            <input type='checkBox' checked={checked.length === postsData.length} readOnly />
             <div>전체선택</div>
           </CheckAll>
         </SelectAll>
+        <Pages setPage={setPage} page={page} postNumber={postNumber} limit={15} />
         <DeleteAndWrite>
           <DeleteBtn onClick={deleteChecked}>삭제</DeleteBtn>
           <WriteBtn onClick={() => navigate('/community/posting')}>글쓰기</WriteBtn>
         </DeleteAndWrite>
-      </ButtonBox>
+      </ButtonAndPageBox>
     </OuterBox>
   );
 }
@@ -270,7 +286,7 @@ const EmptyList = styled.div`
   font-size: 13px;
   border-bottom: 1px solid #e5e5e5;
 `;
-const ButtonBox = styled.div`
+const ButtonAndPageBox = styled.div`
   display: flex;
   justify-content: space-between;
   height: 34px;
@@ -295,6 +311,7 @@ const CheckAll = styled.div`
     cursor: pointer;
   }
 `;
+
 const DeleteAndWrite = styled.div`
   display: flex;
 `;

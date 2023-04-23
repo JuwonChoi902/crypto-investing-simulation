@@ -2,8 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import { ThemeProvider } from 'styled-components';
-
-import reportWebVitals from './reportWebVitals';
 import GlobalStyle from './styles/GlobalStyle';
 import Router from './Router';
 import theme from './styles/theme';

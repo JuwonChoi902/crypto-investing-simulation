@@ -13,9 +13,9 @@ export default function NickNameInput() {
 
   const regex = /^[가-힣a-zA-Z0-9]{2,8}$/;
   const { state } = useLocation();
-  console.log(state);
 
   const changeUserInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsItDuplicated(false);
     setUserInput(e.target.value);
     setIsItValid(regex.test(e.target.value));
   };
@@ -38,16 +38,31 @@ export default function NickNameInput() {
         });
     }
   };
-
-  // const submit = () => {
-  //   if (
-  //     confirm(`한 번 생성한 닉네임은 변경할 수 없습니다. ${checkedString}으로 닉네임을 만드시겠습니까?`) ===
-  //     true
-  //   ) {
-  //   } else {
-  //     return null;
-  //   }
-  // };
+  const submit = () => {
+    if (
+      window.confirm(
+        `한 번 생성한 닉네임은 변경할 수 없습니다. '${checkedString}'(으)로 닉네임을 만드시겠습니까?`,
+      ) === true
+    ) {
+      fetch(`http://pien.kr:4000/user/social`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8',
+        },
+        body: JSON.stringify({ ...state, nickname: checkedString }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.isSuccess === true) {
+            localStorage.clear();
+            localStorage.setItem('id', data.id);
+            localStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem('nickname', data.nickname);
+          }
+        });
+    }
+    return null;
+  };
 
   return (
     <OuterBox>
@@ -75,7 +90,7 @@ export default function NickNameInput() {
           ) : null}
         </IsItDuplicated>
 
-        <SubmitButton isItDuplicated={isItDuplicated} isItValid={isItValid}>
+        <SubmitButton isItDuplicated={isItDuplicated} isItValid={isItValid} onClick={submit}>
           가입하기
         </SubmitButton>
       </NickNameInputForm>
@@ -89,6 +104,7 @@ const OuterBox = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 100px;
 `;
 
 const NickNameInputForm = styled.form`

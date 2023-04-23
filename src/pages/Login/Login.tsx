@@ -8,8 +8,9 @@ import userImg from './images/user.png';
 interface UserType {
   email: string;
   name: string;
-  picture: string;
-  nickname: string;
+  picture?: string;
+  nickname?: string;
+  profileImage?: string;
 }
 
 export default function Login() {
@@ -19,7 +20,7 @@ export default function Login() {
   function handleCredentialResponse(response: any) {
     const userData = jwtDecode(response.credential);
     const { email, name, picture } = userData as UserType;
-    setUserInfo({ email, name, picture, nickname: '' });
+    setUserInfo({ email, name, profileImage: picture });
   }
 
   useEffect(() => {
@@ -45,10 +46,14 @@ export default function Login() {
       })
         .then((res) => res.json())
         .then((data) => {
-          if (data.statusCode === 400) {
+          if (data.statusCode === 404) {
             navigate('/login/nick', { state: userInfo });
-          } else {
-            console.log('login success');
+          } else if (data.isSuccess === true) {
+            localStorage.clear();
+            localStorage.setItem('id', data.id);
+            localStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem('nickname', data.nickname);
+            navigate('/main');
           }
         });
   }, [userInfo]);
@@ -72,10 +77,7 @@ export default function Login() {
             <Line />
           </LineBox>
           <GoogleApple>
-            <GoogleBtn id='signInBtn'>
-              {/* <img src={google} alt='google' />
-              <div>Google</div> */}
-            </GoogleBtn>
+            <GoogleBtn id='signInBtn' />
           </GoogleApple>
         </LoginForm>
       </LoginBox>

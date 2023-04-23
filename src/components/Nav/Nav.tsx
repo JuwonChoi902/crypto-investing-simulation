@@ -1,10 +1,11 @@
 import styled from 'styled-components';
-import React from 'react';
+import React, { useState } from 'react';
 import icon from './images/mainIcon.png';
 import menuLeft from './images/menuLeft.png';
 import menuRight from './images/menuRight.png';
 
 export default function Nav() {
+  const [navMenuNow, setNavMenuNow] = useState<string>('0');
   return (
     <OuterBox>
       <CryptoBy>
@@ -13,12 +14,15 @@ export default function Nav() {
       </CryptoBy>
       <NavButtonBox>
         <img src={menuLeft} alt='menuLeft' />
-        <NavMenuBtn>구매하기</NavMenuBtn>
-        <NavMenuBtn>커뮤니티</NavMenuBtn>
+        <NavMenuBtn id='1' navMenuNow={navMenuNow} onClick={() => setNavMenuNow('1')}>
+          구매하기
+        </NavMenuBtn>
+        <NavMenuBtn id='2' navMenuNow={navMenuNow} onClick={() => setNavMenuNow('2')}>
+          커뮤니티
+        </NavMenuBtn>
       </NavButtonBox>
-
       <MenuButtonBox>
-        <NavMenuBtn>로그인</NavMenuBtn>
+        <NavLoginBtn>로그인</NavLoginBtn>
         <NavMenuBtnForRegister>회원가입</NavMenuBtnForRegister>
         <img src={menuRight} alt='menuRight' />
       </MenuButtonBox>
@@ -82,7 +86,18 @@ const MenuButtonBox = styled.div`
   }
 `;
 
-const NavMenuBtn = styled.div`
+const NavMenuBtn = styled.div<{ id: string; navMenuNow: string }>`
+  font-size: 14px;
+  margin: 8px;
+  color: ${(props) => (props.id === props.navMenuNow ? props.theme.style.yellow : 'black')};
+
+  &:hover {
+    cursor: pointer;
+    color: ${(props) => props.theme.style.yellow};
+  }
+`;
+
+const NavLoginBtn = styled.div`
   font-size: 14px;
   margin: 8px;
 

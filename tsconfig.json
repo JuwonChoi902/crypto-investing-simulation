@@ -1,11 +1,13 @@
 {
+  "extends": "./tsconfig.extend.json",
   "compilerOptions": {
-    "target": "es5",
+    "target": "esnext",
     "lib": [
       "dom",
       "dom.iterable",
       "esnext"
     ],
+    "typeRoots": ["src/types/", "node_modules/@types/", "**/node_modules/@types/"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -20,7 +22,5 @@
     "noEmit": true,
     "jsx": "react-jsx"
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src", "craco.config.js", "workbox.config.js"]
 }

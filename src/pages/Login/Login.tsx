@@ -50,9 +50,9 @@ export default function Login() {
             navigate('/login/nick', { state: userInfo });
           } else if (data.isSuccess === true) {
             localStorage.clear();
-            localStorage.setItem('id', data.id);
-            localStorage.setItem('accessToken', data.accessToken);
-            localStorage.setItem('nickname', data.nickname);
+            localStorage.setItem('id', data.data.id);
+            localStorage.setItem('accessToken', data.data.accessToken);
+            localStorage.setItem('nickname', data.data.nickname);
             navigate('/main');
           }
         });

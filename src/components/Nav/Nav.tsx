@@ -13,6 +13,12 @@ export default function Nav() {
   const [userId, setUserId] = useState<boolean>(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (localStorage.getItem('id')) {
+      setUserId(true);
+    }
+  }, [localStorage.getItem('id')]);
+
   return (
     <OuterBox>
       <CryptoBy onClick={() => navigate('/main')}>

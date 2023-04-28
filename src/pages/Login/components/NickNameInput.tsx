@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { useLocation } from 'react-router';
+import { Navigate, useLocation, useNavigate } from 'react-router';
 import writeYellow from '../images/writeYellow.png';
 import checkGrey from '../images/checkGrey.png';
 import checkGreen from '../images/checkGreen.png';
@@ -11,6 +11,7 @@ export default function NickNameInput() {
   const [isItDuplicated, setIsItDuplicated] = useState<boolean>(false);
   const [checkedString, setCheckedString] = useState<string>('');
 
+  const navigate = useNavigate();
   const regex = /^[가-힣a-zA-Z0-9]{2,8}$/;
   const { state } = useLocation();
 
@@ -55,9 +56,10 @@ export default function NickNameInput() {
         .then((data) => {
           if (data.isSuccess === true) {
             localStorage.clear();
-            localStorage.setItem('id', data.id);
-            localStorage.setItem('accessToken', data.accessToken);
-            localStorage.setItem('nickname', data.nickname);
+            localStorage.setItem('id', data.data.id);
+            localStorage.setItem('accessToken', data.data.accessToken);
+            localStorage.setItem('nickname', data.data.nickname);
+            navigate('/main');
           }
         });
     }

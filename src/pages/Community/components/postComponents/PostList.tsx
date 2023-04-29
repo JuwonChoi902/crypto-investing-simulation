@@ -31,17 +31,24 @@ interface SearchRes {
 type PostListProps = {
   setPosts: React.Dispatch<React.SetStateAction<PostDetail[] | undefined>>;
   setBoardNow: React.Dispatch<React.SetStateAction<number | null>>;
-  setProfileId: React.Dispatch<React.SetStateAction<number | undefined>>;
+  setProfileId: React.Dispatch<React.SetStateAction<number | null | undefined>>;
   setMenuNow: React.Dispatch<React.SetStateAction<number>>;
   setPostNumber: React.Dispatch<React.SetStateAction<number | undefined>>;
   setPage: React.Dispatch<React.SetStateAction<number>>;
   setSearchRes: React.Dispatch<React.SetStateAction<SearchRes>>;
+  setIsItSearching: React.Dispatch<React.SetStateAction<boolean>>;
   searchRes: SearchRes;
   isItSearching: boolean;
   boardNow: number | null;
   page: number;
   posts: PostDetail[] | undefined;
 };
+
+interface Headers {
+  'Content-Type': string;
+  Authorization?: string;
+  [key: string]: string | undefined;
+}
 
 const Category: string[] = ['전체글보기', '질문하기', '자랑하기', '공유하기', '잡담하기'];
 
@@ -58,14 +65,16 @@ export default function PostList({
   boardNow,
   page,
   searchRes,
+  setIsItSearching,
 }: PostListProps) {
   const [dropBox, setDropBox] = useState<number | null>(null);
-  const navigate = useNavigate();
-
   const { stringRes, filterRes, boardRes } = searchRes;
 
+  const navigate = useNavigate();
   const refs = useRef(Array.from({ length: 10 }, () => React.createRef<HTMLDivElement>()));
   const nickRefs = useRef(Array.from({ length: 10 }, () => React.createRef<HTMLDivElement>()));
+
+  const loginUserToken = localStorage.getItem('accessToken');
 
   useEffect(() => {
     const changeDropState = (e: CustomEvent<MouseEvent>) => {
@@ -118,47 +127,73 @@ export default function PostList({
   };
 
   useEffect(() => {
+    const headers: Headers = {
+      'Content-Type': 'application/json;charset=utf-8',
+    };
+
+    if (loginUserToken) {
+      headers.Authorization = `Bearer ${loginUserToken}`;
+    } else {
+      delete headers.Authorization;
+    }
+
     if (!isItSearching) {
       setSearchRes({ stringRes: '', filterRes: '', boardRes: boardNow });
       setPage(1);
       fetch(`http://pien.kr:4000/community?page=1&number=10&categoryId=${boardNow}`, {
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
-        },
+        headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
       })
         .then((res) => res.json())
         .then((data) => {
-          setPostNumber(data.number);
-          setPosts(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
+          if (data.isSuccess) {
+            setPostNumber(data.data.number);
+            setPosts(
+              data.data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
+            );
+          }
         });
     }
   }, [boardNow, isItSearching]);
 
   useEffect(() => {
+    const headers: Headers = {
+      'Content-Type': 'application/json;charset=utf-8',
+    };
+
+    if (loginUserToken) {
+      headers.Authorization = `Bearer ${loginUserToken}`;
+    } else {
+      delete headers.Authorization;
+    }
+
     if (isItSearching) {
       fetch(
         `http://pien.kr:4000/community?page=${page}&number=10&categoryId=${boardRes}&filter=${filterRes}&search=${stringRes}`,
         {
-          headers: {
-            'Content-Type': 'application/json;charset=utf-8',
-          },
+          headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
         },
       )
         .then((res) => res.json())
         .then((data) => {
-          setPostNumber(data.number);
-          setPosts(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
+          if (data.isSuccess) {
+            setPostNumber(data.data.number);
+            setPosts(
+              data.data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
+            );
+          }
         });
     } else {
       fetch(`http://pien.kr:4000/community?page=${page}&number=10&categoryId=${boardNow}`, {
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
-        },
+        headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
       })
         .then((res) => res.json())
         .then((data) => {
-          setPostNumber(data.number);
-          setPosts(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
+          if (data.isSuccess) {
+            setPostNumber(data.data.number);
+            setPosts(
+              data.data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
+            );
+          }
         });
     }
   }, [page]);
@@ -171,7 +206,14 @@ export default function PostList({
         posts?.map((el, i) => (
           <Post key={el.id}>
             <LabelAndTitle>
-              <Label onClick={() => setBoardNow(el.categoryId)}>{Category[el.categoryId].slice(0, 2)}</Label>
+              <Label
+                onClick={() => {
+                  setBoardNow(el.categoryId);
+                  setIsItSearching(false);
+                }}
+              >
+                {Category[el.categoryId].slice(0, 2)}
+              </Label>
               <Title
                 onClick={() =>
                   navigate(`/community/${el.id}`, {
@@ -195,14 +237,46 @@ export default function PostList({
                     <li
                       role='presentation'
                       onClick={() => {
-                        setProfileId(el.user.id);
-                        setMenuNow(2);
+                        if (!loginUserToken) {
+                          if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+                            navigate('/login');
+                          }
+                        } else {
+                          setProfileId(el.user.id);
+                          setMenuNow(2);
+                        }
                       }}
                     >
                       프로필보기
                     </li>
-                    <li>1:1 채팅</li>
-                    <li>쪽지보내기</li>
+                    <li
+                      role='presentation'
+                      onClick={() => {
+                        if (!loginUserToken) {
+                          if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+                            navigate('/login');
+                          }
+                        } else {
+                          alert('서비스 준비중입니다.');
+                        }
+                      }}
+                    >
+                      1:1 채팅
+                    </li>
+                    <li
+                      role='presentation'
+                      onClick={() => {
+                        if (!loginUserToken) {
+                          if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+                            navigate('/login');
+                          }
+                        } else {
+                          alert('서비스 준비중입니다.');
+                        }
+                      }}
+                    >
+                      쪽지보내기
+                    </li>
                   </ul>
                 </UserDropBox>
               ) : null}
@@ -234,7 +308,7 @@ const Post = styled.div`
 `;
 const LabelAndTitle = styled.div`
   display: flex;
-  width: 564px;
+  width: 565px;
   padding: 0px 18px 0px 12px;
 `;
 const Label = styled.div`
@@ -278,8 +352,8 @@ const IsItNew = styled.div`
 const User = styled.div`
   display: flex;
   align-items: center;
-  width: 30px;
-  margin-right: 74px;
+  width: 104px;
+  /* margin-right: 74px; */
   padding: 0px 7px;
   position: relative;
 

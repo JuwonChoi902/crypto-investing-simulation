@@ -32,6 +32,7 @@ type NavigateBoxProps = {
 export default function NavigateBox({ setPostNow, postData }: NavigateBoxProps) {
   const navigate = useNavigate();
   const params = useParams();
+  const loginUserId = Number(localStorage.getItem('id')) || null;
 
   const deletePost = () => {
     if (window.confirm('해당 게시글을 삭제하시겠습니까?') === true) {
@@ -46,31 +47,35 @@ export default function NavigateBox({ setPostNow, postData }: NavigateBoxProps) 
       })
         .then((res) => res.json())
         .then((data) => {
-          if (data.status === true) {
+          if (data.isSuccess === true) {
             setPostNow(null);
+          } else {
+            alert('해당 게시글의 삭제 권한이 없습니다.');
           }
         });
     }
     return null;
   };
-  console.log(postData);
 
   return (
     <OuterBox>
-      <NavigateLeft>
-        <EditPost
-          onClick={() =>
-            navigate(`/community/posting`, {
-              state: {
-                postData,
-              },
-            })
-          }
-        >
-          수정
-        </EditPost>
-        <DeletePost onClick={deletePost}>삭제</DeletePost>
-      </NavigateLeft>
+      {loginUserId === postData?.user.id ? (
+        <NavigateLeft>
+          <EditPost
+            onClick={() =>
+              navigate(`/community/posting`, {
+                state: {
+                  postData,
+                },
+              })
+            }
+          >
+            수정
+          </EditPost>
+          <DeletePost onClick={deletePost}>삭제</DeletePost>
+        </NavigateLeft>
+      ) : null}
+      <div />
       <NavigateRight>
         {!postData?.prevPostId ? null : (
           <Previous type='button' onClick={() => navigate(`/community/${postData.prevPostId}`)}>
@@ -99,6 +104,7 @@ export default function NavigateBox({ setPostNow, postData }: NavigateBoxProps) 
 const OuterBox = styled.div`
   display: flex;
   justify-content: space-between;
+  position: relative;
   padding-bottom: 14px;
 `;
 

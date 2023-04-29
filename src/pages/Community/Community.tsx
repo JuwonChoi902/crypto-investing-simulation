@@ -8,10 +8,12 @@ import BoardsBox from './components/otherComponents/BoardsBox';
 import MenuBox from './components/otherComponents/MenuBox';
 
 export default function Community() {
+  const loginUserId = Number(localStorage.getItem('id'));
+
   const [postNow, setPostNow] = useState<number | null>(null);
   const [menuNow, setMenuNow] = useState<number>(1);
   const [boardNow, setBoardNow] = useState<number | null>(0);
-  const [profileId, setProfileId] = useState<number | undefined>(1);
+  const [profileId, setProfileId] = useState<number | null | undefined>(loginUserId);
   const [isItSearching, setIsItSearching] = useState<boolean>(false);
 
   const params = useParams();
@@ -39,6 +41,7 @@ export default function Community() {
         setMenuNow={setMenuNow}
         setBoardNow={setBoardNow}
         setIsItSearching={setIsItSearching}
+        setProfileId={setProfileId}
       />
       <MainBox>
         <RankAndBoards>

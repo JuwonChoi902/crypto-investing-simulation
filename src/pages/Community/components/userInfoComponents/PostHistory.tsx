@@ -22,8 +22,14 @@ interface UserDetail {
 }
 
 type PostHistoryProps = {
-  profileId: number | undefined;
+  profileId: number | null | undefined;
 };
+
+interface Headers {
+  'Content-Type': string;
+  Authorization?: string;
+  [key: string]: string | undefined;
+}
 
 export default function PostHistory({ profileId }: PostHistoryProps) {
   const [checked, setChecked] = useState<number[]>([]);
@@ -32,6 +38,8 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
   const [page, setPage] = useState<number>(1);
 
   const navigate = useNavigate();
+  const loginUserToken = localStorage.getItem('accessToken');
+  const loginUserId = Number(localStorage.getItem('id'));
 
   const dateParsing = (date: string): [string, boolean] => {
     const theDate = new Date(date);
@@ -60,15 +68,30 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
   };
 
   useEffect(() => {
+    const headers: Headers = {
+      'Content-Type': 'application/json;charset=utf-8',
+    };
+
+    if (loginUserToken) {
+      headers.Authorization = `Bearer ${loginUserToken}`;
+    } else {
+      delete headers.Authorization;
+    }
+
     fetch(`http://pien.kr:4000/community/post/user/${profileId}?page=${page}&number=15`, {
-      headers: {
-        'Content-Type': 'application/json;charset=utf-8',
-      },
+      headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
     })
       .then((res) => res.json())
       .then((data) => {
-        setPostNumber(data.number);
-        setPostsData(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
+        if (data.isSuccess) {
+          setPostNumber(data.data.number);
+          setPostsData(
+            data.data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
+          );
+        } else {
+          alert(data.message);
+          navigate('/community/list');
+        }
       });
   }, [page]);
 
@@ -94,32 +117,48 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
   };
 
   const deleteChecked = () => {
-    if (window.confirm('선택된 게시글을 삭제하시겠습니까?') === true) {
+    const headers: Headers = {
+      'Content-Type': 'application/json;charset=utf-8',
+    };
+
+    if (loginUserToken) {
+      headers.Authorization = `Bearer ${loginUserToken}`;
+    } else {
+      delete headers.Authorization;
+    }
+
+    if (loginUserToken) {
+      if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+        navigate('/login');
+      }
+    } else if (window.confirm('선택된 게시글을 삭제하시겠습니까?') === true) {
       fetch(`http://pien.kr:4000/community/post`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
-        },
+        headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
         body: JSON.stringify({ postId: checked }),
       })
         .then((res) => res.json())
         .then((data) => {
-          if (data.status === true) {
+          if (data.isSuccess) {
             fetch(`http://pien.kr:4000/community/post/user/${profileId}?page=${page}&number=15`, {
-              headers: {
-                'Content-Type': 'application/json;charset=utf-8',
-              },
+              headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
             })
               .then((res) => res.json())
               .then((data) => {
-                setPostNumber(data.number);
-                setPostsData(
-                  data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
-                );
-                setChecked([]);
+                if (data.isSuccess) {
+                  setPostNumber(data.data.number);
+                  setPostsData(
+                    data.data.post.map((el: PostDetail) => ({
+                      ...el,
+                      created_at: dateParsing(el.created_at),
+                    })),
+                  );
+                  setChecked([]);
+                }
               });
+          } else {
+            alert(data.message);
+            navigate('/community/list');
           }
         });
     }
@@ -138,15 +177,17 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
           {postsData.map((post) => (
             <Post key={post.id}>
               <PostTitleBox>
-                <CheckBox>
-                  <input
-                    type='checkBox'
-                    id={String(post.id)}
-                    checked={checked.includes(post.id)}
-                    onChange={(event) => checkedChange(event)}
-                    readOnly
-                  />
-                </CheckBox>
+                {profileId === loginUserId ? (
+                  <CheckBox>
+                    <input
+                      type='checkBox'
+                      id={String(post.id)}
+                      checked={checked.includes(post.id)}
+                      onChange={(event) => checkedChange(event)}
+                      readOnly
+                    />
+                  </CheckBox>
+                ) : null}
                 <PostId>{post.id}</PostId>
                 <PostTitle
                   onClick={() => {
@@ -168,15 +209,29 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
       )}
       <ButtonAndPageBox>
         <SelectAll>
-          <CheckAll onChange={checkAll}>
-            <input type='checkBox' checked={checked.length === postsData.length} readOnly />
-            <div>전체선택</div>
-          </CheckAll>
+          {profileId === loginUserId && postNumber !== 0 ? (
+            <CheckAll onChange={checkAll}>
+              <input type='checkBox' checked={checked.length === postsData.length} readOnly />
+              <div>전체선택</div>
+            </CheckAll>
+          ) : null}
         </SelectAll>
         <Pages setPage={setPage} page={page} postNumber={postNumber} limit={15} />
         <DeleteAndWrite>
-          <DeleteBtn onClick={deleteChecked}>삭제</DeleteBtn>
-          <WriteBtn onClick={() => navigate('/community/posting')}>글쓰기</WriteBtn>
+          {profileId === loginUserId ? <DeleteBtn onClick={deleteChecked}>삭제</DeleteBtn> : null}
+          <WriteBtn
+            onClick={() => {
+              if (!loginUserToken) {
+                if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+                  navigate('/login');
+                }
+              } else {
+                navigate('/community/posting');
+              }
+            }}
+          >
+            글쓰기
+          </WriteBtn>
         </DeleteAndWrite>
       </ButtonAndPageBox>
     </OuterBox>

@@ -36,9 +36,20 @@ interface CommentDetail {
   user: UserDetail;
 }
 
-export default function CommentedPost() {
+interface Headers {
+  'Content-Type': string;
+  Authorization?: string;
+  [key: string]: string | undefined;
+}
+
+type CommentedPostProps = {
+  profileId: number | null | undefined;
+};
+
+export default function CommentedPost({ profileId }: CommentedPostProps) {
   const [postsData, setPostsData] = useState<[PostDetail, UserDetail][]>([]);
   const navigate = useNavigate();
+  const loginUserToken = localStorage.getItem('accessToken');
 
   const dateParsing = (date: string): [string, boolean] => {
     const theDate = new Date(date);
@@ -67,30 +78,44 @@ export default function CommentedPost() {
   };
 
   useEffect(() => {
-    fetch(`http://pien.kr:4000/community/reply/user/1?page=1&number=${1000}`, {
-      headers: {
-        'Content-Type': 'application/json;charset=utf-8',
-      },
+    const headers: Headers = {
+      'Content-Type': 'application/json;charset=utf-8',
+    };
+
+    if (loginUserToken) {
+      headers.Authorization = `Bearer ${loginUserToken}`;
+    } else {
+      delete headers.Authorization;
+    }
+
+    fetch(`http://pien.kr:4000/community/reply/user/${profileId}?page=1&number=${1000}`, {
+      headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
     })
       .then((res) => res.json())
       .then((data) => {
-        const temp: [PostDetail, UserDetail][] = [];
-        const filtered = data.replies.filter(
-          (reply: CommentDetail, index: number) =>
-            index === data.replies.findIndex((reply2: CommentDetail) => reply.post.id === reply2.post.id),
-        );
-        filtered.forEach((comments: CommentDetail): void => {
-          temp.push([comments.post, comments.user]);
-        });
-        setPostsData(
-          temp.map((el: [PostDetail, UserDetail]) => [
-            {
-              ...el[0],
-              created_at: dateParsing(el[0].created_at)[0],
-            },
-            el[1],
-          ]),
-        );
+        if (data.isSuccess) {
+          const temp: [PostDetail, UserDetail][] = [];
+          const filtered = data.data.replies.filter(
+            (reply: CommentDetail, index: number) =>
+              index ===
+              data.data.replies.findIndex((reply2: CommentDetail) => reply.post.id === reply2.post.id),
+          );
+          filtered.forEach((comments: CommentDetail): void => {
+            temp.push([comments.post, comments.user]);
+          });
+          setPostsData(
+            temp.map((el: [PostDetail, UserDetail]) => [
+              {
+                ...el[0],
+                created_at: dateParsing(el[0].created_at)[0],
+              },
+              el[1],
+            ]),
+          );
+        } else {
+          alert(data.message);
+          navigate('/community/list');
+        }
       });
   }, []);
 
@@ -129,7 +154,19 @@ export default function CommentedPost() {
       <ButtonBox>
         <SelectAll />
         <DeleteAndWrite>
-          <WriteBtn onClick={() => navigate('/community/posting')}>글쓰기</WriteBtn>
+          <WriteBtn
+            onClick={() => {
+              if (!loginUserToken) {
+                if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+                  navigate('/login');
+                }
+              } else {
+                navigate('/community/posting');
+              }
+            }}
+          >
+            글쓰기
+          </WriteBtn>
         </DeleteAndWrite>
       </ButtonBox>
     </OuterBox>

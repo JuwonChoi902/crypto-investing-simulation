@@ -4,6 +4,7 @@ import styled from 'styled-components';
 
 export default function Posting() {
   const location = useLocation().state;
+  const loginUserToken = localStorage.getItem('accessToken');
   window.scrollTo(0, 0);
 
   const editingData = location ? location.postData : null;
@@ -30,45 +31,49 @@ export default function Posting() {
   const navigate = useNavigate();
 
   const postThis = () => {
-    if (title.length < 2 || description.length < 2) {
-      alert('제목과 내용은 2글자 이상이어야 합니다.');
-    }
-    if (categoryId === 0) {
-      alert('라벨을 선택하세요');
-    }
-    if (title.length >= 2 && description.length >= 2 && categoryId !== 0) {
-      if (editingData) {
-        fetch(`http://pien.kr:4000/community/${editingData.id}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json;charset=utf-8',
-            Authorization:
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5NDYyMTQsImV4cCI6MTY3Mzk0ODAxNH0.h6ZtgWs1GUcCF5w2ceSXEAZiZqwe8zwplrG1sgmUuv4',
-          },
-          body: JSON.stringify(userInput),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.status === 'good') {
-              navigate(`/community/${editingData.id}`);
-            }
-          });
-      } else {
-        fetch(`http://pien.kr:4000/community/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json;charset=utf-8',
-            Authorization:
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5NDYyMTQsImV4cCI6MTY3Mzk0ODAxNH0.h6ZtgWs1GUcCF5w2ceSXEAZiZqwe8zwplrG1sgmUuv4',
-          },
-          body: JSON.stringify(userInput),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.status === 'good') {
-              navigate(`/community/${data.postId}`);
-            }
-          });
+    if (!loginUserToken) {
+      if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+        navigate('/login');
+      }
+    } else {
+      if (title.length < 2 || description.length < 2) {
+        alert('제목과 내용은 2글자 이상이어야 합니다.');
+      }
+      if (categoryId === 0) {
+        alert('라벨을 선택하세요');
+      }
+      if (title.length >= 2 && description.length >= 2 && categoryId !== 0) {
+        if (editingData) {
+          fetch(`http://pien.kr:4000/community/${editingData.id}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json;charset=utf-8',
+              Authorization: `Bearer ${loginUserToken}`,
+            },
+            body: JSON.stringify(userInput),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.isSuccess === true) {
+                navigate(`/community/${data.data.postId}`);
+              }
+            });
+        } else {
+          fetch(`http://pien.kr:4000/community/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json;charset=utf-8',
+              Authorization: `Bearer ${loginUserToken}`,
+            },
+            body: JSON.stringify(userInput),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.isSuccess === true) {
+                navigate(`/community/${data.data.postId}`);
+              }
+            });
+        }
       }
     }
   };
@@ -97,7 +102,7 @@ export default function Posting() {
               value={title}
             />
           </InputBox>
-          <select name='categoryId' onChange={makingUserInput} required value={categoryId}>
+          <CategorySelect name='categoryId' onChange={makingUserInput} required value={categoryId}>
             <option value={0} disabled>
               게시판을 선택하세요.
             </option>
@@ -105,7 +110,7 @@ export default function Posting() {
             <option value={2}>자랑</option>
             <option value={3}>공유</option>
             <option value={4}>잡담</option>
-          </select>
+          </CategorySelect>
         </TitleBox>
         <Description>
           <textarea
@@ -172,6 +177,18 @@ const TitleBox = styled.div<{ optionColor: number }>`
     &:focus {
       outline: none;
     }
+  }
+`;
+
+const CategorySelect = styled.select`
+  width: 218px;
+  height: 40px;
+  border: 1px solid #e5e5e5;
+  padding-left: 11px;
+  color: #8e8e8e;
+
+  &:focus {
+    outline: none;
   }
 `;
 

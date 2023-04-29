@@ -22,12 +22,24 @@ interface UserDetail {
   description: string | null;
 }
 
-export default function LikeHistory() {
+interface Headers {
+  'Content-Type': string;
+  Authorization?: string;
+  [key: string]: string | undefined;
+}
+
+type LikeHistoryProps = {
+  profileId: number | null | undefined;
+};
+
+export default function LikeHistory({ profileId }: LikeHistoryProps) {
   const [postsData, setPostsData] = useState<PostDetail[]>([]);
   const [postNumber, setPostNumber] = useState<number>(0);
   const [checked, setChecked] = useState<string[]>([]);
   const [page, setPage] = useState<number>(1);
   const navigate = useNavigate();
+  const loginUserToken = localStorage.getItem('accessToken');
+  const loginUserId = Number(localStorage.getItem('id'));
 
   const dateParsing = (date: string): [string, boolean] => {
     const theDate = new Date(date);
@@ -56,15 +68,30 @@ export default function LikeHistory() {
   };
 
   useEffect(() => {
-    fetch(`http://pien.kr:4000/community/like/user/1?page=${page}&number=15`, {
-      headers: {
-        'Content-Type': 'application/json;charset=utf-8',
-      },
+    const headers: Headers = {
+      'Content-Type': 'application/json;charset=utf-8',
+    };
+
+    if (loginUserToken) {
+      headers.Authorization = `Bearer ${loginUserToken}`;
+    } else {
+      delete headers.Authorization;
+    }
+
+    fetch(`http://pien.kr:4000/community/like/user/${profileId}?page=${page}&number=15`, {
+      headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
     })
       .then((res) => res.json())
       .then((data) => {
-        setPostNumber(data.number);
-        setPostsData(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
+        if (data.isSuccess) {
+          setPostNumber(data.data.number);
+          setPostsData(
+            data.data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
+          );
+        } else {
+          alert(data.message);
+          navigate('/community/list');
+        }
       });
   }, [page]);
 
@@ -102,15 +129,17 @@ export default function LikeHistory() {
           {postsData.map((post) => (
             <Post key={post.id}>
               <PostTitleBox>
-                <CheckBox>
-                  <input
-                    type='checkBox'
-                    id={String(post.id)}
-                    checked={checked.includes(String(post.id))}
-                    onChange={(event) => checkedChange(event)}
-                    readOnly
-                  />
-                </CheckBox>
+                {profileId === loginUserId ? (
+                  <CheckBox>
+                    <input
+                      type='checkBox'
+                      id={String(post.id)}
+                      checked={checked.includes(String(post.id))}
+                      onChange={(event) => checkedChange(event)}
+                      readOnly
+                    />
+                  </CheckBox>
+                ) : null}
                 <PostId>{post.id}</PostId>
                 <PostTitle
                   isPublished={post.isPublished}
@@ -132,15 +161,29 @@ export default function LikeHistory() {
       )}
       <ButtonBox>
         <SelectAll>
-          <CheckAll onClick={checkAll}>
-            <input type='checkBox' checked={checked.length === postsData.length} readOnly />
-            <div>전체선택</div>
-          </CheckAll>
+          {profileId === loginUserId && postNumber !== 0 ? (
+            <CheckAll onClick={checkAll}>
+              <input type='checkBox' checked={checked.length === postsData.length} readOnly />
+              <div>전체선택</div>
+            </CheckAll>
+          ) : null}
         </SelectAll>
         <Pages page={page} setPage={setPage} postNumber={postNumber} limit={15} />
         <DeleteAndWrite>
-          <DeleteBtn>삭제</DeleteBtn>
-          <WriteBtn onClick={() => navigate('/community/posting')}>글쓰기</WriteBtn>
+          {profileId === loginUserId ? <DeleteBtn>삭제</DeleteBtn> : null}
+          <WriteBtn
+            onClick={() => {
+              if (!loginUserToken) {
+                if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+                  navigate('/login');
+                }
+              } else {
+                navigate('/community/posting');
+              }
+            }}
+          >
+            글쓰기
+          </WriteBtn>
         </DeleteAndWrite>
       </ButtonBox>
     </OuterBox>

@@ -9,7 +9,7 @@ type PostProps = {
   setPostNow: React.Dispatch<React.SetStateAction<number | null>>;
   setBoardNow: React.Dispatch<React.SetStateAction<number | null>>;
   setMenuNow: React.Dispatch<React.SetStateAction<number>>;
-  setProfileId: React.Dispatch<React.SetStateAction<number | undefined>>;
+  setProfileId: React.Dispatch<React.SetStateAction<number | null | undefined>>;
 };
 
 export interface PostDetail {

@@ -7,7 +7,12 @@ const headerText: [string, number][] = [
   ['작성글', 10],
   ['팔로워', 3],
 ];
-export default function HeaderBox() {
+
+type HeaderBoxProps = {
+  profileId: number | null | undefined;
+};
+
+export default function HeaderBox({ profileId }: HeaderBoxProps) {
   return (
     <OuterBox>
       <ProfilePic>

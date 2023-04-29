@@ -9,15 +9,26 @@ type NavigateBox2Props = {
 
 export default function NavigateBox2({ setPostNow }: NavigateBox2Props) {
   const navigate = useNavigate();
+  const loginUserToken = localStorage.getItem('accessToken');
 
   return (
     <OuterBox>
       <NaviLeft>
-        <WritePost onClick={() => navigate('/community/posting')}>
+        <WritePost
+          onClick={() => {
+            if (!loginUserToken) {
+              if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+                navigate('/login');
+              }
+            } else {
+              navigate('/community/posting');
+            }
+          }}
+        >
           <img src={write} alt='write' />
           글쓰기
         </WritePost>
-        <ReplyThisPost>답글</ReplyThisPost>
+        <ReplyThisPost onClick={() => alert('서비스 준비중입니다.')}>답글</ReplyThisPost>
       </NaviLeft>
       <NaviRight>
         <ShowList

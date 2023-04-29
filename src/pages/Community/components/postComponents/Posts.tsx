@@ -31,7 +31,7 @@ type PostsProps = {
   setBoardNow: React.Dispatch<React.SetStateAction<number | null>>;
   isItSearching: boolean;
   setIsItSearching: React.Dispatch<React.SetStateAction<boolean>>;
-  setProfileId: React.Dispatch<React.SetStateAction<number | undefined>>;
+  setProfileId: React.Dispatch<React.SetStateAction<number | null | undefined>>;
   setMenuNow: React.Dispatch<React.SetStateAction<number>>;
 };
 
@@ -55,6 +55,7 @@ export default function Posts({
   });
 
   const navigate = useNavigate();
+  const loginUserToken = localStorage.getItem('accessToken');
 
   return (
     <OuterBox>
@@ -74,7 +75,18 @@ export default function Posts({
       )}
       <HowManyPosts>
         {postNumber}개의 글
-        <button type='button' onClick={() => navigate('/community/posting')}>
+        <button
+          type='button'
+          onClick={() => {
+            if (!loginUserToken) {
+              if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+                navigate('/login');
+              }
+            } else {
+              navigate('/community/posting');
+            }
+          }}
+        >
           글 작성하기
         </button>
       </HowManyPosts>
@@ -94,6 +106,7 @@ export default function Posts({
           setPostNumber={setPostNumber}
           setPage={setPage}
           setSearchRes={setSearchRes}
+          setIsItSearching={setIsItSearching}
           isItSearching={isItSearching}
           page={page}
           posts={posts}

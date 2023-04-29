@@ -56,6 +56,7 @@ export default function Nav() {
             onClick={() => {
               localStorage.clear();
               setUserId(false);
+              navigate('/main');
             }}
           >
             로그아웃

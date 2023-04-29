@@ -43,6 +43,12 @@ type SearchBarProps = {
   setSearchRes: React.Dispatch<React.SetStateAction<SearchRes>>;
 };
 
+interface Headers {
+  'Content-Type': string;
+  Authorization?: string;
+  [key: string]: string | undefined;
+}
+
 const boards: string[] = ['전체글', '질문하기', '자랑하기', '공유하기', '잡담하기'];
 const filters: string[][] = [
   ['제목 + 내용', 'contents'],
@@ -69,6 +75,7 @@ export default function SearchBarTop({
   const [searchDropIsOpen, setSearchDropIsOpen] = useState<boolean>(false);
   const [boardsDropIsOpen, setBoardDropIsOpen] = useState<boolean>(false);
   const { searchFilter, searchString, searchBoard } = searchInput;
+  const loginUserToken = localStorage.getItem('accessToken');
 
   const makeSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput({ ...searchInput, searchString: event.target.value });
@@ -157,6 +164,16 @@ export default function SearchBarTop({
   };
 
   const search = (e: React.MouseEvent | React.KeyboardEvent) => {
+    const headers: Headers = {
+      'Content-Type': 'application/json;charset=utf-8',
+    };
+
+    if (loginUserToken) {
+      headers.Authorization = `Bearer ${loginUserToken}`;
+    } else {
+      delete headers.Authorization;
+    }
+
     e.preventDefault();
     if (!searchString) {
       alert('검색어를 입력해주세요');
@@ -165,19 +182,22 @@ export default function SearchBarTop({
     fetch(
       `http://pien.kr:4000/community?page=1&number=10&categoryId=${searchBoard}&filter=${searchFilter}&search=${searchString}`,
       {
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
-        },
+        headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
       },
     )
       .then((res) => res.json())
       .then((data) => {
-        setBoardNow(searchBoard);
-        setSearchRes({ stringRes: searchString, filterRes: searchFilter, boardRes: searchBoard });
-        setPostNumber(data.number);
-        setPosts(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
+        if (data.isSuccess) {
+          setBoardNow(searchBoard);
+          setSearchRes({ stringRes: searchString, filterRes: searchFilter, boardRes: searchBoard });
+          setPostNumber(data.data.number);
+          setPosts(
+            data.data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
+          );
+        }
       });
   };
+  console.log(searchBoard, searchFilter, searchString);
 
   return (
     <OuterBox>

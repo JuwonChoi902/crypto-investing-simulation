@@ -8,7 +8,7 @@ type PostBoxProps = {
   setBoardNow: React.Dispatch<React.SetStateAction<number | null>>;
   setMenuNow: React.Dispatch<React.SetStateAction<number>>;
   setIsItSearching: React.Dispatch<React.SetStateAction<boolean>>;
-  setProfileId: React.Dispatch<React.SetStateAction<number | undefined>>;
+  setProfileId: React.Dispatch<React.SetStateAction<number | null | undefined>>;
   isItSearching: boolean;
   boardNow: number | null;
   postNow: number | null;

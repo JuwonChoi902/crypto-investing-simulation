@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import styled from 'styled-components';
 import user from '../../images/user.png';
 
@@ -30,9 +30,15 @@ type CommentsBoxProps = {
   setReplying: React.Dispatch<React.SetStateAction<number | null>>;
   commentCount: number;
   setCommentCount: React.Dispatch<React.SetStateAction<number>>;
-  setProfileId: React.Dispatch<React.SetStateAction<number | undefined>>;
+  setProfileId: React.Dispatch<React.SetStateAction<number | undefined | null>>;
   setMenuNow: React.Dispatch<React.SetStateAction<number>>;
 };
+
+interface Headers {
+  'Content-Type': string;
+  Authorization?: string;
+  [key: string]: string | undefined;
+}
 
 export default function CommentsBox({
   commentWindowRef,
@@ -49,16 +55,18 @@ export default function CommentsBox({
   const [editingComment, setEditingComment] = useState<string>();
   const [replyComment, setReplyComment] = useState<string>();
 
+  const loginUserNick = localStorage.getItem('nickname');
+  const loginUserToken = localStorage.getItem('accessToken');
+  const loginUserId = Number(localStorage.getItem('id'));
   const params = useParams();
+  const navigate = useNavigate();
 
   const dateParsing = (date: string): [string, boolean] => {
     const theDate = new Date(date);
     const todayDate = new Date();
     const oneDayPlus = new Date(date);
     oneDayPlus.setDate(oneDayPlus.getDate() + 1);
-
     const isItInOneDay = oneDayPlus >= todayDate;
-
     return [
       `${theDate.getFullYear()}.${String(theDate.getMonth() + 1).padStart(2, '0')}.${String(
         theDate.getDate(),
@@ -101,53 +109,60 @@ export default function CommentsBox({
   };
 
   useEffect(() => {
+    const headers: Headers = {
+      'Content-Type': 'application/json;charset=utf-8',
+    };
+
+    if (loginUserToken) {
+      headers.Authorization = `Bearer ${loginUserToken}`;
+    } else {
+      delete headers.Authorization;
+    }
+
     if (params.id !== 'list' && params.id !== 'favorite' && params.id !== 'profile') {
       fetch(`http://pien.kr:4000/community/reply/${params.id}`, {
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
-        },
+        headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
       })
         .then((res) => res.json())
         .then((data) => {
-          let count = 0;
-          const temp = [];
+          if (data.isSuccess) {
+            let count = 0;
+            const temp = [];
+            const obj: ObjectType = {};
 
-          const obj: ObjectType = {};
-
-          for (let i = 0; i < data.length; i += 1) {
-            if (!data[i].deleted_at) {
-              if (obj[data[i].replyId]) {
-                obj[data[i].replyId] += 1;
-              } else {
-                obj[data[i].replyId] = 1;
-              }
-            }
-          }
-
-          for (let i = 0; i < data.length; i += 1) {
-            if (data[i].replyId === data[i].id) {
-              if (data[i].deleted_at && obj[data[i].replyId]) {
-                temp.push(data[i]);
+            for (let i = 0; i < data.data.length; i += 1) {
+              if (!data.data[i].deleted_at) {
+                if (obj[data.data[i].replyId]) {
+                  obj[data.data[i].replyId] += 1;
+                } else {
+                  obj[data.data[i].replyId] = 1;
+                }
               }
             }
 
-            if (!data[i].deleted_at) {
-              count += 1;
-              temp.push(data[i]);
-            }
-          }
+            for (let i = 0; i < data.data.length; i += 1) {
+              if (data.data[i].replyId === data.data[i].id) {
+                if (data.data[i].deleted_at && obj[data.data[i].replyId]) {
+                  temp.push(data.data[i]);
+                }
+              }
 
-          setCommentCount(count);
-          setCommentData(
-            temp.map((el: CommentDetail) => ({
-              ...el,
-              created_at: dateParsing(el.created_at)[0],
-              isItNew: dateParsing(el.created_at)[1],
-              isThisOrigin: el.id === el.replyId,
-            })),
-          );
+              if (!data.data[i].deleted_at) {
+                count += 1;
+                temp.push(data.data[i]);
+              }
+            }
+
+            setCommentCount(count);
+            setCommentData(
+              temp.map((el: CommentDetail) => ({
+                ...el,
+                created_at: dateParsing(el.created_at)[0],
+                isItNew: dateParsing(el.created_at)[1],
+                isThisOrigin: el.id === el.replyId,
+              })),
+            );
+          }
         });
 
       setReplying(null);
@@ -162,50 +177,50 @@ export default function CommentsBox({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json;charset=utf-8',
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
+          Authorization: `Bearer ${loginUserToken}`,
         },
         body: JSON.stringify({ postId: params.id, comment: commentWrite }),
       })
         .then((res) => res.json())
         .then((data) => {
-          let count = 0;
-          const temp = [];
+          if (data.isSuccess) {
+            let count = 0;
+            const temp = [];
+            const obj: ObjectType = {};
 
-          const obj: ObjectType = {};
-
-          for (let i = 0; i < data.length; i += 1) {
-            if (!data[i].deleted_at) {
-              if (obj[data[i].replyId]) {
-                obj[data[i].replyId] += 1;
-              } else {
-                obj[data[i].replyId] = 1;
-              }
-            }
-          }
-
-          for (let i = 0; i < data.length; i += 1) {
-            if (data[i].replyId === data[i].id) {
-              if (data[i].deleted_at && obj[data[i].replyId]) {
-                temp.push(data[i]);
+            for (let i = 0; i < data.data.length; i += 1) {
+              if (!data.data[i].deleted_at) {
+                if (obj[data.data[i].replyId]) {
+                  obj[data.data[i].replyId] += 1;
+                } else {
+                  obj[data.data[i].replyId] = 1;
+                }
               }
             }
 
-            if (!data[i].deleted_at) {
-              count += 1;
-              temp.push(data[i]);
-            }
-          }
+            for (let i = 0; i < data.data.length; i += 1) {
+              if (data.data[i].replyId === data.data[i].id) {
+                if (data.data[i].deleted_at && obj[data.data[i].replyId]) {
+                  temp.push(data.data[i]);
+                }
+              }
 
-          setCommentCount(count);
-          setCommentData(
-            temp.map((el: CommentDetail) => ({
-              ...el,
-              created_at: dateParsing(el.created_at)[0],
-              isItNew: dateParsing(el.created_at)[1],
-              isThisOrigin: el.id === el.replyId,
-            })),
-          );
+              if (!data.data[i].deleted_at) {
+                count += 1;
+                temp.push(data.data[i]);
+              }
+            }
+
+            setCommentCount(count);
+            setCommentData(
+              temp.map((el: CommentDetail) => ({
+                ...el,
+                created_at: dateParsing(el.created_at)[0],
+                isItNew: dateParsing(el.created_at)[1],
+                isThisOrigin: el.id === el.replyId,
+              })),
+            );
+          }
         });
 
       setCommentWrite('');
@@ -220,14 +235,13 @@ export default function CommentsBox({
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json;charset=utf-8',
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
+          Authorization: `Bearer ${loginUserToken}`,
         },
         body: JSON.stringify({ comment: editingComment }),
       })
         .then((res) => res.json())
         .then((data) => {
-          if (data) {
+          if (data.isSuccess) {
             setEditing(null);
             fetch(`http://pien.kr:4000/community/reply/${params.id}`, {
               headers: {
@@ -238,44 +252,46 @@ export default function CommentsBox({
             })
               .then((res) => res.json())
               .then((data) => {
-                let count = 0;
-                const temp = [];
+                if (data.isSuccess) {
+                  let count = 0;
+                  const temp = [];
+                  const obj: ObjectType = {};
 
-                const obj: ObjectType = {};
-
-                for (let i = 0; i < data.length; i += 1) {
-                  if (!data[i].deleted_at) {
-                    if (obj[data[i].replyId]) {
-                      obj[data[i].replyId] += 1;
-                    } else {
-                      obj[data[i].replyId] = 1;
-                    }
-                  }
-                }
-
-                for (let i = 0; i < data.length; i += 1) {
-                  if (data[i].replyId === data[i].id) {
-                    if (data[i].deleted_at && obj[data[i].replyId]) {
-                      temp.push(data[i]);
+                  for (let i = 0; i < data.data.length; i += 1) {
+                    if (!data.data[i].deleted_at) {
+                      if (obj[data.data[i].replyId]) {
+                        obj[data.data[i].replyId] += 1;
+                      } else {
+                        obj[data.data[i].replyId] = 1;
+                      }
                     }
                   }
 
-                  if (!data[i].deleted_at) {
-                    count += 1;
-                    temp.push(data[i]);
+                  for (let i = 0; i < data.data.length; i += 1) {
+                    if (data.data[i].replyId === data.data[i].id) {
+                      if (data.data[i].deleted_at && obj[data.data[i].replyId]) {
+                        temp.push(data.data[i]);
+                      }
+                    }
+
+                    if (!data.data[i].deleted_at) {
+                      count += 1;
+                      temp.push(data.data[i]);
+                    }
                   }
+
+                  setCommentCount(count);
+                  setCommentData(
+                    temp.map((el: CommentDetail) => ({
+                      ...el,
+                      created_at: dateParsing(el.created_at)[0],
+                      isItNew: dateParsing(el.created_at)[1],
+                      isThisOrigin: el.id === el.replyId,
+                    })),
+                  );
                 }
-                setCommentCount(count);
-                setCommentData(
-                  temp.map((el: CommentDetail) => ({
-                    ...el,
-                    created_at: dateParsing(el.created_at)[0],
-                    isItNew: dateParsing(el.created_at)[1],
-                    isThisOrigin: el.id === el.replyId,
-                  })),
-                );
               });
-          }
+          } else alert(data.message);
         });
     }
   };
@@ -288,51 +304,52 @@ export default function CommentsBox({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json;charset=utf-8',
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
+          Authorization: `Bearer ${loginUserToken}`,
         },
         body: JSON.stringify({ postId: params.id, comment: replyComment, replyId }),
       })
         .then((res) => res.json())
         .then((data) => {
-          let count = 0;
-          const temp = [];
+          if (data.isSuccess) {
+            let count = 0;
+            const temp = [];
+            const obj: ObjectType = {};
 
-          const obj: ObjectType = {};
-
-          for (let i = 0; i < data.length; i += 1) {
-            if (!data[i].deleted_at) {
-              if (obj[data[i].replyId]) {
-                obj[data[i].replyId] += 1;
-              } else {
-                obj[data[i].replyId] = 1;
-              }
-            }
-          }
-
-          for (let i = 0; i < data.length; i += 1) {
-            if (data[i].replyId === data[i].id) {
-              if (data[i].deleted_at && obj[data[i].replyId]) {
-                temp.push(data[i]);
+            for (let i = 0; i < data.data.length; i += 1) {
+              if (!data.data[i].deleted_at) {
+                if (obj[data.data[i].replyId]) {
+                  obj[data.data[i].replyId] += 1;
+                } else {
+                  obj[data.data[i].replyId] = 1;
+                }
               }
             }
 
-            if (!data[i].deleted_at) {
-              count += 1;
-              temp.push(data[i]);
-            }
-          }
+            for (let i = 0; i < data.data.length; i += 1) {
+              if (data.data[i].replyId === data.data[i].id) {
+                if (data.data[i].deleted_at && obj[data.data[i].replyId]) {
+                  temp.push(data.data[i]);
+                }
+              }
 
-          setCommentCount(count);
-          setCommentData(
-            temp.map((el: CommentDetail) => ({
-              ...el,
-              created_at: dateParsing(el.created_at)[0],
-              isItNew: dateParsing(el.created_at)[1],
-              isThisOrigin: el.id === el.replyId,
-            })),
-          );
-          setReplying(null);
+              if (!data.data[i].deleted_at) {
+                count += 1;
+                temp.push(data.data[i]);
+              }
+            }
+
+            setCommentCount(count);
+            setCommentData(
+              temp.map((el: CommentDetail) => ({
+                ...el,
+                created_at: dateParsing(el.created_at)[0],
+                isItNew: dateParsing(el.created_at)[1],
+                isThisOrigin: el.id === el.replyId,
+              })),
+            );
+
+            setReplying(null);
+          }
         });
 
       setReplyComment('');
@@ -340,67 +357,73 @@ export default function CommentsBox({
   };
 
   const deleteComment = (id: number) => {
+    const headers: Headers = {
+      'Content-Type': 'application/json;charset=utf-8',
+    };
+
+    if (loginUserToken) {
+      headers.Authorization = `Bearer ${loginUserToken}`;
+    } else {
+      delete headers.Authorization;
+    }
+
     if (window.confirm('댓글을 삭제하시겠습니까?') === true) {
       fetch(`http://pien.kr:4000/community/reply`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json;charset=utf-8',
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
+          Authorization: `Bearer ${loginUserToken}`,
         },
         body: JSON.stringify({ replyId: [id] }),
       })
         .then((res) => res.json())
         .then((data) => {
-          if (data.status === true) {
+          if (data.isSuccess) {
             fetch(`http://pien.kr:4000/community/reply/${params.id}`, {
-              headers: {
-                'Content-Type': 'application/json;charset=utf-8',
-                Authorization:
-                  'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
-              },
+              headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
             })
               .then((res) => res.json())
               .then((data) => {
-                let count = 0;
-                const temp = [];
+                if (data.isSuccess) {
+                  let count = 0;
+                  const temp = [];
+                  const obj: ObjectType = {};
 
-                const obj: ObjectType = {};
-
-                for (let i = 0; i < data.length; i += 1) {
-                  if (!data[i].deleted_at) {
-                    if (obj[data[i].replyId]) {
-                      obj[data[i].replyId] += 1;
-                    } else {
-                      obj[data[i].replyId] = 1;
-                    }
-                  }
-                }
-
-                for (let i = 0; i < data.length; i += 1) {
-                  if (data[i].replyId === data[i].id) {
-                    if (data[i].deleted_at && obj[data[i].replyId]) {
-                      temp.push(data[i]);
+                  for (let i = 0; i < data.data.length; i += 1) {
+                    if (!data.data[i].deleted_at) {
+                      if (obj[data.data[i].replyId]) {
+                        obj[data.data[i].replyId] += 1;
+                      } else {
+                        obj[data.data[i].replyId] = 1;
+                      }
                     }
                   }
 
-                  if (!data[i].deleted_at) {
-                    count += 1;
-                    temp.push(data[i]);
-                  }
-                }
+                  for (let i = 0; i < data.data.length; i += 1) {
+                    if (data.data[i].replyId === data.data[i].id) {
+                      if (data.data[i].deleted_at && obj[data.data[i].replyId]) {
+                        temp.push(data.data[i]);
+                      }
+                    }
 
-                setCommentCount(count);
-                setCommentData(
-                  temp.map((el: CommentDetail) => ({
-                    ...el,
-                    created_at: dateParsing(el.created_at)[0],
-                    isItNew: dateParsing(el.created_at)[1],
-                    isThisOrigin: el.id === el.replyId,
-                  })),
-                );
+                    if (!data.data[i].deleted_at) {
+                      count += 1;
+                      temp.push(data.data[i]);
+                    }
+                  }
+
+                  setCommentCount(count);
+                  setCommentData(
+                    temp.map((el: CommentDetail) => ({
+                      ...el,
+                      created_at: dateParsing(el.created_at)[0],
+                      isItNew: dateParsing(el.created_at)[1],
+                      isThisOrigin: el.id === el.replyId,
+                    })),
+                  );
+                }
               });
-          }
+          } else alert(data.message);
         });
     }
     return null;
@@ -423,7 +446,7 @@ export default function CommentsBox({
               <ReplyToReplyBox id={String(el.id)} isLastOne={i === commentData.length - 1}>
                 <RTRPosting>
                   <NickAndLength>
-                    <RTRNick>피엔</RTRNick>
+                    <RTRNick>{loginUserNick}</RTRNick>
                     {editingComment ? <RTRLength>{editingComment.length}/3000</RTRLength> : null}
                   </NickAndLength>
                   <RTRDescription
@@ -445,7 +468,15 @@ export default function CommentsBox({
                       </CancleWriting>
                       <PostThisComment
                         isThisValid={editingComment?.length}
-                        onClick={() => editComment(el.id)}
+                        onClick={() => {
+                          if (!loginUserToken) {
+                            if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+                              navigate('/login');
+                            }
+                          } else {
+                            editComment(el.id);
+                          }
+                        }}
                       >
                         수정
                       </PostThisComment>
@@ -470,34 +501,42 @@ export default function CommentsBox({
                     <span>{el.created_at}</span>
                     <ReplyToReply
                       onClick={() => {
-                        setEditing(null);
-                        setReplying(el.id);
-                        setReplyComment('');
+                        if (!loginUserToken) {
+                          if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+                            navigate('/login');
+                          }
+                        } else {
+                          setEditing(null);
+                          setReplying(el.id);
+                          setReplyComment('');
+                        }
                       }}
                     >
                       답글쓰기
                     </ReplyToReply>
                   </CommentCreatedAt>
                 </CommentTextBox>
-                <DeleteOrEdit>
-                  <Edit
-                    onClick={() => {
-                      setReplying(null);
-                      setEditing(el.id);
-                      setEditingComment(el.comment);
-                    }}
-                  >
-                    수정
-                  </Edit>
-                  <Delete onClick={() => deleteComment(el.id)}>삭제</Delete>
-                </DeleteOrEdit>
+                {loginUserId === el.user.id ? (
+                  <DeleteOrEdit>
+                    <Edit
+                      onClick={() => {
+                        setReplying(null);
+                        setEditing(el.id);
+                        setEditingComment(el.comment);
+                      }}
+                    >
+                      수정
+                    </Edit>
+                    <Delete onClick={() => deleteComment(el.id)}>삭제</Delete>
+                  </DeleteOrEdit>
+                ) : null}
               </Comment>
             )}
             {replying === el.id ? (
               <ReplyToReplyBox id={String(el.id)} isLastOne={i === commentData.length - 1}>
                 <RTRPosting>
                   <NickAndLength>
-                    <RTRNick>피엔</RTRNick>
+                    <RTRNick>{loginUserNick}</RTRNick>
                     {replyComment ? <RTRLength>{replyComment.length}/3000</RTRLength> : null}
                   </NickAndLength>
 
@@ -520,7 +559,15 @@ export default function CommentsBox({
                       </CancleWriting>
                       <PostThisComment
                         isThisValid={replyComment?.length}
-                        onClick={() => makeReplyComment(el.replyId)}
+                        onClick={() => {
+                          if (!loginUserToken) {
+                            if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+                              navigate('/login');
+                            }
+                          } else {
+                            makeReplyComment(el.replyId);
+                          }
+                        }}
                       >
                         등록
                       </PostThisComment>
@@ -534,18 +581,30 @@ export default function CommentsBox({
       </Comments>
       <CommentPosting>
         <NickAndLength>
-          <CommentPostingNick>피엔</CommentPostingNick>
+          <CommentPostingNick>{loginUserNick}</CommentPostingNick>
           {commentWrite ? <RTRLength>{commentWrite.length}/3000</RTRLength> : null}
         </NickAndLength>
         <CommentPostingDesc
           ref={textarea}
-          placeholder='댓글을 남겨보세요'
+          placeholder={loginUserToken ? '댓글을 남겨보세요' : '로그인 후 이용 가능합니다'}
           onChange={TextAreaHandler}
           value={commentWrite}
+          disabled={!loginUserToken}
         />
         <CommentPostingBtns>
           <ButtonsLeft />
-          <PostThisComment onClick={makeComment} isThisValid={commentWrite?.length}>
+          <PostThisComment
+            onClick={() => {
+              if (!loginUserToken) {
+                if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+                  navigate('/login');
+                }
+              } else {
+                makeComment();
+              }
+            }}
+            isThisValid={commentWrite?.length}
+          >
             등록
           </PostThisComment>
         </CommentPostingBtns>

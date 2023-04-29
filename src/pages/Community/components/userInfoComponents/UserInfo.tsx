@@ -10,12 +10,13 @@ import IncomeInfo from './IncomeInfo';
 import DeletedHistory from './DeletedHistory';
 
 type UserInfoProps = {
-  profileId: number | undefined;
+  profileId: number | null | undefined;
 };
 
 export default function UserInfo({ profileId }: UserInfoProps) {
   const [category, setCategory] = useState<string>('0');
   const navigate = useNavigate();
+  const loginUserId = Number(localStorage.getItem('id'));
 
   const categories: string[] = ['작성글', '작성댓글', '댓글단 글', '좋아요한 글', '수익률'];
   useEffect(() => {
@@ -24,27 +25,37 @@ export default function UserInfo({ profileId }: UserInfoProps) {
 
   return (
     <OuterBox>
-      <HeaderBox />
+      <HeaderBox profileId={profileId} />
       <Main>
         <CategoryBox>
           <CategoryLeft>
             {categories.map((c, i) => (
-              <Category id={String(i)} category={category} onClick={() => setCategory(String(i))} key={c}>
+              <Category
+                id={String(i)}
+                category={category}
+                onClick={() => {
+                  if (i === 4) alert('서비스 준비중입니다.');
+                  else setCategory(String(i));
+                }}
+                key={c}
+              >
                 {c}
               </Category>
             ))}
           </CategoryLeft>
           <CategoryRight>
-            <Category id={String(5)} category={category} onClick={() => setCategory(String(5))}>
-              삭제한 게시글
-            </Category>
+            {profileId === loginUserId ? (
+              <Category id={String(5)} category={category} onClick={() => setCategory(String(5))}>
+                삭제한 게시글
+              </Category>
+            ) : null}
           </CategoryRight>
         </CategoryBox>
         <ListBox>
           {category === '0' ? <PostHistory profileId={profileId} /> : null}
-          {category === '1' ? <CommentHistory /> : null}
-          {category === '2' ? <CommentedPost /> : null}
-          {category === '3' ? <LikeHistory /> : null}
+          {category === '1' ? <CommentHistory profileId={profileId} /> : null}
+          {category === '2' ? <CommentedPost profileId={profileId} /> : null}
+          {category === '3' ? <LikeHistory profileId={profileId} /> : null}
           {category === '4' ? <IncomeInfo /> : null}
           {category === '5' ? <DeletedHistory /> : null}
         </ListBox>

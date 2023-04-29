@@ -32,7 +32,7 @@ export default function Pages({ page, setPage, postNumber, limit }: PagesProps) 
   const pages = pagination(postNumber);
   const pageIndex = page % 3 ? Math.floor(page / 3) : page / 3 - 1;
 
-  return (
+  return postNumber === 0 ? null : (
     <OuterBox>
       <PageLeft pageIndex={pageIndex} onClick={() => setPage((pageIndex - 1) * 3 + 1)}>
         <img src={pageLeft} alt='pageLeft' />

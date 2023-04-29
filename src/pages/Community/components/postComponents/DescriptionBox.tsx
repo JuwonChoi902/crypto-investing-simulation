@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import styled from 'styled-components';
 import user from '../../images/user.png';
 import likeFill from '../../images/likeFill.png';
@@ -37,8 +37,14 @@ type DescriptionBoxProps = {
   setBoardNow: React.Dispatch<React.SetStateAction<number | null>>;
   setReplying: React.Dispatch<React.SetStateAction<number | null>>;
   setMenuNow: React.Dispatch<React.SetStateAction<number>>;
-  setProfileId: React.Dispatch<React.SetStateAction<number | undefined>>;
+  setProfileId: React.Dispatch<React.SetStateAction<number | null | undefined>>;
 };
+
+interface Headers {
+  'Content-Type': string;
+  Authorization?: string;
+  [key: string]: string | undefined;
+}
 
 const PostCategory: string[] = ['전체글보기', '질문하기', '자랑하기', '공유하기', '잡담하기'];
 
@@ -60,6 +66,8 @@ export default function DescriptionBox({
   const commentWindowY = commentWindowRef.current?.offsetTop;
   const dropBoxRef = useRef<HTMLDivElement>(null);
   const nickBoxRef = useRef<HTMLDivElement>(null);
+  const loginUserToken = localStorage.getItem('accessToken');
+  const navigate = useNavigate();
 
   const dateParsing = (date: string): [string, boolean] => {
     const theDate = new Date(date);
@@ -80,19 +88,27 @@ export default function DescriptionBox({
   };
 
   useEffect(() => {
+    const headers: Headers = {
+      'Content-Type': 'application/json;charset=utf-8',
+    };
+
+    if (loginUserToken) {
+      headers.Authorization = `Bearer ${loginUserToken}`;
+    } else {
+      delete headers.Authorization;
+    }
+
     if (params.id !== 'list' && params.id !== 'favorite' && params.id !== 'profile') {
       setPostNow(Number(params.id));
 
       fetch(`http://pien.kr:4000/community/${params.id}`, {
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
-        },
+        headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
       })
         .then((res) => res.json())
         .then((data) => {
-          setPostData({ ...data, created_at: dateParsing(data.created_at)[0] });
+          if (data.isSuccess) {
+            setPostData({ ...data.data, created_at: dateParsing(data.data.created_at)[0] });
+          }
         });
 
       setReplying(null);
@@ -100,63 +116,83 @@ export default function DescriptionBox({
   }, [params.id]);
 
   const likeThisPost = () => {
-    if (postData?.isLike !== true) {
+    if (!loginUserToken) {
+      if (window.confirm('로그인 후 가능합니다. 로그인을 하시겠습니까?') === true) {
+        navigate('/login');
+      }
+    } else if (postData?.isLike !== true) {
       fetch(`http://pien.kr:4000/community/like/${params.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json;charset=utf-8',
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
+          Authorization: `Bearer ${loginUserToken}`,
         },
         body: JSON.stringify({ isLike: true }),
       })
         .then((res) => res.json())
         .then((data) => {
-          setPostData({ ...data, created_at: dateParsing(data.created_at)[0] });
+          if (data.isSuccess) {
+            setPostData({ ...data.data, created_at: dateParsing(data.data.created_at)[0] });
+          } else {
+            alert(data.message);
+          }
         });
     } else {
       fetch(`http://pien.kr:4000/community/like/${params.id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json;charset=utf-8',
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
+          Authorization: `Bearer ${loginUserToken}`,
         },
       })
         .then((res) => res.json())
         .then((data) => {
-          setPostData({ ...data, created_at: dateParsing(data.created_at)[0] });
+          if (data.isSuccess) {
+            setPostData({ ...data.data, created_at: dateParsing(data.data.created_at)[0] });
+          } else {
+            alert(data.message);
+          }
         });
     }
   };
 
   const dislikeThisPost = () => {
-    if (postData?.isLike !== false) {
+    if (!loginUserToken) {
+      if (window.confirm('로그인 후 가능합니다. 로그인을 하시겠습니까?') === true) {
+        navigate('/login');
+      }
+    } else if (postData?.isLike !== false) {
       fetch(`http://pien.kr:4000/community/like/${params.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json;charset=utf-8',
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
+          Authorization: `Bearer ${loginUserToken}`,
         },
         body: JSON.stringify({ isLike: false }),
       })
         .then((res) => res.json())
         .then((data) => {
-          setPostData({ ...data, created_at: dateParsing(data.created_at)[0] });
+          if (data.isSuccess) {
+            setPostData({ ...data.data, created_at: dateParsing(data.data.created_at)[0] });
+          } else {
+            alert(data.message);
+          }
         });
     } else {
       fetch(`http://pien.kr:4000/community/like/${params.id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json;charset=utf-8',
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
+          Authorization: `Bearer ${loginUserToken}`,
         },
       })
         .then((res) => res.json())
         .then((data) => {
-          setPostData({ ...data, created_at: dateParsing(data.created_at)[0] });
+          if (data.isSuccess) {
+            setPostData({ ...data.data, created_at: dateParsing(data.data.created_at)[0] });
+          } else {
+            alert(data.message);
+          }
         });
     }
   };
@@ -205,7 +241,7 @@ export default function DescriptionBox({
         <Board
           onClick={() => {
             if (postData) {
-              setPostNow(null);
+              navigate('/community/list');
               setBoardNow(postData.categoryId);
             }
           }}
@@ -217,9 +253,16 @@ export default function DescriptionBox({
       <UserInfo>
         <UserDesc>
           <UserImg
+            role='presentation'
             onClick={() => {
-              setProfileId(postData?.user?.id);
-              setMenuNow(2);
+              if (!loginUserToken) {
+                if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+                  navigate('/login');
+                }
+              } else {
+                setProfileId(postData?.user.id);
+                setMenuNow(2);
+              }
             }}
           >
             <img src={user} alt='user' />
@@ -234,14 +277,46 @@ export default function DescriptionBox({
                       <li
                         role='presentation'
                         onClick={() => {
-                          setProfileId(postData?.user.id);
-                          setMenuNow(2);
+                          if (!loginUserToken) {
+                            if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+                              navigate('/login');
+                            }
+                          } else {
+                            setProfileId(postData?.user.id);
+                            setMenuNow(2);
+                          }
                         }}
                       >
                         프로필보기
                       </li>
-                      <li>1:1 채팅</li>
-                      <li>쪽지보내기</li>
+                      <li
+                        role='presentation'
+                        onClick={() => {
+                          if (!loginUserToken) {
+                            if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+                              navigate('/login');
+                            }
+                          } else {
+                            alert('서비스 준비중입니다.');
+                          }
+                        }}
+                      >
+                        1:1 채팅
+                      </li>
+                      <li
+                        role='presentation'
+                        onClick={() => {
+                          if (!loginUserToken) {
+                            if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+                              navigate('/login');
+                            }
+                          } else {
+                            alert('서비스 준비중입니다.');
+                          }
+                        }}
+                      >
+                        쪽지보내기
+                      </li>
                     </ul>
                   </UserDropBox>
                 ) : null}
@@ -274,8 +349,14 @@ export default function DescriptionBox({
       <Description>{postData?.description}</Description>
       <ShowMore
         onClick={() => {
-          setProfileId(postData?.user?.id);
-          setMenuNow(2);
+          if (!loginUserToken) {
+            if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+              navigate('/login');
+            }
+          } else {
+            setProfileId(postData?.user.id);
+            setMenuNow(2);
+          }
         }}
       >
         <UserImg>
@@ -482,6 +563,7 @@ const Description = styled.div`
 `;
 const ShowMore = styled.div`
   display: flex;
+  width: 205px;
   align-items: center;
   height: 36px;
   font-size: 13px;

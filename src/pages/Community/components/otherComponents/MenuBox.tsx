@@ -7,11 +7,20 @@ type MenuBoxProps = {
   setMenuNow: React.Dispatch<React.SetStateAction<number>>;
   setBoardNow: React.Dispatch<React.SetStateAction<number | null>>;
   setIsItSearching: React.Dispatch<React.SetStateAction<boolean>>;
+  setProfileId: React.Dispatch<React.SetStateAction<number | null | undefined>>;
   menuNow: number;
 };
 
-export default function MenuBox({ setMenuNow, setBoardNow, menuNow, setIsItSearching }: MenuBoxProps) {
+export default function MenuBox({
+  setMenuNow,
+  setBoardNow,
+  menuNow,
+  setIsItSearching,
+  setProfileId,
+}: MenuBoxProps) {
   const navigate = useNavigate();
+  const loginUserId = Number(localStorage.getItem('id'));
+  const loginUserToken = localStorage.getItem('accessToken');
 
   return (
     <OuterBox>
@@ -43,10 +52,17 @@ export default function MenuBox({ setMenuNow, setBoardNow, menuNow, setIsItSearc
         id={String(2)}
         menuNow={menuNow}
         onClick={() => {
-          setMenuNow(2);
-          setBoardNow(null);
-          setIsItSearching(false);
-          navigate(`/community/profile`);
+          if (!loginUserToken) {
+            if (window.confirm('로그인 후 이용가능합니다. 로그인하시겠습니까?') === true) {
+              navigate('/login');
+            }
+          } else {
+            setMenuNow(2);
+            setBoardNow(null);
+            setIsItSearching(false);
+            setProfileId(loginUserId);
+            navigate(`/community/profile`);
+          }
         }}
       >
         유저페이지

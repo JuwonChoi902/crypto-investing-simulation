@@ -43,6 +43,12 @@ type SearchBarProps = {
   boardNow: number | null;
 };
 
+interface Headers {
+  'Content-Type': string;
+  Authorization?: string;
+  [key: string]: string | undefined;
+}
+
 const filters: string[][] = [
   ['제목 + 내용', 'contents'],
   ['작성자', 'nickname'],
@@ -65,6 +71,7 @@ export default function SearchBarUnder({
 
   const { searchFilter, searchString } = searchInput;
   const searchDropRef = useRef<HTMLDivElement>(null);
+  const loginUserToken = localStorage.getItem('accessToken');
 
   useEffect(() => {
     if (searchFilter === 'content') setSearchFilterNow('제목 + 내용');
@@ -120,8 +127,16 @@ export default function SearchBarUnder({
     };
   }, [searchDropIsOpen]);
 
-  const search = (e: React.MouseEvent | React.KeyboardEvent) => {
-    e.preventDefault();
+  const search = () => {
+    const headers: Headers = {
+      'Content-Type': 'application/json;charset=utf-8',
+    };
+
+    if (loginUserToken) {
+      headers.Authorization = `Bearer ${loginUserToken}`;
+    } else {
+      delete headers.Authorization;
+    }
 
     if (!searchString) {
       alert('검색어를 입력해주세요');
@@ -133,16 +148,18 @@ export default function SearchBarUnder({
     fetch(
       `http://pien.kr:4000/community?page=1&number=10&categoryId=${boardNow}&filter=${searchFilter}&search=${searchString}`,
       {
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
-        },
+        headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
       },
     )
       .then((res) => res.json())
       .then((data) => {
-        setPostNumber(data.number);
-        setPosts(data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })));
-        setIsItSearching(true);
+        if (data.isSuccess) {
+          setPostNumber(data.data.number);
+          setPosts(
+            data.data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
+          );
+          setIsItSearching(true);
+        }
       });
   };
 
@@ -171,10 +188,10 @@ export default function SearchBarUnder({
         <SearchInput
           placeholder='검색어를 입력해주세요'
           onChange={makeSearchInput}
-          onKeyDown={(e) => (e.key === 'Enter' ? search(e) : null)}
+          onKeyDown={(e) => (e.key === 'Enter' ? search() : null)}
         />
       </SearchInputBox>
-      <SearchBtn type='button' onClick={(e) => search(e)}>
+      <SearchBtn type='button' onClick={() => search()}>
         검색
       </SearchBtn>
     </OuterBox>

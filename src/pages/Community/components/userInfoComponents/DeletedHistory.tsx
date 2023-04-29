@@ -26,11 +26,18 @@ interface UserDetail {
   description: string | null;
 }
 
+interface Headers {
+  'Content-Type': string;
+  Authorization?: string;
+  [key: string]: string | undefined;
+}
+
 export default function CommentedPost() {
   const [postsData, setPostsData] = useState<PostDetail[]>([]);
   const [page, setPage] = useState<number>(1);
 
   const navigate = useNavigate();
+  const loginUserToken = localStorage.getItem('accessToken');
 
   const dateParsing = (date: string): [string, boolean] => {
     const theDate = new Date(date);
@@ -59,16 +66,26 @@ export default function CommentedPost() {
   };
 
   useEffect(() => {
+    const headers: Headers = {
+      'Content-Type': 'application/json;charset=utf-8',
+    };
+
+    if (loginUserToken) {
+      headers.Authorization = `Bearer ${loginUserToken}`;
+    } else {
+      delete headers.Authorization;
+    }
+
     fetch(`http://pien.kr:4000/user/posts`, {
-      headers: {
-        'Content-Type': 'application/json;charset=utf-8',
-        Authorization:
-          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
-      },
+      headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
     })
       .then((res) => res.json())
       .then((data) => {
-        setPostsData(data.map((post: PostDetail) => ({ ...post, created_at: dateParsing(post.created_at) })));
+        if (data.isSuccess) {
+          setPostsData(
+            data.data.map((post: PostDetail) => ({ ...post, created_at: dateParsing(post.created_at) })),
+          );
+        }
       });
   }, []);
 
@@ -101,12 +118,6 @@ export default function CommentedPost() {
       ) : (
         <EmptyList>삭제한 게시글이 없습니다.</EmptyList>
       )}
-      {/* <ButtonBox>
-        <SelectAll />
-        <DeleteAndWrite>
-          <WriteBtn onClick={() => navigate('/community/posting')}>글쓰기</WriteBtn>
-        </DeleteAndWrite>
-      </ButtonBox> */}
     </OuterBox>
   );
 }
@@ -227,24 +238,4 @@ const ButtonBox = styled.div`
   justify-content: space-between;
   height: 34px;
   margin: 10px 0px 34px 0px;
-`;
-const SelectAll = styled.div`
-  ${(props) => props.theme.variables.flex()}
-`;
-
-const DeleteAndWrite = styled.div`
-  display: flex;
-`;
-
-const WriteBtn = styled.button`
-  border: none;
-  background-color: #eff0f2;
-  margin-left: 10px;
-  border-radius: 7px;
-  font-size: 12px;
-  font-weight: bold;
-  padding: 0 14px;
-  &:hover {
-    cursor: pointer;
-  }
 `;

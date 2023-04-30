@@ -1,53 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
-
-interface PostDetail {
-  id: number;
-  title: string;
-  description: string;
-  hits: number;
-  categoryId: number;
-  created_at: string;
-  repliesCount: number;
-  isLike: boolean;
-  likeCount: number;
-  isPublished: boolean;
-  unLikeCount: number;
-  prevPostId: number | null;
-  nextPostId: number | null;
-  user: UserDetail;
-}
-
-interface UserDetail {
-  id: number;
-  nickname: string;
-  description: string | null;
-}
-
-interface CommentDetail {
-  id: number;
-  comment: string;
-  created_at: string;
-  deleted_at: string;
-  isItNew: boolean;
-  replyId: number;
-  post: PostDetail;
-  user: UserDetail;
-}
-
-interface Headers {
-  'Content-Type': string;
-  Authorization?: string;
-  [key: string]: string | undefined;
-}
+import { HeadersType, PostDataType, CommentDataType, UserDataType } from '../../../../typing/types';
 
 type CommentedPostProps = {
   profileId: number | null | undefined;
 };
 
 export default function CommentedPost({ profileId }: CommentedPostProps) {
-  const [postsData, setPostsData] = useState<[PostDetail, UserDetail][]>([]);
+  const [postsData, setPostsData] = useState<[PostDataType, UserDataType][]>([]);
   const navigate = useNavigate();
   const loginUserToken = localStorage.getItem('accessToken');
 
@@ -78,7 +39,7 @@ export default function CommentedPost({ profileId }: CommentedPostProps) {
   };
 
   useEffect(() => {
-    const headers: Headers = {
+    const headers: HeadersType = {
       'Content-Type': 'application/json;charset=utf-8',
     };
 
@@ -94,17 +55,17 @@ export default function CommentedPost({ profileId }: CommentedPostProps) {
       .then((res) => res.json())
       .then((data) => {
         if (data.isSuccess) {
-          const temp: [PostDetail, UserDetail][] = [];
+          const temp: [PostDataType, UserDataType][] = [];
           const filtered = data.data.replies.filter(
-            (reply: CommentDetail, index: number) =>
+            (reply: CommentDataType, index: number) =>
               index ===
-              data.data.replies.findIndex((reply2: CommentDetail) => reply.post.id === reply2.post.id),
+              data.data.replies.findIndex((reply2: CommentDataType) => reply.post?.id === reply2.post?.id),
           );
-          filtered.forEach((comments: CommentDetail): void => {
-            temp.push([comments.post, comments.user]);
+          filtered.forEach((comments: CommentDataType): void => {
+            if (comments.post) temp.push([comments.post, comments.user]);
           });
           setPostsData(
-            temp.map((el: [PostDetail, UserDetail]) => [
+            temp.map((el: [PostDataType, UserDataType]) => [
               {
                 ...el[0],
                 created_at: dateParsing(el[0].created_at)[0],
@@ -227,7 +188,7 @@ const PostId = styled.div`
   font-size: 11px;
   margin-right: 15px;
 `;
-const PostTitle = styled.div<{ isPublished: boolean }>`
+const PostTitle = styled.div<{ isPublished: boolean | undefined }>`
   ${(props) => props.theme.variables.flex()}
   font-size: 13px;
 

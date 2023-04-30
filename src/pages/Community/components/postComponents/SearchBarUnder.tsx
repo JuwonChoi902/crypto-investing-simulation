@@ -2,55 +2,18 @@ import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import arrowUp from '../../images/arrowUp.png';
 import arrowDown from '../../images/arrowDown.png';
-
-interface PostDetail {
-  id: number;
-  title: string;
-  description: string;
-  created_at: string;
-  repliesCount: number;
-  hits: number;
-  label: string;
-  categoryId: number;
-  prevPostId: number | null;
-  nextPostId: number | null;
-  user: UserDetail;
-}
-
-interface UserDetail {
-  id: number;
-  nickname: string;
-  description: string | null;
-}
-
-interface SearchRes {
-  stringRes: string;
-  filterRes: string;
-  boardRes: number | null;
-}
-
-interface SearchInput {
-  searchFilter: string;
-  searchString: string;
-  searchBoard: number | null;
-}
+import { PostDataType, SearchResType, HeadersType } from '../../../../typing/types';
 
 type SearchBarProps = {
-  setPosts: React.Dispatch<React.SetStateAction<PostDetail[] | undefined>>;
+  setPosts: React.Dispatch<React.SetStateAction<PostDataType[] | undefined>>;
   setPostNumber: React.Dispatch<React.SetStateAction<number | undefined>>;
-  setSearchRes: React.Dispatch<React.SetStateAction<SearchRes>>;
+  setSearchRes: React.Dispatch<React.SetStateAction<SearchResType>>;
   setIsItSearching: React.Dispatch<React.SetStateAction<boolean>>;
   boardNow: number | null;
 };
 
-interface Headers {
-  'Content-Type': string;
-  Authorization?: string;
-  [key: string]: string | undefined;
-}
-
 const filters: string[][] = [
-  ['제목 + 내용', 'contents'],
+  ['제목 + 내용', 'content'],
   ['작성자', 'nickname'],
   ['댓글내용', 'reply'],
 ];
@@ -126,9 +89,10 @@ export default function SearchBarUnder({
       window.removeEventListener('click', changeDropState as EventListener);
     };
   }, [searchDropIsOpen]);
+  console.log(searchFilter, searchFilterNow);
 
   const search = () => {
-    const headers: Headers = {
+    const headers: HeadersType = {
       'Content-Type': 'application/json;charset=utf-8',
     };
 
@@ -142,7 +106,6 @@ export default function SearchBarUnder({
       alert('검색어를 입력해주세요');
       return;
     }
-
     setSearchRes({ filterRes: searchFilter, stringRes: searchString, boardRes: boardNow });
 
     fetch(
@@ -156,7 +119,7 @@ export default function SearchBarUnder({
         if (data.isSuccess) {
           setPostNumber(data.data.number);
           setPosts(
-            data.data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
+            data.data.post.map((el: PostDataType) => ({ ...el, created_at: dateParsing(el.created_at) })),
           );
           setIsItSearching(true);
         }

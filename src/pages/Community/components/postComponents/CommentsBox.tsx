@@ -2,27 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import styled from 'styled-components';
 import user from '../../images/user.png';
-
-type ObjectType = {
-  [index: number]: number;
-};
-
-interface UserDetail {
-  id: number;
-  nickname: string;
-  description: string | null;
-}
-
-interface CommentDetail {
-  id: number;
-  comment: string;
-  created_at: string;
-  deleted_at: string;
-  isItNew: boolean;
-  replyId: number;
-  isThisOrigin: boolean;
-  user: UserDetail;
-}
+import { HeadersType, CommentDataType, IndexObjectType } from '../../../../typing/types';
 
 type CommentsBoxProps = {
   commentWindowRef: React.RefObject<HTMLDivElement>;
@@ -34,12 +14,6 @@ type CommentsBoxProps = {
   setMenuNow: React.Dispatch<React.SetStateAction<number>>;
 };
 
-interface Headers {
-  'Content-Type': string;
-  Authorization?: string;
-  [key: string]: string | undefined;
-}
-
 export default function CommentsBox({
   commentWindowRef,
   replying,
@@ -49,7 +23,7 @@ export default function CommentsBox({
   setProfileId,
   setMenuNow,
 }: CommentsBoxProps) {
-  const [commentData, setCommentData] = useState<CommentDetail[]>();
+  const [commentData, setCommentData] = useState<CommentDataType[]>();
   const [commentWrite, setCommentWrite] = useState<string>('');
   const [editing, setEditing] = useState<number | null>(null);
   const [editingComment, setEditingComment] = useState<string>();
@@ -109,7 +83,7 @@ export default function CommentsBox({
   };
 
   useEffect(() => {
-    const headers: Headers = {
+    const headers: HeadersType = {
       'Content-Type': 'application/json;charset=utf-8',
     };
 
@@ -128,7 +102,7 @@ export default function CommentsBox({
           if (data.isSuccess) {
             let count = 0;
             const temp = [];
-            const obj: ObjectType = {};
+            const obj: IndexObjectType = {};
 
             for (let i = 0; i < data.data.length; i += 1) {
               if (!data.data[i].deleted_at) {
@@ -155,7 +129,7 @@ export default function CommentsBox({
 
             setCommentCount(count);
             setCommentData(
-              temp.map((el: CommentDetail) => ({
+              temp.map((el: CommentDataType) => ({
                 ...el,
                 created_at: dateParsing(el.created_at)[0],
                 isItNew: dateParsing(el.created_at)[1],
@@ -186,7 +160,7 @@ export default function CommentsBox({
           if (data.isSuccess) {
             let count = 0;
             const temp = [];
-            const obj: ObjectType = {};
+            const obj: IndexObjectType = {};
 
             for (let i = 0; i < data.data.length; i += 1) {
               if (!data.data[i].deleted_at) {
@@ -213,7 +187,7 @@ export default function CommentsBox({
 
             setCommentCount(count);
             setCommentData(
-              temp.map((el: CommentDetail) => ({
+              temp.map((el: CommentDataType) => ({
                 ...el,
                 created_at: dateParsing(el.created_at)[0],
                 isItNew: dateParsing(el.created_at)[1],
@@ -255,7 +229,7 @@ export default function CommentsBox({
                 if (data.isSuccess) {
                   let count = 0;
                   const temp = [];
-                  const obj: ObjectType = {};
+                  const obj: IndexObjectType = {};
 
                   for (let i = 0; i < data.data.length; i += 1) {
                     if (!data.data[i].deleted_at) {
@@ -282,7 +256,7 @@ export default function CommentsBox({
 
                   setCommentCount(count);
                   setCommentData(
-                    temp.map((el: CommentDetail) => ({
+                    temp.map((el: CommentDataType) => ({
                       ...el,
                       created_at: dateParsing(el.created_at)[0],
                       isItNew: dateParsing(el.created_at)[1],
@@ -313,7 +287,7 @@ export default function CommentsBox({
           if (data.isSuccess) {
             let count = 0;
             const temp = [];
-            const obj: ObjectType = {};
+            const obj: IndexObjectType = {};
 
             for (let i = 0; i < data.data.length; i += 1) {
               if (!data.data[i].deleted_at) {
@@ -340,7 +314,7 @@ export default function CommentsBox({
 
             setCommentCount(count);
             setCommentData(
-              temp.map((el: CommentDetail) => ({
+              temp.map((el: CommentDataType) => ({
                 ...el,
                 created_at: dateParsing(el.created_at)[0],
                 isItNew: dateParsing(el.created_at)[1],
@@ -357,7 +331,7 @@ export default function CommentsBox({
   };
 
   const deleteComment = (id: number) => {
-    const headers: Headers = {
+    const headers: HeadersType = {
       'Content-Type': 'application/json;charset=utf-8',
     };
 
@@ -387,7 +361,7 @@ export default function CommentsBox({
                 if (data.isSuccess) {
                   let count = 0;
                   const temp = [];
-                  const obj: ObjectType = {};
+                  const obj: IndexObjectType = {};
 
                   for (let i = 0; i < data.data.length; i += 1) {
                     if (!data.data[i].deleted_at) {
@@ -414,7 +388,7 @@ export default function CommentsBox({
 
                   setCommentCount(count);
                   setCommentData(
-                    temp.map((el: CommentDetail) => ({
+                    temp.map((el: CommentDataType) => ({
                       ...el,
                       created_at: dateParsing(el.created_at)[0],
                       isItNew: dateParsing(el.created_at)[1],

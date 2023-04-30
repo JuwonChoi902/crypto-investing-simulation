@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router';
 import styled from 'styled-components';
 import write from '../../images/write.png';
 
-type NavigateBox2Props = {
+type NavigateBoxUnderProps = {
   setPostNow: React.Dispatch<React.SetStateAction<number | null>>;
 };
 
-export default function NavigateBox2({ setPostNow }: NavigateBox2Props) {
+export default function NavigateBoxUnder({ setPostNow }: NavigateBoxUnderProps) {
   const navigate = useNavigate();
   const loginUserToken = localStorage.getItem('accessToken');
 

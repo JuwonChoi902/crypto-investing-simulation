@@ -2,51 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
 import Pages from '../otherComponents/Pages';
-
-interface UserDetail {
-  id: number;
-  nickname: string;
-  description: string | null;
-}
-
-interface CommentDetail {
-  id: number;
-  comment: string;
-  created_at: string;
-  deleted_at: string;
-  isItNew: boolean;
-  replyId: number;
-  post: PostDetail;
-  user: UserDetail;
-}
-
-interface PostDetail {
-  id: number;
-  title: string;
-  description: string;
-  created_at: string;
-  repliesCount: number;
-  hits: number;
-  label: string;
-  categoryId: number;
-  isPublished: boolean;
-  prevPostId: number | null;
-  nextPostId: number | null;
-  user: UserDetail;
-}
+import { HeadersType, CommentDataType } from '../../../../typing/types';
 
 type CommentHistoryProps = {
   profileId: number | null | undefined;
 };
 
-interface Headers {
-  'Content-Type': string;
-  Authorization?: string;
-  [key: string]: string | undefined;
-}
-
 export default function CommentHistory({ profileId }: CommentHistoryProps) {
-  const [comments, setComments] = useState<CommentDetail[]>();
+  const [comments, setComments] = useState<CommentDataType[]>();
   const [checked, setChecked] = useState<number[]>([]);
   const [commentCount, setCommentCount] = useState<number>(0);
   const [page, setPage] = useState<number>(1);
@@ -72,7 +35,7 @@ export default function CommentHistory({ profileId }: CommentHistoryProps) {
   };
 
   useEffect(() => {
-    const headers: Headers = {
+    const headers: HeadersType = {
       'Content-Type': 'application/json;charset=utf-8',
     };
 
@@ -90,7 +53,7 @@ export default function CommentHistory({ profileId }: CommentHistoryProps) {
         if (data.isSuccess) {
           setCommentCount(data.data.number);
           setComments(
-            data.data.replies.map((el: CommentDetail) => ({
+            data.data.replies.map((el: CommentDataType) => ({
               ...el,
               created_at: dateParsing(el.created_at)[0],
               isItNew: dateParsing(el.created_at)[1],
@@ -130,7 +93,7 @@ export default function CommentHistory({ profileId }: CommentHistoryProps) {
         navigate('login');
       }
     } else {
-      const headers: Headers = {
+      const headers: HeadersType = {
         'Content-Type': 'application/json;charset=utf-8',
       };
 
@@ -157,7 +120,7 @@ export default function CommentHistory({ profileId }: CommentHistoryProps) {
                   if (data.isSuccess) {
                     setCommentCount(data.data.number);
                     setComments(
-                      data.data.replies.map((el: CommentDetail) => ({
+                      data.data.replies.map((el: CommentDataType) => ({
                         ...el,
                         created_at: dateParsing(el.created_at)[0],
                         isItNew: dateParsing(el.created_at)[1],
@@ -201,8 +164,8 @@ export default function CommentHistory({ profileId }: CommentHistoryProps) {
                 </CheckBox>
               ) : null}
               <Comment
-                onClick={() => (el.post.isPublished ? navigate(`/community/${el.post.id}`) : null)}
-                isPublished={el.post.isPublished}
+                onClick={() => (el.post?.isPublished ? navigate(`/community/${el.post.id}`) : null)}
+                isPublished={el.post?.isPublished}
               >
                 <CommentDesc>
                   {el.comment}
@@ -210,7 +173,7 @@ export default function CommentHistory({ profileId }: CommentHistoryProps) {
                 </CommentDesc>
                 <CommentDate>{el.created_at}</CommentDate>
                 <PostTitle>
-                  {el.post.isPublished ? el.post.title : <span>삭제된 게시글</span>}
+                  {el.post?.isPublished ? el.post.title : <span>삭제된 게시글</span>}
                   <PostCommentCnt>{`[${el.post?.repliesCount}]`}</PostCommentCnt>
                 </PostTitle>
               </Comment>
@@ -283,7 +246,7 @@ const CheckBox = styled.div`
     height: 14px;
   }
 `;
-const Comment = styled.div<{ isPublished: boolean }>`
+const Comment = styled.div<{ isPublished: boolean | undefined }>`
   &:hover {
     cursor: ${(props) => (props.isPublished ? 'pointer' : null)};
     text-decoration: underline;

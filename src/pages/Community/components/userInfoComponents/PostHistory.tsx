@@ -2,38 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
 import Pages from '../otherComponents/Pages';
-
-interface PostDetail {
-  id: number;
-  title: string;
-  description: string;
-  created_at: string;
-  repliesCount: number;
-  hits: number;
-  label: string;
-  categoryId: number;
-  user: UserDetail;
-}
-
-interface UserDetail {
-  id: number;
-  nickname: string;
-  description: string | null;
-}
+import { HeadersType, PostDataType } from '../../../../typing/types';
 
 type PostHistoryProps = {
   profileId: number | null | undefined;
 };
 
-interface Headers {
-  'Content-Type': string;
-  Authorization?: string;
-  [key: string]: string | undefined;
-}
-
 export default function PostHistory({ profileId }: PostHistoryProps) {
   const [checked, setChecked] = useState<number[]>([]);
-  const [postsData, setPostsData] = useState<PostDetail[]>([]);
+  const [postsData, setPostsData] = useState<PostDataType[]>([]);
   const [postNumber, setPostNumber] = useState<number>();
   const [page, setPage] = useState<number>(1);
 
@@ -68,7 +45,7 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
   };
 
   useEffect(() => {
-    const headers: Headers = {
+    const headers: HeadersType = {
       'Content-Type': 'application/json;charset=utf-8',
     };
 
@@ -86,7 +63,7 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
         if (data.isSuccess) {
           setPostNumber(data.data.number);
           setPostsData(
-            data.data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
+            data.data.post.map((el: PostDataType) => ({ ...el, created_at: dateParsing(el.created_at) })),
           );
         } else {
           alert(data.message);
@@ -117,7 +94,7 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
   };
 
   const deleteChecked = () => {
-    const headers: Headers = {
+    const headers: HeadersType = {
       'Content-Type': 'application/json;charset=utf-8',
     };
 
@@ -148,7 +125,7 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
                 if (data.isSuccess) {
                   setPostNumber(data.data.number);
                   setPostsData(
-                    data.data.post.map((el: PostDetail) => ({
+                    data.data.post.map((el: PostDataType) => ({
                       ...el,
                       created_at: dateParsing(el.created_at),
                     })),

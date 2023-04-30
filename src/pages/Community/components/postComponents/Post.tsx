@@ -2,8 +2,9 @@ import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import DescriptionBox from './DescriptionBox';
 import CommentsBox from './CommentsBox';
-import NavigateBox from './NavigateBox';
-import NavigateBox2 from './NavigateBox2';
+import NavigateBoxTop from './NavigateBoxTop';
+import NavigateBoxUnder from './NavigateBoxUnder';
+import { PostDataType } from '../../../../typing/types';
 
 type PostProps = {
   setPostNow: React.Dispatch<React.SetStateAction<number | null>>;
@@ -12,37 +13,15 @@ type PostProps = {
   setProfileId: React.Dispatch<React.SetStateAction<number | null | undefined>>;
 };
 
-export interface PostDetail {
-  id: number;
-  title: string;
-  description: string;
-  hits: number;
-  categoryId: number;
-  created_at: string;
-  repliesCount: number;
-  isLike: boolean;
-  likeCount: number;
-  unLikeCount: number;
-  prevPostId: number | null;
-  nextPostId: number | null;
-  user: UserDetail;
-}
-
-export interface UserDetail {
-  id: number;
-  nickname: string;
-  description: string | null;
-}
-
 export default function Post({ setPostNow, setBoardNow, setMenuNow, setProfileId }: PostProps) {
-  const [postData, setPostData] = useState<PostDetail>();
+  const [postData, setPostData] = useState<PostDataType>();
   const [replying, setReplying] = useState<number | null>(null);
   const [commentCount, setCommentCount] = useState<number>(0);
   const commentWindowRef = useRef<HTMLDivElement>(null);
 
   return (
     <OuterBox>
-      <NavigateBox setPostNow={setPostNow} postData={postData} />
+      <NavigateBoxTop setPostNow={setPostNow} postData={postData} />
       <MainBox>
         <DescriptionBox
           commentCount={commentCount}
@@ -65,7 +44,7 @@ export default function Post({ setPostNow, setBoardNow, setMenuNow, setProfileId
           setMenuNow={setMenuNow}
         />
       </MainBox>
-      <NavigateBox2 setPostNow={setPostNow} />
+      <NavigateBoxUnder setPostNow={setPostNow} />
     </OuterBox>
   );
 }

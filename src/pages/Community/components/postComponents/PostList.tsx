@@ -1,54 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
-
-interface PostDetail {
-  id: number;
-  title: string;
-  description: string;
-  created_at: string;
-  repliesCount: number;
-  hits: number;
-  label: string;
-  categoryId: number;
-  prevPostId: number | null;
-  nextPostId: number | null;
-  user: UserDetail;
-}
-
-interface UserDetail {
-  id: number;
-  nickname: string;
-  description: string | null;
-}
-
-interface SearchRes {
-  stringRes: string;
-  filterRes: string;
-  boardRes: number | null;
-}
+import { PostDataType, HeadersType, SearchResType } from '../../../../typing/types';
 
 type PostListProps = {
-  setPosts: React.Dispatch<React.SetStateAction<PostDetail[] | undefined>>;
+  setPosts: React.Dispatch<React.SetStateAction<PostDataType[] | undefined>>;
   setBoardNow: React.Dispatch<React.SetStateAction<number | null>>;
   setProfileId: React.Dispatch<React.SetStateAction<number | null | undefined>>;
   setMenuNow: React.Dispatch<React.SetStateAction<number>>;
   setPostNumber: React.Dispatch<React.SetStateAction<number | undefined>>;
   setPage: React.Dispatch<React.SetStateAction<number>>;
-  setSearchRes: React.Dispatch<React.SetStateAction<SearchRes>>;
+  setSearchRes: React.Dispatch<React.SetStateAction<SearchResType>>;
   setIsItSearching: React.Dispatch<React.SetStateAction<boolean>>;
-  searchRes: SearchRes;
+  searchRes: SearchResType;
   isItSearching: boolean;
   boardNow: number | null;
   page: number;
-  posts: PostDetail[] | undefined;
+  posts: PostDataType[] | undefined;
 };
-
-interface Headers {
-  'Content-Type': string;
-  Authorization?: string;
-  [key: string]: string | undefined;
-}
 
 const Category: string[] = ['전체글보기', '질문하기', '자랑하기', '공유하기', '잡담하기'];
 
@@ -127,7 +96,7 @@ export default function PostList({
   };
 
   useEffect(() => {
-    const headers: Headers = {
+    const headers: HeadersType = {
       'Content-Type': 'application/json;charset=utf-8',
     };
 
@@ -148,7 +117,7 @@ export default function PostList({
           if (data.isSuccess) {
             setPostNumber(data.data.number);
             setPosts(
-              data.data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
+              data.data.post.map((el: PostDataType) => ({ ...el, created_at: dateParsing(el.created_at) })),
             );
           }
         });
@@ -156,7 +125,7 @@ export default function PostList({
   }, [boardNow, isItSearching]);
 
   useEffect(() => {
-    const headers: Headers = {
+    const headers: HeadersType = {
       'Content-Type': 'application/json;charset=utf-8',
     };
 
@@ -178,7 +147,7 @@ export default function PostList({
           if (data.isSuccess) {
             setPostNumber(data.data.number);
             setPosts(
-              data.data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
+              data.data.post.map((el: PostDataType) => ({ ...el, created_at: dateParsing(el.created_at) })),
             );
           }
         });
@@ -191,7 +160,7 @@ export default function PostList({
           if (data.isSuccess) {
             setPostNumber(data.data.number);
             setPosts(
-              data.data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
+              data.data.post.map((el: PostDataType) => ({ ...el, created_at: dateParsing(el.created_at) })),
             );
           }
         });

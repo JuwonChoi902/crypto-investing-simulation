@@ -2,38 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
 import Pages from '../otherComponents/Pages';
-
-interface PostDetail {
-  id: number;
-  title: string;
-  description: string;
-  created_at: string;
-  repliesCount: number;
-  hits: number;
-  label: string;
-  categoryId: number;
-  isPublished: boolean;
-  user: UserDetail;
-}
-
-interface UserDetail {
-  id: number;
-  nickname: string;
-  description: string | null;
-}
-
-interface Headers {
-  'Content-Type': string;
-  Authorization?: string;
-  [key: string]: string | undefined;
-}
+import { HeadersType, PostDataType } from '../../../../typing/types';
 
 type LikeHistoryProps = {
   profileId: number | null | undefined;
 };
 
 export default function LikeHistory({ profileId }: LikeHistoryProps) {
-  const [postsData, setPostsData] = useState<PostDetail[]>([]);
+  const [postsData, setPostsData] = useState<PostDataType[]>([]);
   const [postNumber, setPostNumber] = useState<number>(0);
   const [checked, setChecked] = useState<string[]>([]);
   const [page, setPage] = useState<number>(1);
@@ -68,7 +44,7 @@ export default function LikeHistory({ profileId }: LikeHistoryProps) {
   };
 
   useEffect(() => {
-    const headers: Headers = {
+    const headers: HeadersType = {
       'Content-Type': 'application/json;charset=utf-8',
     };
 
@@ -86,7 +62,7 @@ export default function LikeHistory({ profileId }: LikeHistoryProps) {
         if (data.isSuccess) {
           setPostNumber(data.data.number);
           setPostsData(
-            data.data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
+            data.data.post.map((el: PostDataType) => ({ ...el, created_at: dateParsing(el.created_at) })),
           );
         } else {
           alert(data.message);
@@ -257,7 +233,7 @@ const PostId = styled.div`
   font-size: 11px;
   margin-right: 6px;
 `;
-const PostTitle = styled.div<{ isPublished: boolean }>`
+const PostTitle = styled.div<{ isPublished: boolean | undefined }>`
   ${(props) => props.theme.variables.flex()}
   font-size: 13px;
 

@@ -5,46 +5,19 @@ import user from '../../images/user.png';
 import likeFill from '../../images/likeFill.png';
 import dislikeFill from '../../images/dislikeFill.png';
 import comment from '../../images/comment.png';
-
-interface PostDetail {
-  id: number;
-  title: string;
-  description: string;
-  hits: number;
-  categoryId: number;
-  created_at: string;
-  repliesCount: number;
-  isLike: boolean;
-  likeCount: number;
-  unLikeCount: number;
-  prevPostId: number | null;
-  nextPostId: number | null;
-  user: UserDetail;
-}
-
-interface UserDetail {
-  id: number;
-  nickname: string;
-  description: string | null;
-}
+import { HeadersType, PostDataType } from '../../../../typing/types';
 
 type DescriptionBoxProps = {
   commentCount: number;
   commentWindowRef: React.RefObject<HTMLDivElement>;
-  postData: PostDetail | undefined;
-  setPostData: React.Dispatch<React.SetStateAction<PostDetail | undefined>>;
+  postData: PostDataType | undefined;
+  setPostData: React.Dispatch<React.SetStateAction<PostDataType | undefined>>;
   setPostNow: React.Dispatch<React.SetStateAction<number | null>>;
   setBoardNow: React.Dispatch<React.SetStateAction<number | null>>;
   setReplying: React.Dispatch<React.SetStateAction<number | null>>;
   setMenuNow: React.Dispatch<React.SetStateAction<number>>;
   setProfileId: React.Dispatch<React.SetStateAction<number | null | undefined>>;
 };
-
-interface Headers {
-  'Content-Type': string;
-  Authorization?: string;
-  [key: string]: string | undefined;
-}
 
 const PostCategory: string[] = ['전체글보기', '질문하기', '자랑하기', '공유하기', '잡담하기'];
 
@@ -88,7 +61,7 @@ export default function DescriptionBox({
   };
 
   useEffect(() => {
-    const headers: Headers = {
+    const headers: HeadersType = {
       'Content-Type': 'application/json;charset=utf-8',
     };
 

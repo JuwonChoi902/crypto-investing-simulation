@@ -22,6 +22,7 @@ export default function Community() {
     if (params.id === 'list') {
       setPostNow(null);
       setMenuNow(1);
+      setBoardNow(0);
     } else if (params.id === 'profile') {
       setPostNow(null);
       setMenuNow(2);

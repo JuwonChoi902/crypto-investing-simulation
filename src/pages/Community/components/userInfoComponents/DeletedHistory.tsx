@@ -2,38 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
 import Pages from '../otherComponents/Pages';
-
-interface PostDetail {
-  id: number;
-  title: string;
-  description: string;
-  hits: number;
-  categoryId: number;
-  created_at: string;
-  repliesCount: number;
-  isLike: boolean;
-  likeCount: number;
-  isPublished: boolean;
-  unLikeCount: number;
-  prevPostId: number | null;
-  nextPostId: number | null;
-  user: UserDetail;
-}
-
-interface UserDetail {
-  id: number;
-  nickname: string;
-  description: string | null;
-}
-
-interface Headers {
-  'Content-Type': string;
-  Authorization?: string;
-  [key: string]: string | undefined;
-}
+import { HeadersType, PostDataType } from '../../../../typing/types';
 
 export default function CommentedPost() {
-  const [postsData, setPostsData] = useState<PostDetail[]>([]);
+  const [postsData, setPostsData] = useState<PostDataType[]>([]);
   const [page, setPage] = useState<number>(1);
 
   const navigate = useNavigate();
@@ -66,7 +38,7 @@ export default function CommentedPost() {
   };
 
   useEffect(() => {
-    const headers: Headers = {
+    const headers: HeadersType = {
       'Content-Type': 'application/json;charset=utf-8',
     };
 
@@ -83,7 +55,7 @@ export default function CommentedPost() {
       .then((data) => {
         if (data.isSuccess) {
           setPostsData(
-            data.data.map((post: PostDetail) => ({ ...post, created_at: dateParsing(post.created_at) })),
+            data.data.map((post: PostDataType) => ({ ...post, created_at: dateParsing(post.created_at) })),
           );
         }
       });

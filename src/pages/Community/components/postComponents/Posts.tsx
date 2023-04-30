@@ -5,26 +5,7 @@ import SearchBarTop from './SearchBarTop';
 import SearchBarUnder from './SearchBarUnder';
 import PostList from './PostList';
 import Pages from '../otherComponents/Pages';
-
-interface PostDetail {
-  id: number;
-  title: string;
-  description: string;
-  created_at: string;
-  repliesCount: number;
-  hits: number;
-  label: string;
-  categoryId: number;
-  prevPostId: number | null;
-  nextPostId: number | null;
-  user: UserDetail;
-}
-
-interface UserDetail {
-  id: number;
-  nickname: string;
-  description: string | null;
-}
+import { PostDataType } from '../../../../typing/types';
 
 type PostsProps = {
   boardNow: number | null;
@@ -45,7 +26,7 @@ export default function Posts({
   setProfileId,
   setMenuNow,
 }: PostsProps) {
-  const [posts, setPosts] = useState<PostDetail[]>();
+  const [posts, setPosts] = useState<PostDataType[]>();
   const [postNumber, setPostNumber] = useState<number>();
   const [page, setPage] = useState<number>(1);
   const [searchRes, setSearchRes] = useState({

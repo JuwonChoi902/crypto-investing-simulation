@@ -2,56 +2,19 @@ import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import arrowUp from '../../images/arrowUp.png';
 import arrowDown from '../../images/arrowDown.png';
-
-interface PostDetail {
-  id: number;
-  title: string;
-  description: string;
-  created_at: string;
-  repliesCount: number;
-  hits: number;
-  label: string;
-  categoryId: number;
-  prevPostId: number | null;
-  nextPostId: number | null;
-  user: UserDetail;
-}
-
-interface UserDetail {
-  id: number;
-  nickname: string;
-  description: string | null;
-}
-
-interface SearchRes {
-  stringRes: string;
-  filterRes: string;
-  boardRes: number | null;
-}
-
-interface SearchInput {
-  searchFilter: string;
-  searchString: string;
-  searchBoard: number | null;
-}
+import { PostDataType, SearchResType, HeadersType, SearchInputType } from '../../../../typing/types';
 
 type SearchBarProps = {
   setBoardNow: React.Dispatch<React.SetStateAction<number | null>>;
-  setPosts: React.Dispatch<React.SetStateAction<PostDetail[] | undefined>>;
+  setPosts: React.Dispatch<React.SetStateAction<PostDataType[] | undefined>>;
   setPostNumber: React.Dispatch<React.SetStateAction<number | undefined>>;
-  searchRes: SearchRes;
-  setSearchRes: React.Dispatch<React.SetStateAction<SearchRes>>;
+  searchRes: SearchResType;
+  setSearchRes: React.Dispatch<React.SetStateAction<SearchResType>>;
 };
-
-interface Headers {
-  'Content-Type': string;
-  Authorization?: string;
-  [key: string]: string | undefined;
-}
 
 const boards: string[] = ['전체글', '질문하기', '자랑하기', '공유하기', '잡담하기'];
 const filters: string[][] = [
-  ['제목 + 내용', 'contents'],
+  ['제목 + 내용', 'content'],
   ['작성자', 'nickname'],
   ['댓글내용', 'reply'],
 ];
@@ -67,7 +30,7 @@ export default function SearchBarTop({
   const boardsDropRef = useRef<HTMLDivElement>(null);
 
   const [searchFilterNow, setSearchFilterNow] = useState<string>('제목 + 내용');
-  const [searchInput, setSearchInput] = useState<SearchInput>({
+  const [searchInput, setSearchInput] = useState<SearchInputType>({
     searchFilter: '',
     searchString: '',
     searchBoard: 0,
@@ -164,7 +127,7 @@ export default function SearchBarTop({
   };
 
   const search = (e: React.MouseEvent | React.KeyboardEvent) => {
-    const headers: Headers = {
+    const headers: HeadersType = {
       'Content-Type': 'application/json;charset=utf-8',
     };
 
@@ -192,12 +155,11 @@ export default function SearchBarTop({
           setSearchRes({ stringRes: searchString, filterRes: searchFilter, boardRes: searchBoard });
           setPostNumber(data.data.number);
           setPosts(
-            data.data.post.map((el: PostDetail) => ({ ...el, created_at: dateParsing(el.created_at) })),
+            data.data.post.map((el: PostDataType) => ({ ...el, created_at: dateParsing(el.created_at) })),
           );
         }
       });
   };
-  console.log(searchBoard, searchFilter, searchString);
 
   return (
     <OuterBox>

@@ -1,35 +1,14 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router';
 import styled from 'styled-components';
+import { PostDataType } from '../../../../typing/types';
 
-export interface PostDetail {
-  id: number;
-  title: string;
-  description: string;
-  hits: number;
-  categoryId: number;
-  created_at: string;
-  repliesCount: number;
-  isLike: boolean;
-  likeCount: number;
-  unLikeCount: number;
-  prevPostId: number | null;
-  nextPostId: number | null;
-  user: UserDetail;
-}
-
-export interface UserDetail {
-  id: number;
-  nickname: string;
-  description: string | null;
-}
-
-type NavigateBoxProps = {
+type NavigateBoxTopProps = {
   setPostNow: React.Dispatch<React.SetStateAction<number | null>>;
-  postData: PostDetail | undefined;
+  postData: PostDataType | undefined;
 };
 
-export default function NavigateBox({ setPostNow, postData }: NavigateBoxProps) {
+export default function NavigateBoxTop({ setPostNow, postData }: NavigateBoxTopProps) {
   const navigate = useNavigate();
   const params = useParams();
   const loginUserId = Number(localStorage.getItem('id')) || null;

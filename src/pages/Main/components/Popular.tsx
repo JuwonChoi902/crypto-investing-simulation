@@ -79,7 +79,7 @@ export default function Popular() {
         </CategoryBox>
         <CryptoList>
           {PopularCrypto.map((el) => (
-            <Crypto>
+            <Crypto key={el.id}>
               <CryptoTap1>
                 <img alt='coinImg' src={coinImg} />
                 <CryptoName>{el.name}</CryptoName>

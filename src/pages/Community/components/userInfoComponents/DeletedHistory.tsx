@@ -6,6 +6,7 @@ import { HeadersType, PostDataType } from '../../../../typing/types';
 
 export default function CommentedPost() {
   const [postsData, setPostsData] = useState<PostDataType[]>([]);
+  const [postNumber, setPostNumber] = useState<number>(0);
   const [page, setPage] = useState<number>(1);
 
   const navigate = useNavigate();
@@ -54,8 +55,12 @@ export default function CommentedPost() {
       .then((res) => res.json())
       .then((data) => {
         if (data.isSuccess) {
+          setPostNumber(data.data.number);
           setPostsData(
-            data.data.map((post: PostDataType) => ({ ...post, created_at: dateParsing(post.created_at) })),
+            data.data.post.map((post: PostDataType) => ({
+              ...post,
+              created_at: dateParsing(post.created_at),
+            })),
           );
         }
       });
@@ -90,6 +95,9 @@ export default function CommentedPost() {
       ) : (
         <EmptyList>삭제한 게시글이 없습니다.</EmptyList>
       )}
+      <ButtonBox>
+        <Pages limit={15} postNumber={postNumber} page={page} setPage={setPage} />
+      </ButtonBox>
     </OuterBox>
   );
 }
@@ -207,7 +215,7 @@ const EmptyList = styled.div`
 `;
 const ButtonBox = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   height: 34px;
   margin: 10px 0px 34px 0px;
 `;

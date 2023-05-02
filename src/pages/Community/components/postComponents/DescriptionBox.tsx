@@ -226,6 +226,7 @@ export default function DescriptionBox({
       <UserInfo>
         <UserDesc>
           <UserImg
+            userImg={postData?.user.profileImage}
             role='presentation'
             onClick={() => {
               if (!loginUserToken) {
@@ -238,7 +239,7 @@ export default function DescriptionBox({
               }
             }}
           >
-            <img src={user} alt='user' />
+            <img src={postData?.user.profileImage || user} alt='user' />
           </UserImg>
           <UserDetail>
             <DetailNickBox>
@@ -332,8 +333,8 @@ export default function DescriptionBox({
           }
         }}
       >
-        <UserImg>
-          <img src={user} alt='user' />
+        <UserImg userImg={postData?.user.profileImage}>
+          <img src={postData?.user.profileImage || user} alt='user' />
         </UserImg>
         <span>{postData?.user.nickname}</span>
         <div>님의 게시글 더보기</div>
@@ -392,7 +393,7 @@ const UserDesc = styled.div`
   align-items: center;
 `;
 
-const UserImg = styled.div`
+const UserImg = styled.div<{ userImg: string | undefined }>`
   display: flex;
   justify-content: center;
   width: 34px;
@@ -403,10 +404,10 @@ const UserImg = styled.div`
   margin-right: 10px;
 
   img {
-    margin-top: 12px;
-    width: 24px;
-    height: 24px;
-    opacity: 0.2;
+    margin-top: ${(props) => (props.userImg ? 0 : '12px')};
+    width: ${(props) => (props.userImg ? '35px' : '24px')};
+    height: ${(props) => (props.userImg ? '35px' : '24px')};
+    opacity: ${(props) => (props.userImg ? 1 : '0.2')};
   }
 
   &:hover {

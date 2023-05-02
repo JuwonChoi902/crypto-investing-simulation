@@ -28,12 +28,15 @@ export default function CommentsBox({
   const [editing, setEditing] = useState<number | null>(null);
   const [editingComment, setEditingComment] = useState<string>();
   const [replyComment, setReplyComment] = useState<string>();
+  const [dropBoxIsOpen, setDropBoxIsOpen] = useState<boolean>(false);
 
   const loginUserNick = localStorage.getItem('nickname');
   const loginUserToken = localStorage.getItem('accessToken');
   const loginUserId = Number(localStorage.getItem('id'));
   const params = useParams();
   const navigate = useNavigate();
+  const dropBoxRef = useRef<HTMLDivElement>(null);
+  const nickBoxRef = useRef<HTMLDivElement>(null);
 
   const dateParsing = (date: string): [string, boolean] => {
     const theDate = new Date(date);
@@ -142,6 +145,27 @@ export default function CommentsBox({
       setReplying(null);
     }
   }, [params.id]);
+
+  useEffect(() => {
+    const changeDropState = (e: CustomEvent<MouseEvent>) => {
+      if (
+        dropBoxRef.current &&
+        nickBoxRef &&
+        !nickBoxRef.current?.contains(e.target as Node) &&
+        !dropBoxRef.current?.contains(e.target as Node)
+      ) {
+        setDropBoxIsOpen((cur) => !cur);
+      }
+    };
+
+    if (dropBoxIsOpen) {
+      window.addEventListener('click', changeDropState as EventListener);
+    }
+
+    return () => {
+      window.removeEventListener('click', changeDropState as EventListener);
+    };
+  }, [dropBoxIsOpen]);
 
   const makeComment = () => {
     if (commentWrite === '') {
@@ -461,15 +485,73 @@ export default function CommentsBox({
             ) : (
               <Comment index={i} isThisOrigin={el.isThisOrigin} isThisDeleted={el.deleted_at}>
                 <UserImg
+                  userImg={el.user.profileImage}
                   onClick={() => {
                     setProfileId(el.user.id);
                     setMenuNow(2);
                   }}
                 >
-                  <img src={user} alt='user' />
+                  <img src={el.user.profileImage || user} alt='user' />
                 </UserImg>
                 <CommentTextBox>
-                  <CommentUserNick>{el.user.nickname}</CommentUserNick>
+                  <CommentUserNick ref={nickBoxRef} onClick={() => setDropBoxIsOpen((current) => !current)}>
+                    {el.user.nickname}
+                    {dropBoxIsOpen ? (
+                      <UserDropBox ref={dropBoxRef}>
+                        <ul>
+                          <li
+                            role='presentation'
+                            onClick={() => {
+                              if (!loginUserToken) {
+                                if (
+                                  window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true
+                                ) {
+                                  navigate('/login');
+                                }
+                              } else {
+                                setProfileId(el.user.id);
+                                setMenuNow(2);
+                              }
+                            }}
+                          >
+                            프로필보기
+                          </li>
+                          <li
+                            role='presentation'
+                            onClick={() => {
+                              if (!loginUserToken) {
+                                if (
+                                  window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true
+                                ) {
+                                  navigate('/login');
+                                }
+                              } else {
+                                alert('서비스 준비중입니다.');
+                              }
+                            }}
+                          >
+                            1:1 채팅
+                          </li>
+                          <li
+                            role='presentation'
+                            onClick={() => {
+                              if (!loginUserToken) {
+                                if (
+                                  window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true
+                                ) {
+                                  navigate('/login');
+                                }
+                              } else {
+                                alert('서비스 준비중입니다.');
+                              }
+                            }}
+                          >
+                            쪽지보내기
+                          </li>
+                        </ul>
+                      </UserDropBox>
+                    ) : null}
+                  </CommentUserNick>
                   <CommentDescription>{el.comment}</CommentDescription>
                   <CommentCreatedAt>
                     <span>{el.created_at}</span>
@@ -641,11 +723,36 @@ const CommentUserNick = styled.div`
   font-size: 13px;
   font-weight: bold;
   margin-bottom: 6px;
+  position: relative;
 
   &:hover {
     cursor: pointer;
   }
 `;
+
+const UserDropBox = styled.div`
+  display: block;
+  position: absolute;
+  width: 113px;
+  top: 23px;
+  left: 7px;
+  font-size: 12px;
+  z-index: 1;
+  font-weight: bold;
+  background-color: white;
+  border: 1px solid #e5e5e5;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+
+  li {
+    padding: 11px 15px;
+
+    &:hover {
+      cursor: pointer;
+      background-color: #feeaa3;
+    }
+  }
+`;
+
 const CommentDescription = styled.div`
   font-size: 13px;
 `;
@@ -815,7 +922,7 @@ const PostThisComment = styled.button<{ isThisValid: number | undefined }>`
   }
 `;
 
-const UserImg = styled.div`
+const UserImg = styled.div<{ userImg: string | undefined }>`
   display: flex;
   justify-content: center;
   width: 34px;
@@ -826,10 +933,10 @@ const UserImg = styled.div`
   margin-right: 10px;
 
   img {
-    margin-top: 12px;
-    width: 24px;
-    height: 24px;
-    opacity: 0.2;
+    margin-top: ${(props) => (props.userImg ? 0 : '12px')};
+    width: ${(props) => (props.userImg ? '35px' : '24px')};
+    height: ${(props) => (props.userImg ? '35px' : '24px')};
+    opacity: ${(props) => (props.userImg ? 1 : '0.2')};
   }
 
   &:hover {

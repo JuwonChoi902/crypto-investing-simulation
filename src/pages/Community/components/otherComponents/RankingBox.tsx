@@ -11,20 +11,21 @@ interface RankingUsers {
 }
 
 const UserList: RankingUsers[] = [
-  { id: 1, nickname: 'goodjob123', ranking: 1, incomePercent: 145, incomeMoney: 1 },
-  { id: 2, nickname: 'rltjrWkdWkd', ranking: 2, incomePercent: 140, incomeMoney: 1 },
-  { id: 3, nickname: 'juwon123', ranking: 3, incomePercent: 135, incomeMoney: 1 },
-  { id: 4, nickname: 'nerdcloud09', ranking: 4, incomePercent: 130, incomeMoney: 1 },
-  { id: 5, nickname: 'icanwinthis123', ranking: 5, incomePercent: 125, incomeMoney: 1 },
-  { id: 6, nickname: 'hohoho', ranking: 6, incomePercent: 120, incomeMoney: 1 },
-  { id: 7, nickname: 'appleowner17', ranking: 7, incomePercent: 115, incomeMoney: 1 },
-  { id: 8, nickname: 'carsalerRich', ranking: 8, incomePercent: 110, incomeMoney: 1 },
-  { id: 9, nickname: 'youAneMe2233', ranking: 9, incomePercent: 105, incomeMoney: 1 },
-  { id: 10, nickname: 'yoonah95', ranking: 10, incomePercent: 100, incomeMoney: 1 },
+  { id: 1, nickname: '주원쓰', ranking: 1, incomePercent: 145, incomeMoney: 1 },
+  { id: 2, nickname: '기석', ranking: 2, incomePercent: 140, incomeMoney: 1 },
+  { id: 3, nickname: 'test100', ranking: 3, incomePercent: 135, incomeMoney: 1 },
+  { id: 4, nickname: 'test101', ranking: 4, incomePercent: 130, incomeMoney: 1 },
+  { id: 5, nickname: 'test102', ranking: 5, incomePercent: 125, incomeMoney: 1 },
+  { id: 6, nickname: 'test103', ranking: 6, incomePercent: 120, incomeMoney: 1 },
+  { id: 7, nickname: 'test104', ranking: 7, incomePercent: 115, incomeMoney: 1 },
+  { id: 8, nickname: 'test105', ranking: 8, incomePercent: 110, incomeMoney: 1 },
+  { id: 9, nickname: 'test106', ranking: 9, incomePercent: 105, incomeMoney: 1 },
+  { id: 10, nickname: 'test107', ranking: 10, incomePercent: 100, incomeMoney: 1 },
 ];
 
 export default function RankingBox() {
   const [topTen, setTopTen] = useState<RankingUsers[]>();
+  const [filterNow, setFilter] = useState<string>('2');
 
   useEffect(() => {
     fetch(`http://pien.kr:4000/ranking/incomepercent`, {
@@ -39,9 +40,15 @@ export default function RankingBox() {
   return (
     <OuterBox>
       <FilterTap>
-        <Following>팔로잉</Following>
-        <ShowRanks>랭킹</ShowRanks>
-        <ShowMyRank>내랭킹</ShowMyRank>
+        <Following onClick={() => alert('서비스 준비중입니다.')} id='1' filterNow={filterNow}>
+          팔로잉
+        </Following>
+        <ShowRanks id='2' filterNow={filterNow}>
+          랭킹
+        </ShowRanks>
+        <ShowMyRank onClick={() => alert('서비스 준비중입니다.')} id='3' filterNow={filterNow}>
+          내랭킹
+        </ShowMyRank>
       </FilterTap>
       <RankBox>
         {UserList?.map((el) => (
@@ -70,21 +77,24 @@ const FilterTap = styled.div`
   padding: 9px 0px;
   border-bottom: 1px solid #e5e5e5;
 `;
-const Following = styled.div`
+const Following = styled.div<{ filterNow: string }>`
   margin-right: 10px;
+  color: ${(props) => (props.id === props.filterNow ? props.theme.style.yellow : 'black')};
   &:hover {
     cursor: pointer;
     color: ${(props) => props.theme.style.yellow};
   }
 `;
-const ShowRanks = styled.div`
+const ShowRanks = styled.div<{ filterNow: string }>`
   margin-right: 10px;
+  color: ${(props) => (props.id === props.filterNow ? props.theme.style.yellow : 'black')};
   &:hover {
     cursor: pointer;
     color: ${(props) => props.theme.style.yellow};
   }
 `;
-const ShowMyRank = styled.div`
+const ShowMyRank = styled.div<{ filterNow: string }>`
+  color: ${(props) => (props.id === props.filterNow ? props.theme.style.yellow : 'black')};
   &:hover {
     cursor: pointer;
     color: ${(props) => props.theme.style.yellow};

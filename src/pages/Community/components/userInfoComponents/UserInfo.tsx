@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
-import HeaderBox from './HeaderBox';
 import PostHistory from './PostHistory';
 import CommentHistory from './CommentHistory';
 import CommentedPost from './CommentedPost';
 import LikeHistory from './LikeHistory';
 import IncomeInfo from './IncomeInfo';
 import DeletedHistory from './DeletedHistory';
+import UserProfile from './UserProfile';
 
 type UserInfoProps = {
   profileId: number | null | undefined;
@@ -25,7 +25,7 @@ export default function UserInfo({ profileId }: UserInfoProps) {
 
   return (
     <OuterBox>
-      <HeaderBox profileId={profileId} />
+      <UserProfile profileId={profileId} />
       <Main>
         <CategoryBox>
           <CategoryLeft>

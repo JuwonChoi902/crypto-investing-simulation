@@ -2,6 +2,12 @@ export interface UserDataType {
   id: number;
   nickname: string;
   description: string | null;
+  profileImage: string;
+  ranking?: string;
+  totalMoney?: number;
+  yieldPercent?: number;
+  email?: string;
+  publishedPost?: number;
 }
 
 export interface PostDataType {

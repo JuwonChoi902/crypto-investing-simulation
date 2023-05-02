@@ -146,7 +146,7 @@ export default function LikeHistory({ profileId }: LikeHistoryProps) {
         </SelectAll>
         <Pages page={page} setPage={setPage} postNumber={postNumber} limit={15} />
         <DeleteAndWrite>
-          {profileId === loginUserId ? <DeleteBtn>삭제</DeleteBtn> : null}
+          {profileId === loginUserId ? <DeleteBtn>좋아요 취소</DeleteBtn> : null}
           <WriteBtn
             onClick={() => {
               if (!loginUserToken) {

@@ -94,21 +94,21 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
   };
 
   const deleteChecked = () => {
-    const headers: HeadersType = {
-      'Content-Type': 'application/json;charset=utf-8',
-    };
-
-    if (loginUserToken) {
-      headers.Authorization = `Bearer ${loginUserToken}`;
-    } else {
-      delete headers.Authorization;
-    }
-
-    if (loginUserToken) {
+    if (!loginUserToken) {
       if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
         navigate('/login');
       }
     } else if (window.confirm('선택된 게시글을 삭제하시겠습니까?') === true) {
+      const headers: HeadersType = {
+        'Content-Type': 'application/json;charset=utf-8',
+      };
+
+      if (loginUserToken) {
+        headers.Authorization = `Bearer ${loginUserToken}`;
+      } else {
+        delete headers.Authorization;
+      }
+
       fetch(`http://pien.kr:4000/community/post`, {
         method: 'DELETE',
         headers: Object.entries(headers).map(([key, value]) => [key, value || '']),

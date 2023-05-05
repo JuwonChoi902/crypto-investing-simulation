@@ -18,7 +18,7 @@ export default function NeedHelp() {
           <TextBox>
             <HelpTitle>24시간 상담 가능</HelpTitle>
             <HelpDesc>도움이 필요하시다면 24시간 대기중인 상담원이 상담해드립니다.</HelpDesc>
-            <HelpLink>상담하기</HelpLink>
+            <HelpLink onClick={() => alert('서비스 준비중입니다.')}>상담하기</HelpLink>
           </TextBox>
         </MenuCard>
         <MenuCard>
@@ -28,7 +28,7 @@ export default function NeedHelp() {
           <TextBox>
             <HelpTitle>자주 묻는 질문</HelpTitle>
             <HelpDesc>자주 묻는 질문에 대한 자세한 답변을 살펴보세요.</HelpDesc>
-            <HelpLink>보러가기</HelpLink>
+            <HelpLink onClick={() => alert('서비스 준비중입니다.')}>보러가기</HelpLink>
           </TextBox>
         </MenuCard>
         <MenuCard>
@@ -38,7 +38,7 @@ export default function NeedHelp() {
           <TextBox>
             <HelpTitle>커뮤니티</HelpTitle>
             <HelpDesc>다른 사람들과 투자 정보를 공유하고 친구가 되어보세요.</HelpDesc>
-            <HelpLink onClick={() => navigate('/community')}>방문하기</HelpLink>
+            <HelpLink onClick={() => navigate('/community/list')}>방문하기</HelpLink>
           </TextBox>
         </MenuCard>
       </MenuBox>

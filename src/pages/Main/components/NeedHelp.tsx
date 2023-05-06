@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router';
 import React from 'react';
 import styled from 'styled-components';
-import support from '../Images/support.png';
-import faq from '../Images/faq.png';
-import community from '../Images/community.png';
+import support from '../images/support.png';
+import faq from '../images/faq.png';
+import community from '../images/community.png';
 
 export default function NeedHelp() {
   const navigate = useNavigate();

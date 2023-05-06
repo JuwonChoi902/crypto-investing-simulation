@@ -8,6 +8,7 @@ import WannaRich from './components/WannaRich';
 export default function Main() {
   const loginUserToken = localStorage.getItem('accessToken');
   const [isLogin, setIsLogin] = useState<boolean>(false);
+  const [volume, setVolume] = useState<number | undefined>();
 
   useEffect(() => {
     if (loginUserToken) setIsLogin(true);
@@ -17,8 +18,8 @@ export default function Main() {
   return (
     <OuterBox>
       {isLogin ? null : <WannaRich />}
-      <BillBoard />
-      <Popular />
+      <BillBoard volume={volume} />
+      <Popular setVolume={setVolume} />
       <NeedHelp />
     </OuterBox>
   );

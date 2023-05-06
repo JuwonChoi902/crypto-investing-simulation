@@ -22,6 +22,14 @@ export default function Login() {
     const { email, name, picture } = userData as UserType;
     setUserInfo({ email, name, profileImage: picture });
   }
+  const loginUserToken = localStorage.getItem('accessToken');
+
+  useEffect(() => {
+    if (loginUserToken) {
+      alert('이미 로그인 하셨습니다.');
+      navigate('/main');
+    }
+  }, [loginUserToken]);
 
   useEffect(() => {
     /* global google */
@@ -73,7 +81,6 @@ export default function Login() {
           </YellowBox>
           <LineBox>
             <Line />
-            <LineText>또는</LineText>
             <Line />
           </LineBox>
           <GoogleApple>
@@ -136,11 +143,6 @@ const LineBox = styled.div`
   width: 384px;
   height: 56px;
   color: ${(props) => props.theme.style.grey};
-`;
-
-const LineText = styled.div`
-  width: 100px;
-  margin-left: 15px;
 `;
 
 const Line = styled.div`

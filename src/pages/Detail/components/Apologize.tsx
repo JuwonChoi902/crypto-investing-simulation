@@ -21,7 +21,7 @@ export default function Apologize() {
           </div>
         </Tail>
         <ButtonBox>
-          <ConfirmBtn type='button' onClick={() => navigate('/community')}>
+          <ConfirmBtn type='button' onClick={() => navigate('/community/list')}>
             확인
           </ConfirmBtn>
         </ButtonBox>

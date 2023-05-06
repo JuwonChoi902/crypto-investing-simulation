@@ -35,11 +35,13 @@ const OuterBox = styled.div`
 
 const BillBoardInnerBox = styled.div`
   display: flex;
+  align-items: center;
 `;
 const Boards = styled.div`
   display: flex;
   flex-direction: column;
   margin: 0px 20px;
+  align-items: center;
   width: 250px;
 `;
 const BoardTitle = styled.div`

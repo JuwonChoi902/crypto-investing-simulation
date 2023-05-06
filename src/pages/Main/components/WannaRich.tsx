@@ -1,12 +1,16 @@
 import React from 'react';
+import { useNavigate } from 'react-router';
 import styled from 'styled-components';
 
 export default function WannaRich() {
+  const navigate = useNavigate();
   return (
     <OuterBox>
       <TitleBox>부자가 되고 싶으세요?</TitleBox>
       <ButtonBox>
-        <button type='button'>회원가입</button>
+        <button type='button' onClick={() => navigate('/login')}>
+          회원가입
+        </button>
       </ButtonBox>
     </OuterBox>
   );

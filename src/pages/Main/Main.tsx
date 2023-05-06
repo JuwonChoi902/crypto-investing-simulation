@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import Login from '../Login/Login';
 import BillBoard from './components/BillBoard';
 import Popular from './components/Popular';
 import NeedHelp from './components/NeedHelp';
@@ -11,9 +10,9 @@ export default function Main() {
   const [isLogin, setIsLogin] = useState<boolean>(false);
 
   useEffect(() => {
-    if (localStorage.getItem('accessToken')) setIsLogin(true);
+    if (loginUserToken) setIsLogin(true);
     else setIsLogin(false);
-  }, [localStorage]);
+  }, [loginUserToken]);
 
   return (
     <OuterBox>

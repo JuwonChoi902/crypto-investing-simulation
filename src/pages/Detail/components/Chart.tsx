@@ -16,23 +16,27 @@ const initialData = [
   { time: '2018-12-31', open: 109.87, high: 114.69, low: 85.66, close: 111.26 },
 ];
 
-export default function Chart() {
+type ChartProps = {
+  symbol: string;
+};
+
+export default function Chart({ symbol }: ChartProps) {
   const chartRef = useRef<HTMLDivElement>(null);
   const [candleData, setCandleData] = useState<CandleData>();
 
   // useEffect(() => {
-  //   const newSocket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@ticker');
+  //   const newSocket = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol}@ticker`);
 
   //   newSocket.addEventListener('message', (message) => {
   //     setSymbolTicker(JSON.parse(message.data));
   //   });
   // }, []);
 
-  useEffect(() => {
-    fetch('https://binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h', { mode: 'no-cors' })
-      .then((res) => res.json())
-      .then((data) => console.log(data));
-  }, []);
+  // useEffect(() => {
+  //   fetch('https://binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h', { mode: 'no-cors' })
+  //     .then((res) => res.json())
+  //     .then((data) => console.log(data));
+  // }, []);
 
   useEffect(() => {
     const input = chartRef.current as HTMLDivElement;

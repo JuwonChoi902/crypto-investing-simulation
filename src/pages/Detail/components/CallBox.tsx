@@ -11,13 +11,14 @@ interface CallDataType {
 }
 type CallBoxProps = {
   price: number | undefined;
+  symbol: string;
 };
 
-export default function CallBox({ price }: CallBoxProps) {
+export default function CallBox({ price, symbol }: CallBoxProps) {
   const [book, setBook] = useState<CallDataType>();
   const [priceColor, setPriceColor] = useState<string>('');
   useEffect(() => {
-    const newSocket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@depth20');
+    const newSocket = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol}@depth20`);
 
     newSocket.addEventListener('message', (message) => {
       setBook(JSON.parse(message.data));

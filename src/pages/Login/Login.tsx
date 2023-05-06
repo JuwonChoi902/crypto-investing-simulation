@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import jwtDecode from 'jwt-decode';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import present from './images/present.png';
 import userImg from './images/user.png';
 
@@ -16,6 +16,7 @@ interface UserType {
 export default function Login() {
   const [userInfo, setUserInfo] = useState<UserType>();
   const navigate = useNavigate();
+  const params = useParams();
 
   function handleCredentialResponse(response: any) {
     const userData = jwtDecode(response.credential);
@@ -25,7 +26,7 @@ export default function Login() {
   const loginUserToken = localStorage.getItem('accessToken');
 
   useEffect(() => {
-    if (loginUserToken) {
+    if (loginUserToken && params.id === 'login') {
       alert('이미 로그인 하셨습니다.');
       navigate('/main');
     }

@@ -13,15 +13,14 @@ export default function Main() {
   useEffect(() => {
     if (localStorage.getItem('accessToken')) setIsLogin(true);
     else setIsLogin(false);
-  }, [localStorage.getItem('accessToken')]);
+  }, [localStorage]);
 
   return (
     <OuterBox>
-      {isLogin ? null : <Login />}
+      {isLogin ? null : <WannaRich />}
       <BillBoard />
       <Popular />
       <NeedHelp />
-      {isLogin ? null : <WannaRich />}
     </OuterBox>
   );
 }

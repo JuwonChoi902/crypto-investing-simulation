@@ -4,10 +4,12 @@ import { SymbolTickerTypes } from '../../../typing/type';
 
 type OverviewProps = {
   symbolTicker: SymbolTickerTypes | undefined;
+  symbol: string;
 };
 
-export default function Overview({ symbolTicker }: OverviewProps) {
+export default function Overview({ symbolTicker, symbol }: OverviewProps) {
   const [priceColor, setPriceColor] = useState<string>('');
+  const thisSymbol = symbol.slice(0, symbol.indexOf('usdt')).toUpperCase() || 'BTC';
 
   const price = Number(symbolTicker?.c);
   const ref = useRef<number>();
@@ -24,7 +26,7 @@ export default function Overview({ symbolTicker }: OverviewProps) {
 
   return (
     <OuterBox>
-      <CoinTitle>BTC/BUSD</CoinTitle>
+      <CoinTitle>{thisSymbol}/BUSD</CoinTitle>
       <CoinOverview>
         <MarketPrice>
           <Price1 priceColor={priceColor}>

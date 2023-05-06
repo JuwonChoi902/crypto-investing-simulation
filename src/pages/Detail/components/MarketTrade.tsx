@@ -4,13 +4,14 @@ import { TradeDataTypes } from '../../../typing/type';
 
 type MarketTradeBoxProps = {
   price: number | undefined;
+  symbol: string;
 };
 
-export default function MarketTradeBox({ price }: MarketTradeBoxProps) {
+export default function MarketTradeBox({ price, symbol }: MarketTradeBoxProps) {
   const [tradeData, setTradeData] = useState<TradeDataTypes>();
 
   useEffect(() => {
-    const newSocket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@aggTrade');
+    const newSocket = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol}@aggTrade`);
 
     newSocket.addEventListener('message', (message) => {
       setTradeData(JSON.parse(message.data));
@@ -20,8 +21,8 @@ export default function MarketTradeBox({ price }: MarketTradeBoxProps) {
   const ref = useRef<TradeDataTypes[]>([]);
 
   useEffect(() => {
-    if (tradeData && ref.current.length < 20) ref.current.unshift(tradeData);
-    if (tradeData && ref.current.length >= 20) {
+    if (tradeData && ref.current.length < 30) ref.current.unshift(tradeData);
+    if (tradeData && ref.current.length >= 30) {
       ref.current.pop();
       ref.current.unshift(tradeData);
     }

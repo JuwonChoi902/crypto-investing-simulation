@@ -35,7 +35,7 @@ export default function UserProfile({ profileId }: UserProfileProps) {
 
   const headerText: [string, number | undefined][] = [
     ['작성글', userData?.publishedPost],
-    ['작성댓글', userData?.yieldPercent],
+    ['작성댓글', userData?.publishedReply],
     ['팔로워', 0],
   ];
 

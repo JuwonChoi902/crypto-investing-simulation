@@ -91,6 +91,56 @@ export default function LikeHistory({ profileId }: LikeHistoryProps) {
       setChecked([]);
     }
   };
+  console.log(checked);
+
+  const deleteLikes = () => {
+    if (!loginUserToken) {
+      if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+        navigate('login');
+      }
+    } else {
+      const headers: HeadersType = {
+        'Content-Type': 'application/json;charset=utf-8',
+      };
+
+      if (loginUserToken) {
+        headers.Authorization = `Bearer ${loginUserToken}`;
+      } else {
+        delete headers.Authorization;
+      }
+
+      if (window.confirm('선택한 좋아요를 취소하시겠습니까?') === true) {
+        fetch(`http://pien.kr:4000/community/like`, {
+          method: 'DELETE',
+          headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
+          body: JSON.stringify({ postId: checked.map((str) => Number(str)) }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.isSuccess) {
+              fetch(`http://pien.kr:4000/community/like/user/${profileId}?page=${page}&number=15`, {
+                headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
+              })
+                .then((res) => res.json())
+                .then((data) => {
+                  if (data.isSuccess) {
+                    setPostNumber(data.data.number);
+                    setPostsData(
+                      data.data.post.map((el: PostDataType) => ({
+                        ...el,
+                        created_at: dateParsing(el.created_at),
+                      })),
+                    );
+                  } else {
+                    alert(data.message);
+                    navigate('/community/list');
+                  }
+                });
+            } else alert(data.message);
+          });
+      }
+    }
+  };
 
   return (
     <OuterBox>
@@ -146,7 +196,7 @@ export default function LikeHistory({ profileId }: LikeHistoryProps) {
         </SelectAll>
         <Pages page={page} setPage={setPage} postNumber={postNumber} limit={15} />
         <DeleteAndWrite>
-          {profileId === loginUserId ? <DeleteBtn>좋아요 취소</DeleteBtn> : null}
+          {profileId === loginUserId ? <DeleteBtn onClick={deleteLikes}>좋아요 취소</DeleteBtn> : null}
           <WriteBtn
             onClick={() => {
               if (!loginUserToken) {

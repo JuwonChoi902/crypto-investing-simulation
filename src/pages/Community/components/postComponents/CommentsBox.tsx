@@ -28,15 +28,22 @@ export default function CommentsBox({
   const [editing, setEditing] = useState<number | null>(null);
   const [editingComment, setEditingComment] = useState<string>();
   const [replyComment, setReplyComment] = useState<string>();
-  const [dropBoxIsOpen, setDropBoxIsOpen] = useState<boolean>(false);
+  const [dropBox, setDropBox] = useState<number | null>(null);
+  const [countAll, setCountAll] = useState<number>(0);
 
   const loginUserNick = localStorage.getItem('nickname');
   const loginUserToken = localStorage.getItem('accessToken');
   const loginUserId = Number(localStorage.getItem('id'));
   const params = useParams();
   const navigate = useNavigate();
-  const dropBoxRef = useRef<HTMLDivElement>(null);
-  const nickBoxRef = useRef<HTMLDivElement>(null);
+
+  const dropBoxRefs = useRef<Array<React.RefObject<HTMLDivElement> | undefined>>();
+  const nickBoxRefs = useRef<Array<React.RefObject<HTMLDivElement> | undefined>>();
+
+  useEffect(() => {
+    dropBoxRefs.current = Array.from({ length: countAll }, () => React.createRef<HTMLDivElement>());
+    nickBoxRefs.current = Array.from({ length: countAll }, () => React.createRef<HTMLDivElement>());
+  }, [countAll]);
 
   const dateParsing = (date: string): [string, boolean] => {
     const theDate = new Date(date);
@@ -106,6 +113,7 @@ export default function CommentsBox({
             let count = 0;
             const temp = [];
             const obj: IndexObjectType = {};
+            setCountAll(data.data.length);
 
             for (let i = 0; i < data.data.length; i += 1) {
               if (!data.data[i].deleted_at) {
@@ -149,23 +157,24 @@ export default function CommentsBox({
   useEffect(() => {
     const changeDropState = (e: CustomEvent<MouseEvent>) => {
       if (
-        dropBoxRef.current &&
-        nickBoxRef &&
-        !nickBoxRef.current?.contains(e.target as Node) &&
-        !dropBoxRef.current?.contains(e.target as Node)
+        dropBox !== null &&
+        nickBoxRefs.current?.[dropBox]?.current &&
+        dropBoxRefs.current?.[dropBox]?.current &&
+        !dropBoxRefs.current?.[dropBox]?.current?.contains(e.target as Node) &&
+        !nickBoxRefs.current?.[dropBox]?.current?.contains(e.target as Node)
       ) {
-        setDropBoxIsOpen((cur) => !cur);
+        setDropBox(null);
       }
     };
 
-    if (dropBoxIsOpen) {
+    if (dropBox !== null) {
       window.addEventListener('click', changeDropState as EventListener);
     }
 
     return () => {
       window.removeEventListener('click', changeDropState as EventListener);
     };
-  }, [dropBoxIsOpen]);
+  }, [dropBox]);
 
   const makeComment = () => {
     if (commentWrite === '') {
@@ -185,6 +194,7 @@ export default function CommentsBox({
             let count = 0;
             const temp = [];
             const obj: IndexObjectType = {};
+            setCountAll(data.data.length);
 
             for (let i = 0; i < data.data.length; i += 1) {
               if (!data.data[i].deleted_at) {
@@ -254,6 +264,7 @@ export default function CommentsBox({
                   let count = 0;
                   const temp = [];
                   const obj: IndexObjectType = {};
+                  setCountAll(data.data.length);
 
                   for (let i = 0; i < data.data.length; i += 1) {
                     if (!data.data[i].deleted_at) {
@@ -312,6 +323,7 @@ export default function CommentsBox({
             let count = 0;
             const temp = [];
             const obj: IndexObjectType = {};
+            setCountAll(data.data.length);
 
             for (let i = 0; i < data.data.length; i += 1) {
               if (!data.data[i].deleted_at) {
@@ -386,6 +398,7 @@ export default function CommentsBox({
                   let count = 0;
                   const temp = [];
                   const obj: IndexObjectType = {};
+                  setCountAll(data.data.length);
 
                   for (let i = 0; i < data.data.length; i += 1) {
                     if (!data.data[i].deleted_at) {
@@ -494,10 +507,10 @@ export default function CommentsBox({
                   <img src={el.user.profileImage || user} alt='user' />
                 </UserImg>
                 <CommentTextBox>
-                  <CommentUserNick ref={nickBoxRef} onClick={() => setDropBoxIsOpen((current) => !current)}>
+                  <CommentUserNick ref={nickBoxRefs.current?.[i]} onClick={() => setDropBox(i)}>
                     {el.user.nickname}
-                    {dropBoxIsOpen ? (
-                      <UserDropBox ref={dropBoxRef}>
+                    {dropBox === i ? (
+                      <UserDropBox ref={dropBoxRefs.current?.[i]}>
                         <ul>
                           <li
                             role='presentation'
@@ -720,10 +733,13 @@ const Comment = styled.div<{ index: number; isThisOrigin: boolean; isThisDeleted
 
 const CommentTextBox = styled.div``;
 const CommentUserNick = styled.div`
+  display: inline-block;
+  width: auto;
   font-size: 13px;
   font-weight: bold;
   margin-bottom: 6px;
   position: relative;
+  white-space: nowrap;
 
   &:hover {
     cursor: pointer;

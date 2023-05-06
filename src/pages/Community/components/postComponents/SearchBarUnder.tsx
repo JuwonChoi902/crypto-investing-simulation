@@ -89,7 +89,6 @@ export default function SearchBarUnder({
       window.removeEventListener('click', changeDropState as EventListener);
     };
   }, [searchDropIsOpen]);
-  console.log(searchFilter, searchFilterNow);
 
   const search = () => {
     const headers: HeadersType = {

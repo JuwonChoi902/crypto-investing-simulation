@@ -8,6 +8,7 @@ export interface UserDataType {
   yieldPercent?: number;
   email?: string;
   publishedPost?: number;
+  publishedReply?: number;
 }
 
 export interface PostDataType {

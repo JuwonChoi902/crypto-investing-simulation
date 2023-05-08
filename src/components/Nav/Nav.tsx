@@ -8,7 +8,6 @@ import menuRight from './images/menuRight.png';
 import user from './images/user.png';
 
 export default function Nav() {
-  const [navMenuNow, setNavMenuNow] = useState<string>('0');
   const [menuColor, setMenuColor] = useState<boolean>(false);
   const [userId, setUserId] = useState<boolean>(false);
   const navigate = useNavigate();
@@ -16,6 +15,8 @@ export default function Nav() {
   useEffect(() => {
     if (localStorage.getItem('id')) {
       setUserId(true);
+    } else {
+      setUserId(false);
     }
   }, [localStorage.getItem('id')]);
 
@@ -30,20 +31,14 @@ export default function Nav() {
           {menuColor ? <img src={menuYellow} alt='menuYellow' /> : <img src={menuLeft} alt='menuLeft' />}
         </NavButtonImgBox>
         <NavMenuBtn
-          id='1'
-          navMenuNow={navMenuNow}
           onClick={() => {
-            setNavMenuNow('1');
             navigate('/market');
           }}
         >
           구매하기
         </NavMenuBtn>
         <NavMenuBtn
-          id='2'
-          navMenuNow={navMenuNow}
           onClick={() => {
-            setNavMenuNow('2');
             navigate('/community/list');
           }}
         >
@@ -55,18 +50,14 @@ export default function Nav() {
           <NavLogoutBtn
             onClick={() => {
               localStorage.clear();
-              setUserId(false);
-              navigate('/main');
+              navigate('/login');
             }}
           >
             로그아웃
           </NavLogoutBtn>
         ) : (
           <NavLoginBtn
-            id='3'
-            navMenuNow={navMenuNow}
             onClick={() => {
-              setNavMenuNow('3');
               navigate('/login');
             }}
           >
@@ -145,10 +136,9 @@ const MenuButtonBox = styled.div`
   }
 `;
 
-const NavMenuBtn = styled.div<{ id: string; navMenuNow: string }>`
+const NavMenuBtn = styled.div`
   font-size: 14px;
   margin: 8px;
-  color: ${(props) => (props.id === props.navMenuNow ? props.theme.style.yellow : 'black')};
 
   &:hover {
     cursor: pointer;
@@ -156,10 +146,9 @@ const NavMenuBtn = styled.div<{ id: string; navMenuNow: string }>`
   }
 `;
 
-const NavLoginBtn = styled.div<{ id: string; navMenuNow: string }>`
+const NavLoginBtn = styled.div`
   font-size: 14px;
   margin: 8px;
-  color: ${(props) => (props.id === props.navMenuNow ? props.theme.style.yellow : 'black')};
 
   &:hover {
     cursor: pointer;

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import jwtDecode from 'jwt-decode';
-import { useNavigate, useParams } from 'react-router';
+import { useNavigate } from 'react-router';
 import present from './images/present.png';
 import userImg from './images/user.png';
 
@@ -16,7 +16,6 @@ interface UserType {
 export default function Login() {
   const [userInfo, setUserInfo] = useState<UserType>();
   const navigate = useNavigate();
-  const params = useParams();
 
   function handleCredentialResponse(response: any) {
     const userData = jwtDecode(response.credential);
@@ -26,13 +25,11 @@ export default function Login() {
   const loginUserToken = localStorage.getItem('accessToken');
 
   useEffect(() => {
-    if (loginUserToken && params.id === 'login') {
+    if (loginUserToken) {
       alert('이미 로그인 하셨습니다.');
       navigate('/main');
     }
-  }, [loginUserToken]);
 
-  useEffect(() => {
     /* global google */
     if (google)
       google.accounts.id.initialize({
@@ -95,7 +92,7 @@ export default function Login() {
 
 const OuterBox = styled.div`
   ${(props) => props.theme.variables.flex()}
-  padding: 80px 24px 80px 24px;
+  padding: 120px 24px 120px 24px;
   background-color: ${(props) => props.theme.style.backgroundGrey};
 `;
 

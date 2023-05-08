@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { SymbolTickerTypes } from '../../../typing/type';
+import CustomSpinner from './CustomSpinner';
 
 type OverviewProps = {
   symbolTicker: SymbolTickerTypes | undefined;
@@ -28,72 +29,108 @@ export default function Overview({ symbolTicker, symbol }: OverviewProps) {
     <OuterBox>
       <CoinTitle>{thisSymbol}/BUSD</CoinTitle>
       <CoinOverview>
-        <MarketPrice>
-          <Price1 priceColor={priceColor}>
-            {Number(symbolTicker?.c).toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-          </Price1>
-          <Price2>
-            $
-            {Number(symbolTicker?.c).toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-          </Price2>
-        </MarketPrice>
-        <OverViewMenu>
-          <MenuTitle>24시간 변동</MenuTitle>
-          <ChangeInADay whatColor={symbolTicker?.p}>
-            <span>
-              {Number(symbolTicker?.p).toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </span>
-            <span>
-              {Number(symbolTicker?.P) >= 0 ? '+' : null}
-              {Number(symbolTicker?.P).toFixed(2)}%
-            </span>
-          </ChangeInADay>
-        </OverViewMenu>
-        <OverViewMenu>
-          <MenuTitle>24시간 최고가</MenuTitle>
-          <MenuIndex>
-            {Number(symbolTicker?.h).toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-          </MenuIndex>
-        </OverViewMenu>
-        <OverViewMenu>
-          <MenuTitle>24시간 최저가</MenuTitle>
-          <MenuIndex>
-            {Number(symbolTicker?.l).toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-          </MenuIndex>
-        </OverViewMenu>
-        <OverViewMenu>
-          <MenuTitle>24시간 거래량(BTC)</MenuTitle>
-          <MenuIndex>
-            {Number(symbolTicker?.v).toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-          </MenuIndex>
-        </OverViewMenu>
-        <OverViewMenu>
-          <MenuTitle>24시간 거래량(BUSD)</MenuTitle>
-          <MenuIndex>
-            {Number(symbolTicker?.q).toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-          </MenuIndex>
-        </OverViewMenu>
+        <MarketPriceOuter>
+          {symbolTicker?.c ? (
+            <MarketPrice>
+              <Price1 priceColor={priceColor}>
+                {Number(symbolTicker?.c).toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </Price1>
+              <Price2>
+                $
+                {Number(symbolTicker?.c).toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </Price2>
+            </MarketPrice>
+          ) : (
+            <CustomSpinner />
+          )}
+        </MarketPriceOuter>
+        <OverViewMenuOuter>
+          {symbolTicker?.p ? (
+            <OverViewMenu>
+              <MenuTitle>24시간 변동</MenuTitle>
+              <ChangeInADay whatColor={symbolTicker?.p}>
+                <span>
+                  {Number(symbolTicker?.p).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+                <span>
+                  {Number(symbolTicker?.P) >= 0 ? '+' : null}
+                  {Number(symbolTicker?.P).toFixed(2)}%
+                </span>
+              </ChangeInADay>
+            </OverViewMenu>
+          ) : (
+            <CustomSpinner />
+          )}
+        </OverViewMenuOuter>
+        <OverViewMenuOuter>
+          {symbolTicker?.h ? (
+            <OverViewMenu>
+              <MenuTitle>24시간 최고가</MenuTitle>
+              <MenuIndex>
+                {Number(symbolTicker?.h).toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </MenuIndex>
+            </OverViewMenu>
+          ) : (
+            <CustomSpinner />
+          )}
+        </OverViewMenuOuter>
+        <OverViewMenuOuter>
+          {symbolTicker?.l ? (
+            <OverViewMenu>
+              <MenuTitle>24시간 최저가</MenuTitle>
+              <MenuIndex>
+                {Number(symbolTicker?.l).toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </MenuIndex>
+            </OverViewMenu>
+          ) : (
+            <CustomSpinner />
+          )}
+        </OverViewMenuOuter>
+        <OverViewMenuOuter>
+          {symbolTicker?.v ? (
+            <OverViewMenu>
+              <MenuTitle>24시간 거래량(BTC)</MenuTitle>
+              <MenuIndex>
+                {Number(symbolTicker?.v).toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </MenuIndex>
+            </OverViewMenu>
+          ) : (
+            <CustomSpinner />
+          )}
+        </OverViewMenuOuter>
+        <OverViewMenuOuter>
+          {symbolTicker?.q ? (
+            <OverViewMenu>
+              <MenuTitle>24시간 거래량(BUSD)</MenuTitle>
+              <MenuIndex>
+                {Number(symbolTicker?.q).toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </MenuIndex>
+            </OverViewMenu>
+          ) : (
+            <CustomSpinner />
+          )}
+        </OverViewMenuOuter>
       </CoinOverview>
     </OuterBox>
   );
@@ -121,9 +158,18 @@ const CoinTitle = styled.div`
 const CoinOverview = styled.div`
   display: flex;
 `;
+const MarketPriceOuter = styled.div`
+  width: 104px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
 const MarketPrice = styled.div`
   width: 72px;
   padding-right: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 `;
 const Price1 = styled.div<{ priceColor: string }>`
   font-size: 16px;
@@ -135,6 +181,14 @@ const Price2 = styled.div`
   font-size: 12px;
   font-weight: 600;
 `;
+
+const OverViewMenuOuter = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 120px;
+`;
+
 const OverViewMenu = styled.div`
   display: flex;
   flex-direction: column;
@@ -142,6 +196,7 @@ const OverViewMenu = styled.div`
   font-size: 12px;
   padding-right: 32px;
   font-weight: 600;
+  white-space: nowrap;
 `;
 const MenuTitle = styled.div`
   color: ${(props) => props.theme.style.grey};

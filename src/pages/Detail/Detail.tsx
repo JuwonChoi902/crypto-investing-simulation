@@ -53,7 +53,7 @@ export default function Detail() {
         </RightBox>
       </CoinDetail>
       <OrderInfo />
-      {isApVisible ? <Apologize /> : null};
+      {/* {isApVisible ? <Apologize /> : null}; */}
     </OuterBox>
   );
 }

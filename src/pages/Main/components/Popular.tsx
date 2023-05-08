@@ -132,7 +132,7 @@ export default function Popular({ setVolume }: PopularProps) {
         <CategoryBox>
           <Category>
             <Tap1>Name</Tap1>
-            <Tap2>가격</Tap2>
+            <Tap2>실시간 가격(달러)</Tap2>
             <Tap3>24시간 변동</Tap3>
             <Tap4>24시간 거래량</Tap4>
           </Category>
@@ -155,7 +155,7 @@ export default function Popular({ setVolume }: PopularProps) {
               </CryptoTap1>
               <CryptoTap2 thisColor={priceColor[index]}>
                 {coin.price ? (
-                  `${coin.price}`
+                  `$${coin.price}`
                 ) : (
                   <CryptoTap2Spinner>
                     <CustomSpinner />
@@ -173,7 +173,7 @@ export default function Popular({ setVolume }: PopularProps) {
               </CryptoTap3>
               <CryptoTap4>
                 {coin.dayChange ? (
-                  `${coin.volume}`
+                  `$${coin.volume}`
                 ) : (
                   <CryptoTap4Spinner>
                     <CustomSpinner />

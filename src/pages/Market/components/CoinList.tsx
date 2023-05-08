@@ -63,7 +63,13 @@ export default function CoinList({ tickers, priceColor }: CoinListProps) {
         </FilterTap>
         <Coins>
           {tickers.slice(0, 10).map((coin, index) => (
-            <Coin key={coin.id}>
+            <Coin
+              key={coin.id}
+              isMounted={coin.dayChange}
+              onClick={() => {
+                if (coin.dayChange) navigate('/detail', { state: { symbol: coin.symbol } });
+              }}
+            >
               {coin.dayChange ? (
                 <CoinInnerBox>
                   <img src={coin.imgURL} alt={coinIcon} />
@@ -76,9 +82,7 @@ export default function CoinList({ tickers, priceColor }: CoinListProps) {
                   <CoinChange dayChange={coin.dayChange}>{coin.dayChange}</CoinChange>
                   <CoinVolume>${coin.volume}</CoinVolume>
                   <CoinMaketCap>${coin.marketCap}</CoinMaketCap>
-                  <CoinTrade onClick={() => navigate('/detail', { state: { symbol: coin.symbol } })}>
-                    거래하기
-                  </CoinTrade>
+                  <CoinTrade>거래하기</CoinTrade>
                 </CoinInnerBox>
               ) : (
                 <CustomSpinner />
@@ -206,17 +210,16 @@ const FilterMarketCap = styled.div`
 
 const Coins = styled.div``;
 
-const Coin = styled.div`
+const Coin = styled.div<{ isMounted: string | undefined }>`
   display: flex;
   height: 64px;
   padding: 0 16px;
   align-items: center;
   justify-content: center;
   border-bottom: 1px solid #e9ecef;
-
   &:hover {
-    cursor: pointer;
-    background-color: ${(props) => props.theme.style.backgroundGrey};
+    cursor: ${(props) => (props.isMounted ? 'pointer' : 'normal')};
+    background-color: ${(props) => (props.isMounted ? props.theme.style.backgroundGrey : 'none')};
   }
 
   img {

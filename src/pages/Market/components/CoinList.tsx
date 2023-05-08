@@ -73,7 +73,7 @@ export default function CoinList({ tickers, priceColor }: CoinListProps) {
                   </CoinName>
 
                   <CoinPrice color={priceColor[index]}>${coin.price}</CoinPrice>
-                  <CoinChange isColor={coin.dayChange}>{coin.dayChange}</CoinChange>
+                  <CoinChange dayChange={coin.dayChange}>{coin.dayChange}</CoinChange>
                   <CoinVolume>${coin.volume}</CoinVolume>
                   <CoinMaketCap>${coin.marketCap}</CoinMaketCap>
                   <CoinTrade onClick={() => navigate('/detail', { state: { symbol: coin.symbol } })}>
@@ -256,15 +256,15 @@ const CoinPrice = styled.div<{ color: string | undefined }>`
     return 'black';
   }};
 `;
-const CoinChange = styled.div<{ isColor: string | undefined }>`
+const CoinChange = styled.div<{ dayChange: string | undefined }>`
   display: flex;
   justify-content: end;
   width: 200px;
   font-size: 16px;
   font-weight: 600;
   color: ${(props) => {
-    if (Number(props.isColor) === 0) return 'black';
-    return Number(props.isColor) > 0 ? props.theme.style.green : props.theme.style.red;
+    if (Number(props.dayChange) === 0) return 'black';
+    return Number(props.dayChange) > 0 ? props.theme.style.green : props.theme.style.red;
   }};
 `;
 const CoinVolume = styled.div`

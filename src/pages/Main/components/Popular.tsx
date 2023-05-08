@@ -1,147 +1,126 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router';
-import { SymbolTickerTypes, PopularCrypto } from '../../../typing/types';
+import { SymbolTickerTypes, CoinTypes } from '../../../typing/types';
 import bitCoin from '../images/bitcoin.png';
 import ethereum from '../images/ethereum.png';
 import usdc from '../images/usd.png';
 import tether from '../images/tether.png';
 import bnb from '../images/bnb.png';
+import coinImg from '../images/coinImg.png';
+import CustomSpinner from './CustomSpinner';
 
 type PopularProps = {
   setVolume: React.Dispatch<React.SetStateAction<number | undefined>>;
 };
 
+const tenDummyCoins: CoinTypes[] = [
+  { id: 1, name: 'Bitcoin', nick: 'BTC', symbol: 'btcusdt', imgURL: bitCoin, quantity: 19365700 },
+  { id: 2, name: 'Ethereum', nick: 'ETH', symbol: 'ethusdt', imgURL: ethereum, quantity: 120350515 },
+  { id: 3, name: 'TetherUS', nick: 'USDT', symbol: 'busdusdt', imgURL: tether, quantity: 82160000000 },
+  { id: 4, name: 'BNB', nick: 'BNB', symbol: 'bnbusdt', imgURL: bnb, quantity: 155900000 },
+  { id: 5, name: 'USD coin', nick: 'USDC', symbol: 'usdcusdt', imgURL: usdc, quantity: 30390000000 },
+];
+
 export default function Popular({ setVolume }: PopularProps) {
+  const [tickers, setTickers] = useState<CoinTypes[]>(tenDummyCoins);
+  const [priceColor, setPriceColor] = useState<string[]>(Array.from({ length: tickers.length }));
   const navigate = useNavigate();
-  const [BTCticker, setBTCticker] = useState<SymbolTickerTypes | undefined>();
-  const [ETHticker, setETHticker] = useState<SymbolTickerTypes | undefined>();
-  const [USDTticker, setUSDTticker] = useState<SymbolTickerTypes | undefined>();
-  const [BNBticker, setBNBticker] = useState<SymbolTickerTypes | undefined>();
-  const [USDCticker, setUSDCticker] = useState<SymbolTickerTypes | undefined>();
+  const priceRef = useRef<number[]>([]);
+
+  const unitParsing = (num: string) => {
+    const temp = Number(num);
+    let [divideNum, resString, fractionDigit] = [1, '', 2];
+    if (temp >= 1000000000) {
+      [divideNum, resString] = [1000000000, 'B'];
+    } else if (temp < 1000000000 && temp >= 1000000) {
+      [divideNum, resString] = [1000000, 'M'];
+    } else if (temp < 1000000 && temp >= 1000) {
+      [divideNum, resString] = [1000, 'K'];
+    } else fractionDigit = 4;
+
+    return `${(temp / divideNum).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: fractionDigit,
+    })}${resString}`;
+  };
 
   useEffect(() => {
-    const BTCSocket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@ticker');
-    const ETHSocket = new WebSocket('wss://stream.binance.com:9443/ws/ethusdt@ticker');
-    const USDTSocket = new WebSocket('wss://stream.binance.com:9443/ws/busdusdt@ticker');
-    const BNBSocket = new WebSocket('wss://stream.binance.com:9443/ws/bnbusdt@ticker');
-    const USDCSocket = new WebSocket('wss://stream.binance.com:9443/ws/usdcusdt@ticker');
+    const webSockets: WebSocket[] = tenDummyCoins.map(
+      (coin) => new WebSocket(`wss://stream.binance.com:9443/ws/${coin.symbol}@ticker`),
+    );
 
-    BTCSocket.addEventListener('message', (message) => {
-      setBTCticker(JSON.parse(message.data));
+    const updateTickerData = (index: number, data: SymbolTickerTypes) =>
+      new Promise<Array<CoinTypes | undefined>>((resolve) => {
+        setTickers((prevTickers) => {
+          const updatedTickers = [...prevTickers];
+          const prevPrice = priceRef.current[index];
+          const currentPrice = Number(data.c);
+
+          if (prevPrice !== undefined) {
+            if (currentPrice > prevPrice) {
+              setPriceColor((prevColors) => {
+                const colors = [...prevColors];
+                colors[index] = 'green';
+                return colors;
+              });
+            } else if (currentPrice < prevPrice) {
+              setPriceColor((prevColors) => {
+                const colors = [...prevColors];
+                colors[index] = 'red';
+                return colors;
+              });
+            } else {
+              setPriceColor((prevColors) => {
+                const colors = [...prevColors];
+                colors[index] = 'black';
+                return colors;
+              });
+            }
+          }
+
+          priceRef.current[index] = currentPrice;
+
+          updatedTickers[index] = {
+            ...updatedTickers[index],
+            price: unitParsing(data.c),
+            dayChange: Number(data.P) > 0 ? `+${Number(data.P).toFixed(2)}` : `${Number(data.P).toFixed(2)}`,
+            volume: unitParsing(data.q),
+            volumeOrigin: data.q,
+            marketCap: unitParsing(String(Number(data.c) * updatedTickers[index].quantity)),
+          };
+
+          return updatedTickers;
+        });
+        resolve([]);
+      });
+
+    const attachWebSocketListeners = (webSocket: WebSocket, index: number) =>
+      new Promise<void>((resolve) => {
+        webSocket.addEventListener('message', (event) => {
+          const data = JSON.parse(event.data) as SymbolTickerTypes;
+          updateTickerData(index, data).then(() => {
+            resolve();
+          });
+        });
+      });
+
+    Promise.all(webSockets.map((webSocket, index) => attachWebSocketListeners(webSocket, index))).then(() => {
+      // 모든 웹소켓 연결 완료
     });
 
-    ETHSocket.addEventListener('message', (message) => {
-      setETHticker(JSON.parse(message.data));
-    });
-
-    USDTSocket.addEventListener('message', (message) => {
-      setUSDTticker(JSON.parse(message.data));
-    });
-
-    BNBSocket.addEventListener('message', (message) => {
-      setBNBticker(JSON.parse(message.data));
-    });
-
-    USDCSocket.addEventListener('message', (message) => {
-      setUSDCticker(JSON.parse(message.data));
-    });
+    return () => {
+      webSockets.forEach((webSocket) => {
+        webSocket.close();
+      });
+    };
   }, []);
 
-  const totalVolume =
-    (Number(BTCticker?.q || 0) +
-      Number(ETHticker?.q || 0) +
-      Number(USDTticker?.q || 0) +
-      Number(BNBticker?.q || 0) +
-      Number(USDCticker?.q || 0)) /
-    1000000;
+  const totalVoume = tickers.reduce((prev, cur) => prev + Number(cur.volumeOrigin), 0);
 
   useEffect(() => {
-    setVolume(totalVolume);
-  }, [totalVolume]);
-
-  const popularCrypto: PopularCrypto[] = [
-    {
-      id: 1,
-      name: 'Bitcoin',
-      nick: 'BTC',
-      symbol: 'btcusdt',
-      imgURL: bitCoin,
-      lastPrice: Number(BTCticker?.c || 0).toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
-      dayChange: Number(BTCticker?.P || 0).toFixed(2),
-      marketCap: (Number(BTCticker?.q || 0) / 1000000).toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
-    },
-    {
-      id: 2,
-      name: 'Ethereum',
-      nick: 'ETH',
-      symbol: 'ethusdt',
-      imgURL: ethereum,
-      lastPrice: Number(ETHticker?.c || 0).toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
-      dayChange: Number(ETHticker?.P || 0).toFixed(2),
-      marketCap: (Number(ETHticker?.q || 0) / 1000000).toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
-    },
-    {
-      id: 3,
-      name: 'TetherUS',
-      nick: 'USDT',
-      symbol: 'busdusdt',
-      imgURL: tether,
-      lastPrice: Number(USDTticker?.c || 0).toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
-      dayChange: Number(USDTticker?.P || 0).toFixed(2),
-      marketCap: (Number(USDTticker?.q || 0) / 1000000).toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
-    },
-    {
-      id: 4,
-      name: 'BNB',
-      nick: 'BNB',
-      symbol: 'bnbusdt',
-      imgURL: bnb,
-      lastPrice: Number(BNBticker?.c || 0).toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
-      dayChange: Number(BNBticker?.P || 0).toFixed(2),
-      marketCap: (Number(BNBticker?.q || 0) / 1000000).toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
-    },
-    {
-      id: 5,
-      name: 'USD coin',
-      nick: 'USDC',
-      symbol: 'usdcusdt',
-      imgURL: usdc,
-      lastPrice: Number(USDCticker?.c || 0).toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
-      dayChange: Number(USDCticker?.P || 0).toFixed(2),
-      marketCap: (Number(USDCticker?.q || 0) / 1000000).toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
-    },
-  ];
+    setVolume(totalVoume);
+  }, [totalVoume]);
 
   return (
     <OuterBox>
@@ -159,21 +138,48 @@ export default function Popular({ setVolume }: PopularProps) {
           </Category>
         </CategoryBox>
         <CryptoList>
-          {popularCrypto.map((el) => (
-            <Crypto
-              key={el.id}
-              onClick={() => navigate('/detail', { state: { symbol: el.symbol, img: el.imgURL } })}
-            >
+          {tickers.map((coin, index) => (
+            <Crypto key={coin.id} onClick={() => navigate('/detail', { state: { symbol: coin.symbol } })}>
               <CryptoTap1>
-                <img alt='coinImg' src={el.imgURL} />
-                <CryptoName>{el.name}</CryptoName>
-                <CryptoNick>{el.nick}</CryptoNick>
+                {coin.dayChange ? (
+                  <>
+                    <img src={coin.imgURL} alt={coinImg} />
+                    <CryptoName>{coin.name}</CryptoName>
+                    <CryptoNick>{coin.nick}</CryptoNick>
+                  </>
+                ) : (
+                  <CryptoTap1Spinner>
+                    <CustomSpinner />
+                  </CryptoTap1Spinner>
+                )}
               </CryptoTap1>
-              <CryptoTap2>${el.lastPrice || 0}</CryptoTap2>
-              <CryptoTap3 isPlusMinus={Number(el.dayChange)}>
-                {Number(el.dayChange) > 0 ? `+${el.dayChange}` : el.dayChange}%
+              <CryptoTap2 thisColor={priceColor[index]}>
+                {coin.price ? (
+                  `${coin.price}`
+                ) : (
+                  <CryptoTap2Spinner>
+                    <CustomSpinner />
+                  </CryptoTap2Spinner>
+                )}
+              </CryptoTap2>
+              <CryptoTap3 dayChange={coin.dayChange}>
+                {coin.dayChange ? (
+                  `${coin.dayChange}%`
+                ) : (
+                  <CryptoTap3Spinner>
+                    <CustomSpinner />
+                  </CryptoTap3Spinner>
+                )}
               </CryptoTap3>
-              <CryptoTap4>${el.marketCap.toLocaleString()}M</CryptoTap4>
+              <CryptoTap4>
+                {coin.dayChange ? (
+                  `${coin.volume}`
+                ) : (
+                  <CryptoTap4Spinner>
+                    <CustomSpinner />
+                  </CryptoTap4Spinner>
+                )}
+              </CryptoTap4>
             </Crypto>
           ))}
         </CryptoList>
@@ -239,6 +245,7 @@ const CryptoList = styled.div``;
 const Crypto = styled.div`
   display: flex;
   align-items: center;
+  justify-content: center;
   font-size: 16px;
   height: 32px;
   padding: 16px;
@@ -261,24 +268,51 @@ const CryptoTap1 = styled.div`
   margin-right: 130px;
   width: 100%;
 `;
-const CryptoTap2 = styled.div`
+const CryptoTap1Spinner = styled.div`
+  margin-left: 50px;
+`;
+
+const CryptoTap2 = styled.div<{ thisColor: string }>`
   width: 100%;
   margin-right: 50px;
-`;
-const CryptoTap3 = styled.div<{ isPlusMinus: number }>`
-  width: 100%;
-  margin-left: 0px;
+  font-weight: bold;
   color: ${(props) => {
-    if (props.isPlusMinus === 0) {
-      return 'black';
-    }
-    return props.isPlusMinus < 0 ? props.theme.style.red : props.theme.style.green;
+    if (props.thisColor === 'green') return props.theme.style.green;
+    if (props.thisColor === 'red') return props.theme.style.red;
+    return 'black';
   }};
 `;
+
+const CryptoTap2Spinner = styled.div`
+  margin-left: 30px;
+`;
+
+const CryptoTap3 = styled.div<{ dayChange: string | undefined }>`
+  width: 100%;
+  margin-left: 0px;
+  font-weight: bold;
+  color: ${(props) => {
+    if (Number(props.dayChange) === 0) {
+      return 'black';
+    }
+    return Number(props.dayChange) < 0 ? props.theme.style.red : props.theme.style.green;
+  }};
+`;
+
+const CryptoTap3Spinner = styled.div`
+  margin-left: 30px;
+`;
+
 const CryptoTap4 = styled.div`
   display: flex;
   justify-content: end;
   width: 100%;
+  font-weight: bold;
+`;
+
+const CryptoTap4Spinner = styled.div`
+  display: flex;
+  justify-content: end;
 `;
 
 const CryptoName = styled.div`

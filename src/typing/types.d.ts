@@ -129,17 +129,6 @@ export interface TradeDataTypes {
   M: boolean; // Ignore
 }
 
-export interface PopularCrypto {
-  id: number;
-  name: string;
-  nick: string;
-  imgURL: string;
-  lastPrice: string;
-  dayChange: string;
-  marketCap: string;
-  symbol: string;
-}
-
 export interface CoinTypes {
   id: number;
   name: string;
@@ -151,4 +140,5 @@ export interface CoinTypes {
   dayChange?: string;
   marketCap?: string;
   volume?: string;
+  volumeOrigin?: string;
 }

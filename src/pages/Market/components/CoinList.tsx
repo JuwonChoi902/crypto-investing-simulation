@@ -1,151 +1,41 @@
-import React, { PropsWithChildren, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import styled from 'styled-components';
+import Pages from './Pages';
+import CustomSpinner from './CustomSpinner';
 import star from '../images/star.png';
 import search from '../images/searchCoin.png';
 import coinIcon from '../images/mainIcon.png';
-import pageLeft from '../images/pageLeft.png';
-import pageRight from '../images/pageRight.png';
 import upDown from '../images/upDown.png';
-import upDownDown from '../images/upDownDown.png';
-import upDownUp from '../images/upDownUp.png';
+import { CoinTypes } from '../../../typing/types';
 
-interface Coin {
-  id: number;
-  name: string;
-  nick: string;
-  imgURL: string;
-  price: number;
-  change: number;
-  volume: number;
-  marketCap: number;
-}
+type CoinListProps = {
+  tickers: CoinTypes[];
+  priceColor: string[];
+};
 
-const CoinData: Coin[] = [
-  {
-    id: 1,
-    name: 'TetherUS',
-    nick: 'USDT',
-    price: 0.9985,
-    change: 0.1,
-    marketCap: 65879.56,
-    imgURL: 'www.naver.com',
-    volume: 32156.03,
-  },
-  {
-    id: 2,
-    name: 'TetherUS',
-    nick: 'USDT',
-    price: 0.9985,
-    change: -0.6,
-    marketCap: 65879.56,
-    imgURL: 'www.naver.com',
-    volume: 32156.03,
-  },
-  {
-    id: 3,
-    name: 'TetherUS',
-    nick: 'USDT',
-    price: 0.9985,
-    change: 0.5,
-    marketCap: 65879.56,
-    imgURL: 'www.naver.com',
-    volume: 32156.03,
-  },
-  {
-    id: 4,
-    name: 'TetherUS',
-    nick: 'USDT',
-    price: 0.9985,
-    change: 0.1,
-    marketCap: 65879.56,
-    imgURL: 'www.naver.com',
-    volume: 32156.03,
-  },
-  {
-    id: 5,
-    name: 'TetherUS',
-    nick: 'USDT',
-    price: 0.9985,
-    change: 0.1,
-    marketCap: 65879.56,
-    imgURL: 'www.naver.com',
-    volume: 32156.03,
-  },
-  {
-    id: 6,
-    name: 'TetherUS',
-    nick: 'USDT',
-    price: 0.9985,
-    change: 0.1,
-    marketCap: 65879.56,
-    imgURL: 'www.naver.com',
-    volume: 32156.03,
-  },
-  {
-    id: 7,
-    name: 'TetherUS',
-    nick: 'USDT',
-    price: 0.9985,
-    change: 0.1,
-    marketCap: 65879.56,
-    imgURL: 'www.naver.com',
-    volume: 32156.03,
-  },
-  {
-    id: 8,
-    name: 'TetherUS',
-    nick: 'USDT',
-    price: 0.9985,
-    change: 0,
-    marketCap: 65879.56,
-    imgURL: 'www.naver.com',
-    volume: 32156.03,
-  },
-  {
-    id: 9,
-    name: 'TetherUS',
-    nick: 'USDT',
-    price: 0.9985,
-    change: 0.1,
-    marketCap: 65879.56,
-    imgURL: 'www.naver.com',
-    volume: 32156.03,
-  },
-  {
-    id: 10,
-    name: 'TetherUS',
-    nick: 'USDT',
-    price: 0.9985,
-    change: 0.1,
-    marketCap: 65879.56,
-    imgURL: 'www.naver.com',
-    volume: 32156.03,
-  },
-];
-
-export default function CoinList() {
-  const [tickers, setTickers] = useState();
+export default function CoinList({ tickers, priceColor }: CoinListProps) {
   const navigate = useNavigate();
-
-  const newSocket = new WebSocket('wss://stream.binance.com:9443/ws/!miniTicker@arr');
-
-  newSocket.addEventListener('message', (message) => {
-    setTickers(JSON.parse(message.data));
-  });
+  const [page, setPage] = useState<number>(1);
+  const [category, setCategory] = useState<string>('2');
+  const coinNumber = 350;
 
   return (
     <OuterBox>
       <CategoryBox>
-        <CategoryName>
+        <CategoryName id='1' category={category} onClick={() => alert('서비스 준비중입니다.')}>
           <img src={star} alt='star' />
           즐겨찾기
         </CategoryName>
-        <CategoryName>전체</CategoryName>
+        <CategoryName id='2' category={category} onClick={() => setCategory('2')}>
+          전체
+        </CategoryName>
         <SearchBox>
           <img src={search} alt='search' />
-          <SearchTap placeholder='화폐 이름을 검색하세요' />
+          <SearchTap
+            placeholder='화폐 이름을 검색하세요'
+            onClick={() => alert('검색서비스는 현재 점검중입니다.')}
+          />
         </SearchBox>
       </CategoryBox>
       <CoinListBox>
@@ -155,11 +45,11 @@ export default function CoinList() {
             <img src={upDown} alt='updown' />
           </FilterName>
           <FilterPrice>
-            <div>가격</div>
+            <div>가격(달러)</div>
             <img src={upDown} alt='updown' />
           </FilterPrice>
           <FilterChange>
-            <div>1h</div>
+            <div>24시간 변동</div>
             <img src={upDown} alt='updown' />
           </FilterChange>
           <FilterVolume>
@@ -172,33 +62,33 @@ export default function CoinList() {
           </FilterMarketCap>
         </FilterTap>
         <Coins>
-          {CoinData.map((el) => (
-            <Coin key={el.id}>
-              <img src={coinIcon} alt='coinIcon' />
-              <CoinName>
-                <Nick>{el.nick}</Nick>
-                <Name>{el.name}</Name>
-              </CoinName>
+          {tickers.slice(0, 10).map((coin, index) => (
+            <Coin key={coin.id}>
+              {coin.dayChange ? (
+                <CoinInnerBox>
+                  <img src={coin.imgURL} alt={coinIcon} />
+                  <CoinName>
+                    <Nick>{coin.nick}</Nick>
+                    <Name>{coin.name}</Name>
+                  </CoinName>
 
-              <CoinPrice>${el.price}</CoinPrice>
-              <CoinChange isColor={el.change}>{el.change > 0 ? `+${el.change}` : el.change}%</CoinChange>
-              <CoinVolume>{el.volume}M</CoinVolume>
-              <CoinMaketCap>${el.marketCap}M</CoinMaketCap>
-              <CoinTrade onClick={() => navigate('/detail')}>거래하기</CoinTrade>
+                  <CoinPrice color={priceColor[index]}>${coin.price}</CoinPrice>
+                  <CoinChange isColor={coin.dayChange}>{coin.dayChange}</CoinChange>
+                  <CoinVolume>${coin.volume}</CoinVolume>
+                  <CoinMaketCap>${coin.marketCap}</CoinMaketCap>
+                  <CoinTrade onClick={() => navigate('/detail', { state: { symbol: coin.symbol } })}>
+                    거래하기
+                  </CoinTrade>
+                </CoinInnerBox>
+              ) : (
+                <CustomSpinner />
+              )}
             </Coin>
           ))}
         </Coins>
       </CoinListBox>
       <PageBox>
-        <Pages>
-          <img src={pageLeft} alt='pageLeft' />
-          <Page>1</Page>
-          <Page>2</Page>
-          <Page>3</Page>
-          <Page>4</Page>
-          <Page>5</Page>
-          <img src={pageRight} alt='pageRight' />
-        </Pages>
+        <Pages page={page} postNumber={coinNumber} limit={10} />
       </PageBox>
     </OuterBox>
   );
@@ -213,7 +103,7 @@ const CategoryBox = styled.div`
   position: relative;
   margin: 24px 0 16px 0;
 `;
-const CategoryName = styled.div`
+const CategoryName = styled.div<{ category: string }>`
   display: flex;
   align-items: center;
   ${(props) => props.theme.variables.flex()}
@@ -223,6 +113,7 @@ const CategoryName = styled.div`
   font-size: 14px;
   font-weight: 600;
   color: ${(props) => props.theme.style.grey};
+  background-color: ${(props) => (props.id === props.category ? '#feeaa3' : 'none')};
 
   img {
     width: 16px;
@@ -231,7 +122,8 @@ const CategoryName = styled.div`
 
   &:hover {
     cursor: pointer;
-    background-color: #fafafa;
+    background-color: ${(props) =>
+      props.id === props.category ? props.theme.style.buttonYellow : ' #fafafa;'};
   }
 `;
 
@@ -313,11 +205,13 @@ const FilterMarketCap = styled.div`
 `;
 
 const Coins = styled.div``;
+
 const Coin = styled.div`
   display: flex;
   height: 64px;
   padding: 0 16px;
   align-items: center;
+  justify-content: center;
   border-bottom: 1px solid #e9ecef;
 
   &:hover {
@@ -331,6 +225,12 @@ const Coin = styled.div`
     margin-right: 16px;
   }
 `;
+
+const CoinInnerBox = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
 const CoinName = styled.div`
   display: flex;
   align-items: center;
@@ -346,31 +246,40 @@ const Name = styled.div`
   font-size: 14px;
   color: ${(props) => props.theme.style.grey};
 `;
-const CoinPrice = styled.div`
+const CoinPrice = styled.div<{ color: string | undefined }>`
   width: 118px;
   font-size: 16px;
   font-weight: 600;
+  color: ${(props) => {
+    if (props.color === 'green') return props.theme.style.green;
+    if (props.color === 'red') return props.theme.style.red;
+    return 'black';
+  }};
 `;
-const CoinChange = styled.div<{ isColor: number }>`
+const CoinChange = styled.div<{ isColor: string | undefined }>`
   display: flex;
   justify-content: end;
   width: 200px;
   font-size: 16px;
   font-weight: 600;
-  color: ${(props) => (props.isColor > 0 ? props.theme.style.green : props.theme.style.red)};
-  color: ${(props) => (props.isColor === 0 ? 'black' : 'none')};
+  color: ${(props) => {
+    if (Number(props.isColor) === 0) return 'black';
+    return Number(props.isColor) > 0 ? props.theme.style.green : props.theme.style.red;
+  }};
 `;
 const CoinVolume = styled.div`
   display: flex;
   justify-content: end;
   width: 154px;
   font-size: 16px;
+  font-weight: bold;
 `;
 const CoinMaketCap = styled.div`
   display: flex;
   justify-content: end;
   width: 154px;
   font-size: 16px;
+  font-weight: bold;
 `;
 const CoinTrade = styled.div`
   display: flex;
@@ -378,6 +287,7 @@ const CoinTrade = styled.div`
   font-size: 16px;
   color: #c99402;
   width: 196px;
+  margin-right: 65px;
 `;
 const PageBox = styled.div`
   display: flex;
@@ -385,34 +295,4 @@ const PageBox = styled.div`
   height: 28px;
   margin-top: 40px;
   padding-bottom: 24px;
-`;
-
-const Pages = styled.div`
-  display: flex;
-  align-items: center;
-  margin-right: 20px;
-
-  img {
-    width: 7.5px;
-    height: 11px;
-    margin: 14px;
-
-    &:hover {
-      cursor: pointer;
-    }
-  }
-`;
-
-const Page = styled.div`
-  ${(props) => props.theme.variables.flex()}
-  width: 28px;
-  height: 28px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 4px;
-  margin: 6px;
-
-  &:hover {
-    cursor: pointer;
-  }
 `;

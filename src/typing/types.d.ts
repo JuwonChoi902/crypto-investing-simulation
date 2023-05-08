@@ -139,3 +139,16 @@ export interface PopularCrypto {
   marketCap: string;
   symbol: string;
 }
+
+export interface CoinTypes {
+  id: number;
+  name: string;
+  nick: string;
+  imgURL: any;
+  symbol: string;
+  quantity: number;
+  price?: string;
+  dayChange?: string;
+  marketCap?: string;
+  volume?: string;
+}

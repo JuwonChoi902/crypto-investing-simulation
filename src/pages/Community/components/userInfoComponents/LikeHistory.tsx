@@ -91,7 +91,6 @@ export default function LikeHistory({ profileId }: LikeHistoryProps) {
       setChecked([]);
     }
   };
-  console.log(checked);
 
   const deleteLikes = () => {
     if (!loginUserToken) {

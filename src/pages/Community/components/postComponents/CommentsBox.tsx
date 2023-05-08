@@ -254,8 +254,7 @@ export default function CommentsBox({
             fetch(`http://pien.kr:4000/community/reply/${params.id}`, {
               headers: {
                 'Content-Type': 'application/json;charset=utf-8',
-                Authorization:
-                  'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
+                Authorization: `Bearer ${loginUserToken}`,
               },
             })
               .then((res) => res.json())

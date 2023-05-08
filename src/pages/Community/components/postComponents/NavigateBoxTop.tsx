@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router';
 import styled from 'styled-components';
-import { PostDataType } from '../../../../typing/types';
+import { PostDataType, HeadersType } from '../../../../typing/types';
 
 type NavigateBoxTopProps = {
   setPostNow: React.Dispatch<React.SetStateAction<number | null>>;
@@ -11,17 +11,24 @@ type NavigateBoxTopProps = {
 export default function NavigateBoxTop({ setPostNow, postData }: NavigateBoxTopProps) {
   const navigate = useNavigate();
   const params = useParams();
-  const loginUserId = Number(localStorage.getItem('id')) || null;
+  const loginUserId = Number(localStorage.getItem('id'));
+  const loginUserToken = localStorage.getItem('accessToken');
 
   const deletePost = () => {
+    const headers: HeadersType = {
+      'Content-Type': 'application/json;charset=utf-8',
+    };
+
+    if (loginUserToken) {
+      headers.Authorization = `Bearer ${loginUserToken}`;
+    } else {
+      delete headers.Authorization;
+    }
+
     if (window.confirm('해당 게시글을 삭제하시겠습니까?') === true) {
       fetch(`http://pien.kr:4000/community/post`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJraXN1azYyM0BuYXZlci5jb20iLCJpYXQiOjE2NzM5Mzg4OTUsImV4cCI6MTY3Mzk0MDY5NX0.VWzQ1BIRwbrdAn1RLcmHol8lTtZf4Yx5we2pLpzQr3U',
-        },
+        headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
         body: JSON.stringify({ postId: [params.id] }),
       })
         .then((res) => res.json())

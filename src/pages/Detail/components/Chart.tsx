@@ -61,6 +61,8 @@ export default function Chart({ symbol }: ChartProps) {
     const sizeHandler = () => {
       chart.applyOptions({ width: input.clientWidth });
     };
+
+    return () => chart.remove();
   }, []);
   return <OuterBox ref={chartRef} />;
 }

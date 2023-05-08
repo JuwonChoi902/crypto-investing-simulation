@@ -21,6 +21,8 @@ export default function Detail() {
     newSocket.addEventListener('message', (message) => {
       setSymbolTicker(JSON.parse(message.data));
     });
+
+    return () => newSocket.close();
   }, []);
 
   useEffect(() => {
@@ -53,7 +55,7 @@ export default function Detail() {
         </RightBox>
       </CoinDetail>
       <OrderInfo />
-      {/* {isApVisible ? <Apologize /> : null}; */}
+      {isApVisible ? <Apologize /> : null};
     </OuterBox>
   );
 }

@@ -7,7 +7,7 @@ type MarketTradeBoxProps = {
   symbol: string;
 };
 
-export default function MarketTradeBox({ price, symbol }: MarketTradeBoxProps) {
+export default function MarketTrade({ price, symbol }: MarketTradeBoxProps) {
   const [tradeData, setTradeData] = useState<TradeDataTypes>();
 
   useEffect(() => {
@@ -16,6 +16,8 @@ export default function MarketTradeBox({ price, symbol }: MarketTradeBoxProps) {
     newSocket.addEventListener('message', (message) => {
       setTradeData(JSON.parse(message.data));
     });
+
+    return () => newSocket.close();
   }, []);
 
   const ref = useRef<TradeDataTypes[]>([]);

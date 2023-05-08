@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import switchBoth from '../images/switchBoth.png';
 import switchGreen from '../images/switchGreen.png';
 import switchRed from '../images/switchRed.png';
+import CustomSpinner from './CustomSpinner';
 
 interface CallDataType {
   lastUpdateId: number;
@@ -23,6 +24,8 @@ export default function CallBox({ price, symbol }: CallBoxProps) {
     newSocket.addEventListener('message', (message) => {
       setBook(JSON.parse(message.data));
     });
+
+    return () => newSocket.close();
   }, []);
 
   const ref = useRef<number>();
@@ -62,10 +65,14 @@ export default function CallBox({ price, symbol }: CallBoxProps) {
             </Ask>
           ))}
         </Asks>
-        <MarketPrice priceColor={priceColor}>
-          <div>{price?.toFixed(2)}</div>
-          <span>${price?.toFixed(2)}</span>
-        </MarketPrice>
+        {price ? (
+          <MarketPrice priceColor={priceColor}>
+            <div>{price?.toFixed(2)}</div>
+            <span>${price?.toFixed(2)}</span>
+          </MarketPrice>
+        ) : (
+          <CustomSpinner />
+        )}
         <Bids>
           {bids?.map((el) => (
             <Bid>

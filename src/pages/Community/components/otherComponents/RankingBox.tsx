@@ -107,7 +107,7 @@ const RankBox = styled.div`
 const UserNick = styled.div`
   margin-right: 5px;
   &:hover {
-    cursor: pointer;
+    /* cursor: pointer; */
   }
 `;
 const Rank = styled.div`

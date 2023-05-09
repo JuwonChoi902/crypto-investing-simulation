@@ -29,7 +29,7 @@ export default function NavigateBoxTop({ setPostNow, postData }: NavigateBoxTopP
       fetch(`http://pien.kr:4000/community/post`, {
         method: 'DELETE',
         headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
-        body: JSON.stringify({ postId: [params.id] }),
+        body: JSON.stringify({ postId: [Number(params.id)] }),
       })
         .then((res) => res.json())
         .then((data) => {

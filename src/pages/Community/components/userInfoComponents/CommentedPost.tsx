@@ -49,7 +49,7 @@ export default function CommentedPost({ profileId }: CommentedPostProps) {
       delete headers.Authorization;
     }
 
-    fetch(`http://pien.kr:4000/community/reply/user/${profileId}?page=1&number=${1000}`, {
+    fetch(`https://server.pien.kr:4000/community/reply/user/${profileId}?page=1&number=${1000}`, {
       headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
     })
       .then((res) => res.json())

@@ -27,7 +27,7 @@ export default function Login() {
   useEffect(() => {
     if (loginUserToken) {
       alert('이미 로그인 하셨습니다.');
-      navigate('/main');
+      navigate('/');
     }
 
     /* global google */
@@ -43,7 +43,7 @@ export default function Login() {
 
   useEffect(() => {
     if (userInfo)
-      fetch(`http://pien.kr:4000/user/social`, {
+      fetch(`https://server.pien.kr:4000/user/social`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json;charset=utf-8',
@@ -59,7 +59,7 @@ export default function Login() {
             localStorage.setItem('id', data.data.id);
             localStorage.setItem('accessToken', data.data.accessToken);
             localStorage.setItem('nickname', data.data.nickname);
-            navigate('/main');
+            navigate('/');
           }
         });
   }, [userInfo]);

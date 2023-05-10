@@ -28,7 +28,7 @@ export default function RankingBox() {
   const [filterNow, setFilter] = useState<string>('2');
 
   useEffect(() => {
-    fetch(`http://pien.kr:4000/ranking/incomepercent`, {
+    fetch(`https://server.pien.kr:4000/ranking/incomepercent`, {
       headers: {
         'Content-Type': 'application/json;charset=utf-8',
       },

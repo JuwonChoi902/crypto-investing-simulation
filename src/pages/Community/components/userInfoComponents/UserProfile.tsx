@@ -22,7 +22,7 @@ export default function UserProfile({ profileId }: UserProfileProps) {
       delete headers.Authorization;
     }
 
-    fetch(`http://pien.kr:4000/user/${profileId}`, {
+    fetch(`https://server.pien.kr:4000/user/${profileId}`, {
       headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
     })
       .then((res) => res.json())

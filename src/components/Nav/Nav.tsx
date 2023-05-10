@@ -22,7 +22,7 @@ export default function Nav() {
 
   return (
     <OuterBox>
-      <CryptoBy onClick={() => navigate('/main')}>
+      <CryptoBy onClick={() => navigate('/')}>
         <img src={icon} alt='icon' />
         <span>CryptoBy</span>
       </CryptoBy>

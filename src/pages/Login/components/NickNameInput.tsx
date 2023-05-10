@@ -24,7 +24,7 @@ export default function NickNameInput() {
   const duplicateCheck = () => {
     if (isItValid) {
       setCheckedString(userInput);
-      fetch('http://pien.kr:4000/user/check', {
+      fetch('https://server.pien.kr:4000/user/check', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json;charset=utf-8',
@@ -45,7 +45,7 @@ export default function NickNameInput() {
         `한 번 생성한 닉네임은 변경할 수 없습니다. '${checkedString}'(으)로 닉네임을 만드시겠습니까?`,
       ) === true
     ) {
-      fetch(`http://pien.kr:4000/user/social`, {
+      fetch(`https://server.pien.kr:4000/user/social`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json;charset=utf-8',
@@ -59,7 +59,7 @@ export default function NickNameInput() {
             localStorage.setItem('id', data.data.id);
             localStorage.setItem('accessToken', data.data.accessToken);
             localStorage.setItem('nickname', data.data.nickname);
-            navigate('/main');
+            navigate('/');
           }
         });
     }

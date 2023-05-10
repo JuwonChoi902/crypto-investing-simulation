@@ -26,7 +26,7 @@ export default function NavigateBoxTop({ setPostNow, postData }: NavigateBoxTopP
     }
 
     if (window.confirm('해당 게시글을 삭제하시겠습니까?') === true) {
-      fetch(`http://pien.kr:4000/community/post`, {
+      fetch(`https://server.pien.kr:4000/community/post`, {
         method: 'DELETE',
         headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
         body: JSON.stringify({ postId: [Number(params.id)] }),

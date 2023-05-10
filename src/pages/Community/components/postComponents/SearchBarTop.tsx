@@ -143,7 +143,7 @@ export default function SearchBarTop({
       return;
     }
     fetch(
-      `http://pien.kr:4000/community?page=1&number=10&categoryId=${searchBoard}&filter=${searchFilter}&search=${searchString}`,
+      `https://server.pien.kr:4000/community?page=1&number=10&categoryId=${searchBoard}&filter=${searchFilter}&search=${searchString}`,
       {
         headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
       },

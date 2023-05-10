@@ -54,7 +54,7 @@ export default function LikeHistory({ profileId }: LikeHistoryProps) {
       delete headers.Authorization;
     }
 
-    fetch(`http://pien.kr:4000/community/like/user/${profileId}?page=${page}&number=15`, {
+    fetch(`https://server.pien.kr:4000/community/like/user/${profileId}?page=${page}&number=15`, {
       headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
     })
       .then((res) => res.json())
@@ -109,7 +109,7 @@ export default function LikeHistory({ profileId }: LikeHistoryProps) {
       }
 
       if (window.confirm('선택한 좋아요를 취소하시겠습니까?') === true) {
-        fetch(`http://pien.kr:4000/community/like`, {
+        fetch(`https://server.pien.kr:4000/community/like`, {
           method: 'DELETE',
           headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
           body: JSON.stringify({ postId: checked.map((str) => Number(str)) }),
@@ -117,7 +117,7 @@ export default function LikeHistory({ profileId }: LikeHistoryProps) {
           .then((res) => res.json())
           .then((data) => {
             if (data.isSuccess) {
-              fetch(`http://pien.kr:4000/community/like/user/${profileId}?page=${page}&number=15`, {
+              fetch(`https://server.pien.kr:4000/community/like/user/${profileId}?page=${page}&number=15`, {
                 headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
               })
                 .then((res) => res.json())

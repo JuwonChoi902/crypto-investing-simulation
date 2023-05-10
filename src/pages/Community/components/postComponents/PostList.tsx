@@ -109,7 +109,7 @@ export default function PostList({
     if (!isItSearching) {
       setSearchRes({ stringRes: '', filterRes: '', boardRes: boardNow });
       setPage(1);
-      fetch(`http://pien.kr:4000/community?page=1&number=10&categoryId=${boardNow}`, {
+      fetch(`https://server.pien.kr:4000/community?page=1&number=10&categoryId=${boardNow}`, {
         headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
       })
         .then((res) => res.json())
@@ -137,7 +137,7 @@ export default function PostList({
 
     if (isItSearching) {
       fetch(
-        `http://pien.kr:4000/community?page=${page}&number=10&categoryId=${boardRes}&filter=${filterRes}&search=${stringRes}`,
+        `https://server.pien.kr:4000/community?page=${page}&number=10&categoryId=${boardRes}&filter=${filterRes}&search=${stringRes}`,
         {
           headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
         },
@@ -152,7 +152,7 @@ export default function PostList({
           }
         });
     } else {
-      fetch(`http://pien.kr:4000/community?page=${page}&number=10&categoryId=${boardNow}`, {
+      fetch(`https://server.pien.kr:4000/community?page=${page}&number=10&categoryId=${boardNow}`, {
         headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
       })
         .then((res) => res.json())

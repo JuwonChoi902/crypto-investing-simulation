@@ -74,7 +74,7 @@ export default function DescriptionBox({
     if (params.id !== 'list' && params.id !== 'favorite' && params.id !== 'profile') {
       setPostNow(Number(params.id));
 
-      fetch(`http://pien.kr:4000/community/${params.id}`, {
+      fetch(`https://server.pien.kr:4000/community/${params.id}`, {
         headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
       })
         .then((res) => res.json())
@@ -94,7 +94,7 @@ export default function DescriptionBox({
         navigate('/login');
       }
     } else if (postData?.isLike !== true) {
-      fetch(`http://pien.kr:4000/community/like/${params.id}`, {
+      fetch(`https://server.pien.kr:4000/community/like/${params.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json;charset=utf-8',
@@ -111,7 +111,7 @@ export default function DescriptionBox({
           }
         });
     } else {
-      fetch(`http://pien.kr:4000/community/like/${params.id}`, {
+      fetch(`https://server.pien.kr:4000/community/like/${params.id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json;charset=utf-8',
@@ -135,7 +135,7 @@ export default function DescriptionBox({
         navigate('/login');
       }
     } else if (postData?.isLike !== false) {
-      fetch(`http://pien.kr:4000/community/like/${params.id}`, {
+      fetch(`https://server.pien.kr:4000/community/like/${params.id}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json;charset=utf-8',
@@ -152,7 +152,7 @@ export default function DescriptionBox({
           }
         });
     } else {
-      fetch(`http://pien.kr:4000/community/like/${params.id}`, {
+      fetch(`https://server.pien.kr:4000/community/like/${params.id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json;charset=utf-8',

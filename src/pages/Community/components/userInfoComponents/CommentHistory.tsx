@@ -45,7 +45,7 @@ export default function CommentHistory({ profileId }: CommentHistoryProps) {
       delete headers.Authorization;
     }
 
-    fetch(`http://pien.kr:4000/community/reply/user/${profileId}?page=${page}&number=15`, {
+    fetch(`https://server.pien.kr:4000/community/reply/user/${profileId}?page=${page}&number=15`, {
       headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
     })
       .then((res) => res.json())
@@ -104,7 +104,7 @@ export default function CommentHistory({ profileId }: CommentHistoryProps) {
       }
 
       if (window.confirm('댓글을 삭제하시겠습니까?') === true) {
-        fetch(`http://pien.kr:4000/community/reply/`, {
+        fetch(`https://server.pien.kr:4000/community/reply/`, {
           method: 'DELETE',
           headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
           body: JSON.stringify({ replyId: checked }),
@@ -112,7 +112,7 @@ export default function CommentHistory({ profileId }: CommentHistoryProps) {
           .then((res) => res.json())
           .then((data) => {
             if (data.isSuccess) {
-              fetch(`http://pien.kr:4000/community/reply/user/1?page=${page}&number=15`, {
+              fetch(`https://server.pien.kr:4000/community/reply/user/1?page=${page}&number=15`, {
                 headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
               })
                 .then((res) => res.json())

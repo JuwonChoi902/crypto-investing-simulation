@@ -44,7 +44,7 @@ export default function Posting() {
       }
       if (title.length >= 2 && description.length >= 2 && categoryId !== 0) {
         if (editingData) {
-          fetch(`http://pien.kr:4000/community/${editingData.id}`, {
+          fetch(`https://server.pien.kr:4000/community/${editingData.id}`, {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json;charset=utf-8',
@@ -59,7 +59,7 @@ export default function Posting() {
               }
             });
         } else {
-          fetch(`http://pien.kr:4000/community/`, {
+          fetch(`https://server.pien.kr:4000/community/`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json;charset=utf-8',

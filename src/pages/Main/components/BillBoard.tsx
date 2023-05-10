@@ -33,7 +33,7 @@ export default function BillBoard({ volume }: BillBoardProps) {
       delete headers.Authorization;
     }
 
-    fetch(`http://pien.kr:4000/user/count`, {
+    fetch(`https://server.pien.kr:4000/user/count`, {
       headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
     })
       .then((res) => res.json())

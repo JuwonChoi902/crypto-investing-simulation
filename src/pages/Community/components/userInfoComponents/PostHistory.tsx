@@ -55,7 +55,7 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
       delete headers.Authorization;
     }
 
-    fetch(`http://pien.kr:4000/community/post/user/${profileId}?page=${page}&number=15`, {
+    fetch(`https://server.pien.kr:4000/community/post/user/${profileId}?page=${page}&number=15`, {
       headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
     })
       .then((res) => res.json())
@@ -109,7 +109,7 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
         delete headers.Authorization;
       }
 
-      fetch(`http://pien.kr:4000/community/post`, {
+      fetch(`https://server.pien.kr:4000/community/post`, {
         method: 'DELETE',
         headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
         body: JSON.stringify({ postId: checked }),
@@ -117,7 +117,7 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
         .then((res) => res.json())
         .then((data) => {
           if (data.isSuccess) {
-            fetch(`http://pien.kr:4000/community/post/user/${profileId}?page=${page}&number=15`, {
+            fetch(`https://server.pien.kr:4000/community/post/user/${profileId}?page=${page}&number=15`, {
               headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
             })
               .then((res) => res.json())

@@ -49,7 +49,7 @@ export default function CommentedPost() {
       delete headers.Authorization;
     }
 
-    fetch(`http://pien.kr:4000/user/posts`, {
+    fetch(`https://server.pien.kr:4000/user/posts`, {
       headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
     })
       .then((res) => res.json())

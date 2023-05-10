@@ -104,7 +104,7 @@ export default function CommentsBox({
     }
 
     if (params.id !== 'list' && params.id !== 'favorite' && params.id !== 'profile') {
-      fetch(`http://pien.kr:4000/community/reply/${params.id}`, {
+      fetch(`https://server.pien.kr:4000/community/reply/${params.id}`, {
         headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
       })
         .then((res) => res.json())
@@ -180,7 +180,7 @@ export default function CommentsBox({
     if (commentWrite === '') {
       alert('내용을 입력해주세요');
     } else {
-      fetch(`http://pien.kr:4000/community/reply`, {
+      fetch(`https://server.pien.kr:4000/community/reply`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json;charset=utf-8',
@@ -239,7 +239,7 @@ export default function CommentsBox({
     if (editingComment === '') {
       alert('내용을 입력해주세요');
     } else {
-      fetch(`http://pien.kr:4000/community/reply/${id}`, {
+      fetch(`https://server.pien.kr:4000/community/reply/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json;charset=utf-8',
@@ -251,7 +251,7 @@ export default function CommentsBox({
         .then((data) => {
           if (data.isSuccess) {
             setEditing(null);
-            fetch(`http://pien.kr:4000/community/reply/${params.id}`, {
+            fetch(`https://server.pien.kr:4000/community/reply/${params.id}`, {
               headers: {
                 'Content-Type': 'application/json;charset=utf-8',
                 Authorization: `Bearer ${loginUserToken}`,
@@ -308,7 +308,7 @@ export default function CommentsBox({
     if (replyComment === '') {
       alert('내용을 입력해주세요');
     } else {
-      fetch(`http://pien.kr:4000/community/reply`, {
+      fetch(`https://server.pien.kr:4000/community/reply`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json;charset=utf-8',
@@ -377,7 +377,7 @@ export default function CommentsBox({
     }
 
     if (window.confirm('댓글을 삭제하시겠습니까?') === true) {
-      fetch(`http://pien.kr:4000/community/reply`, {
+      fetch(`https://server.pien.kr:4000/community/reply`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json;charset=utf-8',
@@ -388,7 +388,7 @@ export default function CommentsBox({
         .then((res) => res.json())
         .then((data) => {
           if (data.isSuccess) {
-            fetch(`http://pien.kr:4000/community/reply/${params.id}`, {
+            fetch(`https://server.pien.kr:4000/community/reply/${params.id}`, {
               headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
             })
               .then((res) => res.json())

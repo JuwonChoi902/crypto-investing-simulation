@@ -16,7 +16,7 @@ function Router() {
     <BrowserRouter>
       <Nav />
       <Routes>
-        <Route path='/main/' element={<Main />} />
+        <Route path='/' element={<Main />} />
         <Route path='/login/' element={<Login />} />
         <Route path='/login/nick' element={<NickNameInput />} />
         <Route path='/market/' element={<Market />} />

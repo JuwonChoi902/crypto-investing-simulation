@@ -66,31 +66,44 @@ export default function CommentsBox({
   const editTextArea = useRef<HTMLTextAreaElement>(null);
 
   const TextAreaHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (event.target.value.length > 1000) {
+      alert('댓글은 최대 1,000자 이내로 입력 가능합니다.');
+    } else {
+      setCommentWrite(event.target.value);
+    }
+  };
+
+  const replyTextAreaHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (event.target.value.length > 1000) {
+      alert('댓글은 최대 1,000자 이내로 입력 가능합니다.');
+    } else {
+      setReplyComment(event.target.value);
+    }
+  };
+
+  const editTextAreaHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (event.target.value.length > 1000) {
+      alert('댓글은 최대 1,000자 이내로 입력 가능합니다.');
+    } else {
+      setEditingComment(event.target.value);
+    }
+  };
+
+  useEffect(() => {
     if (textarea.current) {
       textarea.current.style.height = 'auto';
       textarea.current.style.height = `${textarea.current.scrollHeight}px`;
     }
 
-    setCommentWrite(event.target.value);
-  };
-
-  const replyTextAreaHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (replyTextArea.current) {
       replyTextArea.current.style.height = 'auto';
       replyTextArea.current.style.height = `${replyTextArea.current.scrollHeight}px`;
     }
-
-    setReplyComment(event.target.value);
-  };
-
-  const editTextAreaHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (editTextArea.current) {
       editTextArea.current.style.height = 'auto';
       editTextArea.current.style.height = `${editTextArea.current.scrollHeight}px`;
     }
-
-    setEditingComment(event.target.value);
-  };
+  }, [commentWrite, editingComment, replyComment]);
 
   useEffect(() => {
     const headers: HeadersType = {
@@ -232,6 +245,7 @@ export default function CommentsBox({
         });
 
       setCommentWrite('');
+      if (textarea.current) textarea.current.style.height = 'auto';
     }
   };
 
@@ -457,7 +471,7 @@ export default function CommentsBox({
                 <RTRPosting>
                   <NickAndLength>
                     <RTRNick>{loginUserNick}</RTRNick>
-                    {editingComment ? <RTRLength>{editingComment.length}/3000</RTRLength> : null}
+                    {editingComment ? <RTRLength>{editingComment.length}/1000</RTRLength> : null}
                   </NickAndLength>
                   <RTRDescription
                     ref={editTextArea}
@@ -496,15 +510,17 @@ export default function CommentsBox({
               </ReplyToReplyBox>
             ) : (
               <Comment index={i} isThisOrigin={el.isThisOrigin} isThisDeleted={el.deleted_at}>
-                <UserImg
-                  userImg={el.user.profileImage}
-                  onClick={() => {
-                    setProfileId(el.user.id);
-                    setMenuNow(2);
-                  }}
-                >
-                  <img src={el.user.profileImage || user} alt='user' />
-                </UserImg>
+                <UserImgBox>
+                  <UserImg
+                    userImg={el.user.profileImage}
+                    onClick={() => {
+                      setProfileId(el.user.id);
+                      setMenuNow(2);
+                    }}
+                  >
+                    <img src={el.user.profileImage || user} alt='user' />
+                  </UserImg>
+                </UserImgBox>
                 <CommentTextBox>
                   <CommentUserNick ref={nickBoxRefs.current?.[i]} onClick={() => setDropBox(i)}>
                     {el.user.nickname}
@@ -589,8 +605,8 @@ export default function CommentsBox({
                     <Edit
                       onClick={() => {
                         setReplying(null);
-                        setEditing(el.id);
                         setEditingComment(el.comment);
+                        setEditing(el.id);
                       }}
                     >
                       수정
@@ -605,7 +621,7 @@ export default function CommentsBox({
                 <RTRPosting>
                   <NickAndLength>
                     <RTRNick>{loginUserNick}</RTRNick>
-                    {replyComment ? <RTRLength>{replyComment.length}/3000</RTRLength> : null}
+                    {replyComment ? <RTRLength>{replyComment.length}/1000</RTRLength> : null}
                   </NickAndLength>
 
                   <RTRDescription
@@ -650,7 +666,7 @@ export default function CommentsBox({
       <CommentPosting>
         <NickAndLength>
           <CommentPostingNick>{loginUserNick}</CommentPostingNick>
-          {commentWrite ? <RTRLength>{commentWrite.length}/3000</RTRLength> : null}
+          {commentWrite ? <RTRLength>{commentWrite.length}/1000</RTRLength> : null}
         </NickAndLength>
         <CommentPostingDesc
           ref={textarea}
@@ -693,12 +709,14 @@ const CommentHeaderBox = styled.div`
     font-size: 13px;
     font-weight: bold;
     color: #b7b7b7;
+    white-space: nowrap;
   }
 `;
 const CommentHeaderTitle = styled.div`
   font-size: 17px;
   font-weight: bold;
   margin: 0 12px 0 0;
+  white-space: nowrap;
 `;
 
 const IsItNew = styled.div`
@@ -770,6 +788,10 @@ const UserDropBox = styled.div`
 
 const CommentDescription = styled.div`
   font-size: 13px;
+  white-space: pre-wrap;
+
+  word-break: break-all;
+  white-space: -moz-pre-wrap; ;
 `;
 const CommentCreatedAt = styled.div`
   font-size: 12px;
@@ -801,6 +823,7 @@ const Edit = styled.button`
   font-size: 12px;
   font-weight: bold;
   height: 16px;
+  white-space: nowrap;
 
   &:hover {
     cursor: pointer;
@@ -813,6 +836,7 @@ const Delete = styled.button`
   font-size: 12px;
   font-weight: bold;
   height: 16px;
+  white-space: nowrap;
 
   &:hover {
     cursor: pointer;
@@ -832,6 +856,7 @@ const RTRPosting = styled.div`
   border-radius: 5px;
   padding: 16px 10px 10px 18px;
   font-size: 13px;
+  white-space: nowrap;
 `;
 
 const NickAndLength = styled.div`
@@ -842,11 +867,13 @@ const NickAndLength = styled.div`
 const RTRLength = styled.div`
   font-size: 12px;
   color: #979797;
+  white-space: nowrap;
 `;
 
 const RTRNick = styled.div`
   font-weight: bold;
   margin-bottom: 10px;
+  white-space: nowrap;
 `;
 
 const RTRDescription = styled.textarea`
@@ -873,14 +900,16 @@ const RTRBtns = styled.div`
 const CommentPosting = styled.div`
   border: 2px solid #e5e5e5;
   border-radius: 5px;
-  padding: 16px 10px 10px 18px;
+  padding: 16px 20px 10px 18px;
   font-size: 13px;
   margin-top: 10px;
+  white-space: nowrap;
 `;
 
 const CommentPostingNick = styled.div`
   font-weight: bold;
   margin-bottom: 10px;
+  white-space: nowrap;
 `;
 
 const CommentPostingDesc = styled.textarea`
@@ -888,7 +917,6 @@ const CommentPostingDesc = styled.textarea`
   resize: none;
   width: 100%;
   background-color: white;
-  overflow: visible;
 
   &:focus {
     outline: none;
@@ -916,6 +944,7 @@ const CancleWriting = styled.button`
   font-size: 13px;
   color: #b7b7b7;
   background-color: white;
+  white-space: nowrap;
 
   &:hover {
     cursor: pointer;
@@ -931,11 +960,14 @@ const PostThisComment = styled.button<{ isThisValid: number | undefined }>`
   color: ${(props) => (props.isThisValid && props.isThisValid > 0 ? 'black' : '#b7b7b7;')};
   background-color: ${(props) => (props.isThisValid && props.isThisValid > 0 ? '#feeaa3' : 'white')};
   border-radius: 5px;
+  white-space: nowrap;
 
   &:hover {
     cursor: pointer;
   }
 `;
+
+const UserImgBox = styled.div``;
 
 const UserImg = styled.div<{ userImg: string | undefined }>`
   display: flex;

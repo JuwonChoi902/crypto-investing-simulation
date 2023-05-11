@@ -171,8 +171,10 @@ export default function LikeHistory({ profileId }: LikeHistoryProps) {
                   onClick={() => (post.isPublished ? navigate(`/community/${post.id}`) : null)}
                 >
                   {post.isPublished ? post.title : <span>삭제된 게시물입니다.</span>}
-                  {post.repliesCount === 0 ? null : <RepliesCount>[{post.repliesCount}]</RepliesCount>}
-                  {post.created_at[1] ? <IsItNew>N</IsItNew> : null}
+                  <ReplyAndNew>
+                    {post.repliesCount === 0 ? null : <RepliesCount>[{post.repliesCount}]</RepliesCount>}
+                    {post.created_at[1] ? <IsItNew>N</IsItNew> : null}
+                  </ReplyAndNew>
                 </PostTitle>
               </PostTitleBox>
               <PostNick>{post.user.nickname}</PostNick>
@@ -223,6 +225,7 @@ const ListCategories = styled.div`
   font-weight: bold;
   border-top: 1px solid black;
   border-bottom: 1px solid #e5e5e5;
+  white-space: nowrap;
 `;
 const LCTitle = styled.div`
   ${(props) => props.theme.variables.flex()};
@@ -264,7 +267,7 @@ const PostTitleBox = styled.div`
 
 const CheckBox = styled.div`
   ${(props) => props.theme.variables.flex()}
-  width: 30px;
+  min-width: 30px;
   input {
     width: 14px;
     height: 14px;
@@ -278,7 +281,7 @@ const CheckBox = styled.div`
 const PostId = styled.div`
   ${(props) => props.theme.variables.flex()}
   color:#878787;
-  width: 69px;
+  min-width: 69px;
   font-size: 11px;
   margin-right: 6px;
 `;
@@ -297,12 +300,17 @@ const PostTitle = styled.div<{ isPublished: boolean | undefined }>`
   }
 `;
 
+const ReplyAndNew = styled.div`
+  display: flex;
+`;
+
 const PostNick = styled.div`
   ${(props) => props.theme.variables.flex()}
 
   font-size: 13px;
   width: 122px;
   padding: 2px 7px;
+  white-space: nowrap;
 
   &:hover {
     cursor: pointer;
@@ -313,6 +321,7 @@ const RepliesCount = styled.div`
   font-weight: bold;
   margin-left: 5px;
   color: ${(props) => props.theme.style.red};
+  white-space: nowrap;
 `;
 
 const IsItNew = styled.div`
@@ -330,11 +339,13 @@ const PostDate = styled.div`
   ${(props) => props.theme.variables.flex()}
   width: 120px;
   font-size: 12px;
+  white-space: nowrap;
 `;
 const PostHit = styled.div`
   ${(props) => props.theme.variables.flex()}
   width: 80px;
   font-size: 12px;
+  white-space: nowrap;
 `;
 
 const EmptyList = styled.div`
@@ -373,6 +384,7 @@ const CheckAll = styled.div`
 
 const DeleteAndWrite = styled.div`
   display: flex;
+  white-space: nowrap;
 `;
 
 const DeleteBtn = styled.button`

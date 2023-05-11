@@ -116,7 +116,9 @@ const OuterBox = styled.div`
   font-weight: bold;
 `;
 const SearchResult = styled.div``;
-const WhatIsList = styled.div``;
+const WhatIsList = styled.div`
+  white-space: nowrap;
+`;
 const HowManyPosts = styled.div`
   display: flex;
   align-items: center;
@@ -125,11 +127,13 @@ const HowManyPosts = styled.div`
   padding: 6px 0 10px 0;
   font-size: 12px;
   border-bottom: 1px solid black;
+  white-space: nowrap;
 
   button {
     /* background-color: ${(props) => props.theme.style.backgroundGrey}; */
     background-color: white;
     border: none;
+    white-space: nowrap;
   }
 
   button:hover {
@@ -146,10 +150,13 @@ const TableTitles = styled.div`
   height: 45px;
   font-size: 12px;
   font-weight: bold;
-  border-bottom: 1px solid #e5e5e5; ;
+  border-bottom: 1px solid #e5e5e5;
+  white-space: nowrap;
 `;
 
 const TableEmpty = styled.div`
+  white-space: nowrap;
+
   width: 88px;
 `;
 const TableTitle = styled.div`

@@ -80,6 +80,7 @@ const OuterBox = styled.div`
   border: 1px solid #e5e5e5;
   border-radius: 4px;
   margin-bottom: 30px;
+  white-space: nowrap;
 `;
 
 const Favorite = styled.div<{ id: string; menuNow: number }>`

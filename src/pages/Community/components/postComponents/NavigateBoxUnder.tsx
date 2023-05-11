@@ -65,6 +65,7 @@ const WritePost = styled.button`
   font-weight: bold;
   background-color: #feeaa3;
   margin-right: 10px;
+  white-space: nowrap;
 
   img {
     opacity: 0.6;
@@ -86,6 +87,7 @@ const ReplyThisPost = styled.button`
   border-radius: 5px;
   font-size: 12px;
   font-weight: bold;
+  white-space: nowrap;
 
   &:hover {
     cursor: pointer;
@@ -106,6 +108,7 @@ const ShowList = styled.button`
   margin-right: 10px;
   font-size: 12px;
   font-weight: bold;
+  white-space: nowrap;
 
   &:hover {
     cursor: pointer;
@@ -121,6 +124,7 @@ const GoToTheTop = styled.button`
   border-radius: 5px;
   font-size: 12px;
   font-weight: bold;
+  white-space: nowrap;
 
   &:hover {
     cursor: pointer;

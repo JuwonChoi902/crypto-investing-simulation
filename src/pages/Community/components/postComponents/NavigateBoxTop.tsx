@@ -110,6 +110,7 @@ const EditPost = styled.div`
   border-radius: 4px;
   font-size: 12px;
   font-weight: bold;
+  white-space: nowrap;
 
   &:hover {
     cursor: pointer;
@@ -117,6 +118,7 @@ const EditPost = styled.div`
 `;
 const DeletePost = styled.div`
   ${(props) => props.theme.variables.flex()}
+  white-space: nowrap;
   width: 76px;
   height: 36px;
   background-color: #eff0f2;
@@ -140,6 +142,7 @@ const Previous = styled.button`
   border-radius: 4px;
   font-size: 12px;
   font-weight: bold;
+  white-space: nowrap;
 
   &:hover {
     cursor: pointer;
@@ -156,6 +159,7 @@ const Next = styled.button`
   font-size: 12px;
   font-weight: bold;
   margin-left: 10px;
+  white-space: nowrap;
   &:hover {
     cursor: pointer;
   }
@@ -170,6 +174,7 @@ const List = styled.button`
   font-size: 12px;
   font-weight: bold;
   margin-left: 10px;
+  white-space: nowrap;
   &:hover {
     cursor: pointer;
   }

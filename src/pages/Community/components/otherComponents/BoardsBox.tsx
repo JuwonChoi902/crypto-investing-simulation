@@ -50,7 +50,9 @@ export default function BoardsBox({ boardNow, setPostNow, setBoardNow, setIsItSe
   );
 }
 
-const OuterBox = styled.div``;
+const OuterBox = styled.div`
+  white-space: nowrap;
+`;
 
 const ShowAll = styled.div<{ id: string; boardNow: number | null }>`
   border-bottom: 2px solid #e5e5e5;

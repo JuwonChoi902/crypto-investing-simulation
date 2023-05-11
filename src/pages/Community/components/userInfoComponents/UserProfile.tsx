@@ -68,6 +68,7 @@ const OuterBox = styled.div`
   display: flex;
   width: 860px;
   height: 80px;
+  white-space: nowrap;
 `;
 
 const ProfilePic = styled.div<{ userImg: string | undefined }>`

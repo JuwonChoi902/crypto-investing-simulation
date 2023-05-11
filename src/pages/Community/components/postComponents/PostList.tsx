@@ -194,8 +194,10 @@ export default function PostList({
                 }
               >
                 {el.title}
-                {el.repliesCount === 0 ? null : <RepliesCount>[{el.repliesCount}]</RepliesCount>}
-                {el.created_at[1] ? <IsItNew>N</IsItNew> : null}
+                <ReplyAndNew>
+                  {el.repliesCount === 0 ? null : <RepliesCount>[{el.repliesCount}]</RepliesCount>}
+                  {el.created_at[1] ? <IsItNew>N</IsItNew> : null}
+                </ReplyAndNew>
               </Title>
             </LabelAndTitle>
             <User ref={nickRefs.current[i]} onClick={() => setDropBox(i)}>
@@ -267,11 +269,12 @@ const EmptyPosts = styled.div`
   font-size: 12px;
   font-weight: bold;
   border-bottom: 1px solid #e5e5e5;
+  white-space: nowrap;
 `;
 const Post = styled.div`
   display: flex;
   font-size: 12px;
-  height: 28px;
+  min-height: 28px;
   padding: 4px 0px;
   border-bottom: 1px solid #e5e5e5;
 `;
@@ -283,7 +286,7 @@ const LabelAndTitle = styled.div`
 const Label = styled.div`
   display: flex;
   align-items: center;
-  width: 69px;
+  min-width: 69px;
   padding-right: 7px;
 
   &:hover {
@@ -294,13 +297,16 @@ const Label = styled.div`
 const Title = styled.div`
   display: flex;
   align-items: center;
-
+  /* flex-wrap: wrap; */
+  /* white-space: normal; */
   &:hover {
     cursor: pointer;
     text-decoration: underline;
   }
 `;
-
+const ReplyAndNew = styled.div`
+  display: flex;
+`;
 const RepliesCount = styled.div`
   font-weight: bold;
   margin-left: 5px;
@@ -325,6 +331,7 @@ const User = styled.div`
   /* margin-right: 74px; */
   padding: 0px 7px;
   position: relative;
+  white-space: nowrap;
 
   &:hover {
     cursor: pointer;
@@ -344,6 +351,7 @@ const UserDropBox = styled.div`
   background-color: white;
   border: 1px solid #e5e5e5;
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+  white-space: nowrap;
 
   li {
     padding: 11px 15px;
@@ -360,6 +368,7 @@ const DateInPost = styled.div`
   width: 66px;
   padding: 0px 7px;
   font-weight: normal;
+  white-space: nowrap;
 `;
 const Hits = styled.div`
   ${(props) => props.theme.variables.flex()}
@@ -367,4 +376,5 @@ const Hits = styled.div`
   width: 54px;
   padding: 0px 7px;
   font-weight: normal;
+  white-space: nowrap;
 `;

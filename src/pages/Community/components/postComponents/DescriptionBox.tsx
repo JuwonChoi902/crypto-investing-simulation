@@ -360,7 +360,6 @@ export default function DescriptionBox({
 
 const OuterBox = styled.div``;
 const TitleBox = styled.div`
-  height: 54px;
   margin-bottom: 12px;
 `;
 
@@ -370,6 +369,7 @@ const Board = styled.div`
   margin-bottom: 7px;
   font-weight: bold;
   width: 60px;
+  white-space: nowrap;
 
   &:hover {
     cursor: pointer;
@@ -425,6 +425,7 @@ const DetailNick = styled.div`
   font-weight: bold;
   margin-right: 6px;
   position: relative;
+  white-space: nowrap;
 
   &:hover {
     cursor: pointer;
@@ -458,6 +459,7 @@ const UserDropBox = styled.div`
 const DetailRank = styled.div`
   margin-right: 6px;
   color: #676767;
+  white-space: nowrap;
 `;
 const AskChat = styled.button`
   background-color: #eff0f2;
@@ -465,6 +467,7 @@ const AskChat = styled.button`
   border-radius: 4px;
   font-size: 11px;
   font-weight: bold;
+  white-space: nowrap;
 
   &:hover {
     cursor: pointer;
@@ -478,14 +481,18 @@ const DetailPostInfo = styled.div`
 
 const CreatedAt = styled.div`
   margin-right: 6px;
+  white-space: nowrap;
 `;
-const Hits = styled.div``;
+const Hits = styled.div`
+  white-space: nowrap;
+`;
 const ButtonBox = styled.div`
   display: flex;
 `;
 const GoComment = styled.div`
   display: flex;
   align-items: center;
+  white-space: nowrap;
   img {
     width: 20px;
     height: 20px;
@@ -499,6 +506,7 @@ const GoComment = styled.div`
 const HowManyComment = styled.div`
   display: flex;
   font-size: 13px;
+  white-space: nowrap;
   div {
     margin-right: 5px;
   }
@@ -510,6 +518,7 @@ const GoShare = styled.div`
   display: flex;
   align-items: center;
   font-size: 13px;
+  white-space: nowrap;
 
   &:hover {
     cursor: pointer;
@@ -530,6 +539,7 @@ const IsCopied = styled.div<{ isURLCopied: boolean }>`
   height: 20px;
   border-radius: 5px;
   transition: 0.2s opacity ease-in-out;
+  white-space: nowrap;
 `;
 const Description = styled.div`
   font-size: 14px;
@@ -542,6 +552,7 @@ const ShowMore = styled.div`
   height: 36px;
   font-size: 13px;
   margin: 40px 0 26px 0;
+  white-space: nowrap;
 
   span {
     font-weight: bold;
@@ -580,6 +591,7 @@ const LikeBox = styled.div<{ isLiked: boolean | null | undefined }>`
     color: ${(props) => (props.isLiked === true ? 'black' : '#b7b7b7')};
     margin-right: 10px;
     font-weight: bold;
+    white-space: nowrap;
   }
 `;
 const DisLikeBox = styled.div<{ isLiked: boolean | null | undefined }>`
@@ -596,6 +608,7 @@ const DisLikeBox = styled.div<{ isLiked: boolean | null | undefined }>`
     color: ${(props) => (props.isLiked === false ? 'black' : '#b7b7b7;')};
     margin-right: 10px;
     font-weight: bold;
+    white-space: nowrap;
   }
 `;
 const LikeImg = styled.img<{ isLiked: boolean | null | undefined }>`
@@ -614,6 +627,7 @@ const Report = styled.div`
   position: absolute;
   right: 0;
   font-size: 13px;
+  white-space: nowrap;
 
   &:hover {
     cursor: pointer;

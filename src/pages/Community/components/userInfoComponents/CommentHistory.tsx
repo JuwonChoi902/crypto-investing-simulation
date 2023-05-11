@@ -57,6 +57,11 @@ export default function CommentHistory({ profileId }: CommentHistoryProps) {
               ...el,
               created_at: dateParsing(el.created_at)[0],
               isItNew: dateParsing(el.created_at)[1],
+              post: {
+                ...el.post,
+                title:
+                  String(el.post?.title).length > 40 ? `${el.post?.title.slice(0, 40)}...` : el.post?.title,
+              },
             })),
           );
         } else {
@@ -112,7 +117,7 @@ export default function CommentHistory({ profileId }: CommentHistoryProps) {
           .then((res) => res.json())
           .then((data) => {
             if (data.isSuccess) {
-              fetch(`https://server.pien.kr:4000/community/reply/user/1?page=${page}&number=15`, {
+              fetch(`https://server.pien.kr:4000/community/reply/user/1?page=${page}&number=10`, {
                 headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
               })
                 .then((res) => res.json())
@@ -124,6 +129,13 @@ export default function CommentHistory({ profileId }: CommentHistoryProps) {
                         ...el,
                         created_at: dateParsing(el.created_at)[0],
                         isItNew: dateParsing(el.created_at)[1],
+                        post: {
+                          ...el.post,
+                          title:
+                            String(el.post?.title).length > 40
+                              ? `${el.post?.title.slice(0, 40)}...`
+                              : el.post?.title,
+                        },
                       })),
                     );
                     setChecked([]);
@@ -169,7 +181,11 @@ export default function CommentHistory({ profileId }: CommentHistoryProps) {
               >
                 <CommentDesc>
                   {el.comment}
-                  {el.isItNew ? <IsItNew>N</IsItNew> : null}
+                  {el.isItNew ? (
+                    <ReplyAndNew>
+                      <IsItNew>N</IsItNew>
+                    </ReplyAndNew>
+                  ) : null}
                 </CommentDesc>
                 <CommentDate>{el.created_at}</CommentDate>
                 <PostTitle>
@@ -190,7 +206,7 @@ export default function CommentHistory({ profileId }: CommentHistoryProps) {
             </CheckAll>
           ) : null}
         </SelectAll>
-        <Pages page={page} setPage={setPage} postNumber={commentCount} limit={15} />
+        <Pages page={page} setPage={setPage} postNumber={commentCount} limit={10} />
         <DeleteAndWrite>
           {profileId === loginUserId ? <DeleteBtn onClick={deleteComment}>삭제</DeleteBtn> : null}
           <WriteBtn
@@ -221,6 +237,7 @@ const CommentCount = styled.div`
   font-size: 13px;
   border-top: 1px solid black;
   border-bottom: 1px solid #e5e5e5;
+  white-space: nowrap;
   div {
     font-weight: bold;
   }
@@ -241,6 +258,7 @@ const CommentInner = styled.div`
 
 const CheckBox = styled.div`
   padding-right: 10px;
+  min-width: 21px;
   input {
     width: 14px;
     height: 14px;
@@ -255,6 +273,13 @@ const Comment = styled.div<{ isPublished: boolean | undefined }>`
 
 const CommentDesc = styled.div`
   display: flex;
+  max-width: 600px;
+  word-break: break-all;
+`;
+
+const ReplyAndNew = styled.div`
+  display: flex;
+  align-items: center;
 `;
 
 const IsItNew = styled.div`
@@ -277,6 +302,8 @@ const PostTitle = styled.div`
   display: flex;
   color: #878787;
   margin-top: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   span {
     font-style: italic;

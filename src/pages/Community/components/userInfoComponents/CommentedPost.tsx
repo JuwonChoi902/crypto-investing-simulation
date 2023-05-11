@@ -99,8 +99,12 @@ export default function CommentedPost({ profileId }: CommentedPostProps) {
                   onClick={() => (data[0].isPublished ? navigate(`/community/${data[0].id}`) : null)}
                 >
                   {data[0].isPublished ? data[0].title : <span>삭제된 게시물입니다.</span>}
-                  {data[0].repliesCount === 0 ? null : <RepliesCount>[{data[0].repliesCount}]</RepliesCount>}
-                  {data[0].created_at[1] ? <IsItNew>N</IsItNew> : null}
+                  <ReplyAndNew>
+                    {data[0].repliesCount === 0 ? null : (
+                      <RepliesCount>[{data[0].repliesCount}]</RepliesCount>
+                    )}
+                    {data[0].created_at[1] ? <IsItNew>N</IsItNew> : null}
+                  </ReplyAndNew>
                 </PostTitle>
               </PostTitleBox>
               <PostNick>{data[1].nickname}</PostNick>
@@ -142,6 +146,7 @@ const ListCategories = styled.div`
   font-weight: bold;
   border-top: 1px solid black;
   border-bottom: 1px solid #e5e5e5;
+  white-space: nowrap;
 `;
 const LCTitle = styled.div`
   ${(props) => props.theme.variables.flex()};
@@ -184,9 +189,10 @@ const PostTitleBox = styled.div`
 const PostId = styled.div`
   ${(props) => props.theme.variables.flex()}
   color:#878787;
-  width: 50px;
+  min-width: 50px;
   font-size: 11px;
   margin-right: 15px;
+  white-space: nowrap;
 `;
 const PostTitle = styled.div<{ isPublished: boolean | undefined }>`
   ${(props) => props.theme.variables.flex()}
@@ -203,12 +209,18 @@ const PostTitle = styled.div<{ isPublished: boolean | undefined }>`
   }
 `;
 
+const ReplyAndNew = styled.div`
+  display: flex;
+  white-space: nowrap;
+`;
+
 const PostNick = styled.div`
   ${(props) => props.theme.variables.flex()}
 
   font-size: 13px;
   width: 122px;
   padding: 2px 7px;
+  white-space: nowrap;
 
   &:hover {
     cursor: pointer;
@@ -236,11 +248,13 @@ const PostDate = styled.div`
   ${(props) => props.theme.variables.flex()}
   width: 120px;
   font-size: 12px;
+  white-space: nowrap;
 `;
 const PostHit = styled.div`
   ${(props) => props.theme.variables.flex()}
   width: 80px;
   font-size: 12px;
+  white-space: nowrap;
 `;
 
 const EmptyList = styled.div`
@@ -249,15 +263,18 @@ const EmptyList = styled.div`
   height: 37px;
   font-size: 13px;
   border-bottom: 1px solid #e5e5e5;
+  white-space: nowrap;
 `;
 const ButtonBox = styled.div`
   display: flex;
   justify-content: space-between;
   height: 34px;
   margin: 10px 0px 34px 0px;
+  white-space: nowrap;
 `;
 const SelectAll = styled.div`
   ${(props) => props.theme.variables.flex()}
+  white-space: nowrap;
 `;
 
 const DeleteAndWrite = styled.div`

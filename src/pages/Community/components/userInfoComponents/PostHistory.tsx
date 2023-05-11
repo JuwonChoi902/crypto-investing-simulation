@@ -172,8 +172,10 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
                   }}
                 >
                   {post.title}
-                  {post.repliesCount === 0 ? null : <RepliesCount>[{post.repliesCount}]</RepliesCount>}
-                  {post.created_at[1] ? <IsItNew>N</IsItNew> : null}
+                  <ReplyAndNew>
+                    {post.repliesCount === 0 ? null : <RepliesCount>[{post.repliesCount}]</RepliesCount>}
+                    {post.created_at[1] ? <IsItNew>N</IsItNew> : null}
+                  </ReplyAndNew>
                 </PostTitle>
               </PostTitleBox>
               <PostDate>{post.created_at}</PostDate>
@@ -255,7 +257,7 @@ const PostTitleBox = styled.div`
 `;
 const CheckBox = styled.div`
   ${(props) => props.theme.variables.flex()}
-  width: 30px;
+  min-width: 30px;
   input {
     width: 14px;
     height: 14px;
@@ -269,7 +271,7 @@ const CheckBox = styled.div`
 const PostId = styled.div`
   ${(props) => props.theme.variables.flex()}
   color:#878787;
-  width: 69px;
+  min-width: 69px;
   font-size: 11px;
   margin-right: 6px;
 `;
@@ -281,6 +283,9 @@ const PostTitle = styled.div`
     cursor: pointer;
     text-decoration: underline;
   }
+`;
+const ReplyAndNew = styled.div`
+  display: flex;
 `;
 
 const RepliesCount = styled.div`
@@ -304,11 +309,13 @@ const PostDate = styled.div`
   ${(props) => props.theme.variables.flex()}
   width: 120px;
   font-size: 12px;
+  white-space: nowrap;
 `;
 const PostHit = styled.div`
   ${(props) => props.theme.variables.flex()}
   width: 80px;
   font-size: 12px;
+  white-space: nowrap;
 `;
 
 const EmptyList = styled.div`
@@ -331,6 +338,7 @@ const CheckAll = styled.div`
   ${(props) => props.theme.variables.flex()}
   display: flex;
   font-size: 13px;
+  white-space: nowrap;
 
   input {
     width: 14px;
@@ -354,6 +362,7 @@ const DeleteBtn = styled.button`
   font-size: 12px;
   font-weight: bold;
   padding: 0 14px;
+  white-space: nowrap;
   &:hover {
     cursor: pointer;
   }
@@ -366,6 +375,7 @@ const WriteBtn = styled.button`
   font-size: 12px;
   font-weight: bold;
   padding: 0 14px;
+  white-space: nowrap;
   &:hover {
     cursor: pointer;
   }

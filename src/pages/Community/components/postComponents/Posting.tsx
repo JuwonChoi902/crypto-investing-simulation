@@ -81,11 +81,35 @@ export default function Posting() {
   const makingUserInput = (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
-    setUserInput({ ...userInput, [event.target?.name]: event.target.value });
+    if (event.target.name === 'title' || event.target.name === 'description') {
+      const inputTable = {
+        title: {
+          name: '제목',
+          limit: 60,
+        },
+        description: {
+          name: '본문',
+          limit: 3000,
+        },
+      };
+
+      const fieldName = event.target.name as keyof typeof inputTable;
+      const field = inputTable[fieldName];
+
+      const textLength = event.target.value.length;
+
+      if (textLength >= field.limit) {
+        alert(`${field.name}은 ${field.limit}자 이내로 입력해주세요.`);
+      } else {
+        setUserInput({ ...userInput, [fieldName]: event.target.value });
+      }
+    } else {
+      setUserInput({ ...userInput, [event.target.name]: event.target.value });
+    }
   };
 
   return (
-    <OuterBox>
+    <OuterBox onSubmit={(e) => e.preventDefault()}>
       <HeaderBox>
         <h1>게시판 글쓰기</h1>
         <button type='button' onClick={postThis}>
@@ -138,6 +162,7 @@ const HeaderBox = styled.div`
   align-items: center;
   padding-bottom: 10px;
   border-bottom: 1px solid black;
+  white-space: nowrap;
 
   h1 {
     font-size: 20px;
@@ -152,6 +177,7 @@ const HeaderBox = styled.div`
     background-color: #f9f9fa;
     border-radius: 4px;
     border: none;
+    white-space: nowrap;
 
     &:hover {
       cursor: pointer;
@@ -173,6 +199,7 @@ const TitleBox = styled.div<{ optionColor: number }>`
     border: 1px solid #e5e5e5;
     padding-left: 11px;
     color: #8e8e8e;
+    white-space: nowrap;
 
     &:focus {
       outline: none;
@@ -186,6 +213,7 @@ const CategorySelect = styled.select`
   border: 1px solid #e5e5e5;
   padding-left: 11px;
   color: #8e8e8e;
+  white-space: nowrap;
 
   &:focus {
     outline: none;

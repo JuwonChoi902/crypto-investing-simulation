@@ -76,11 +76,15 @@ const CategoryBox = styled.div`
 `;
 const CategoryLeft = styled.div`
   display: flex;
+  white-space: nowrap;
 `;
-const CategoryRight = styled.div``;
+const CategoryRight = styled.div`
+  white-space: nowrap;
+`;
 const Category = styled.div<{ id: string; category: string }>`
   margin-right: 16px;
   padding-bottom: 5px;
+  white-space: nowrap;
   border-bottom: ${(props) =>
     props.category === props.id ? `2px solid ${props.theme.style.yellow}` : 'none'};
   font-weight: ${(props) => (props.category === props.id ? 'bold' : 'normal')};

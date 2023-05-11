@@ -69,6 +69,7 @@ export default function RankingBox() {
 const OuterBox = styled.div`
   width: 200px;
   border-top: 2px solid black;
+  white-space: nowrap;
 `;
 const FilterTap = styled.div`
   display: flex;

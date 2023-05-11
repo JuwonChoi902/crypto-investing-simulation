@@ -49,7 +49,7 @@ export default function CommentedPost() {
       delete headers.Authorization;
     }
 
-    fetch(`https://server.pien.kr:4000/user/posts`, {
+    fetch(`https://server.pien.kr:4000/user/posts?page=${page}&number=15`, {
       headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
     })
       .then((res) => res.json())
@@ -64,7 +64,7 @@ export default function CommentedPost() {
           );
         }
       });
-  }, []);
+  }, [page]);
 
   return (
     <OuterBox>
@@ -82,8 +82,10 @@ export default function CommentedPost() {
                 <PostId>{post.id}</PostId>
                 <PostTitle onClick={() => (post.isPublished ? navigate(`/community/${post.id}`) : null)}>
                   {post.title}
-                  {post.repliesCount === 0 ? null : <RepliesCount>[{post.repliesCount}]</RepliesCount>}
-                  {post.created_at[1] ? <IsItNew>N</IsItNew> : null}
+                  <ReplyAndNew>
+                    {post.repliesCount === 0 ? null : <RepliesCount>[{post.repliesCount}]</RepliesCount>}
+                    {post.created_at[1] ? <IsItNew>N</IsItNew> : null}
+                  </ReplyAndNew>
                 </PostTitle>
               </PostTitleBox>
               <PostNick>기석</PostNick>
@@ -110,6 +112,7 @@ const ListCategories = styled.div`
   font-weight: bold;
   border-top: 1px solid black;
   border-bottom: 1px solid #e5e5e5;
+  white-space: nowrap;
 `;
 const LCTitle = styled.div`
   ${(props) => props.theme.variables.flex()};
@@ -152,9 +155,10 @@ const PostTitleBox = styled.div`
 const PostId = styled.div`
   ${(props) => props.theme.variables.flex()}
   color:#878787;
-  width: 50px;
+  min-width: 50px;
   font-size: 11px;
   margin-right: 15px;
+  white-space: nowrap;
 `;
 const PostTitle = styled.div`
   ${(props) => props.theme.variables.flex()}
@@ -170,12 +174,18 @@ const PostTitle = styled.div`
   }
 `;
 
+const ReplyAndNew = styled.div`
+  display: flex;
+  white-space: nowrap;
+`;
+
 const PostNick = styled.div`
   ${(props) => props.theme.variables.flex()}
 
   font-size: 13px;
   width: 122px;
   padding: 2px 7px;
+  white-space: nowrap;
 `;
 
 const RepliesCount = styled.div`
@@ -199,11 +209,13 @@ const PostDate = styled.div`
   ${(props) => props.theme.variables.flex()}
   width: 120px;
   font-size: 12px;
+  white-space: nowrap;
 `;
 const PostHit = styled.div`
   ${(props) => props.theme.variables.flex()}
   width: 80px;
   font-size: 12px;
+  white-space: nowrap;
 `;
 
 const EmptyList = styled.div`
@@ -212,10 +224,12 @@ const EmptyList = styled.div`
   height: 37px;
   font-size: 13px;
   border-bottom: 1px solid #e5e5e5;
+  white-space: nowrap;
 `;
 const ButtonBox = styled.div`
   display: flex;
   justify-content: center;
   height: 34px;
   margin: 10px 0px 34px 0px;
+  white-space: nowrap;
 `;

@@ -17,7 +17,7 @@ export default function Apologize() {
         <Tail>
           <div>현재 커뮤니티 서비스가 이용가능하오니,</div>
           <div>
-            커뮤니티 페이지를 통해서 적극적인 피드백 부탁드립니다.<span>-ByCripto</span>
+            커뮤니티 페이지를 통해서 적극적인 피드백 부탁드립니다.<span>-CriptoBy</span>
           </div>
         </Tail>
         <ButtonBox>

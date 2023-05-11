@@ -2,6 +2,8 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router';
 import styled from 'styled-components';
 import { PostDataType, HeadersType } from '../../../../typing/types';
+import arrowUp from '../../images/arrowUpBlack.png';
+import arrowDown from '../../images/arrowDownBlack.png';
 
 type NavigateBoxTopProps = {
   setPostNow: React.Dispatch<React.SetStateAction<number | null>>;
@@ -63,13 +65,15 @@ export default function NavigateBoxTop({ setPostNow, postData }: NavigateBoxTopP
       ) : null}
       <div />
       <NavigateRight>
-        {!postData?.prevPostId ? null : (
-          <Previous type='button' onClick={() => navigate(`/community/${postData.prevPostId}`)}>
+        {!postData?.nextPostId ? null : (
+          <Previous type='button' onClick={() => navigate(`/community/${postData.nextPostId}`)}>
+            <img src={arrowUp} alt='arrowUp' />
             이전글
           </Previous>
         )}
-        {!postData?.nextPostId ? null : (
-          <Next type='button' onClick={() => navigate(`/community/${postData.nextPostId}`)}>
+        {!postData?.prevPostId ? null : (
+          <Next type='button' onClick={() => navigate(`/community/${postData.prevPostId}`)}>
+            <img src={arrowDown} alt='arrowDown' />
             다음글
           </Next>
         )}
@@ -144,6 +148,11 @@ const Previous = styled.button`
   font-weight: bold;
   white-space: nowrap;
 
+  img {
+    width: 14px;
+    margin-right: 5px;
+  }
+
   &:hover {
     cursor: pointer;
   }
@@ -160,6 +169,12 @@ const Next = styled.button`
   font-weight: bold;
   margin-left: 10px;
   white-space: nowrap;
+
+  img {
+    width: 14px;
+    margin-right: 5px;
+  }
+
   &:hover {
     cursor: pointer;
   }

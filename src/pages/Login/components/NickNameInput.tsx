@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Navigate, useLocation, useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import writeYellow from '../images/writeYellow.png';
 import checkGrey from '../images/checkGrey.png';
 import checkGreen from '../images/checkGreen.png';

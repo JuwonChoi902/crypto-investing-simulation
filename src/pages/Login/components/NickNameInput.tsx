@@ -33,7 +33,7 @@ export default function NickNameInput() {
       })
         .then((res) => res.json())
         .then((data) => {
-          if (data.status === true) {
+          if (data.isSuccess === true) {
             setIsItDuplicated(true);
           }
         });

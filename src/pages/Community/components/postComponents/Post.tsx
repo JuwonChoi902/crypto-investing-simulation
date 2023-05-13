@@ -18,7 +18,6 @@ export default function Post({ setPostNow, setBoardNow, setMenuNow, setProfileId
   const [replying, setReplying] = useState<number | null>(null);
   const [commentCount, setCommentCount] = useState<number>(0);
   const commentWindowRef = useRef<HTMLDivElement>(null);
-  console.log(postData);
 
   return (
     <OuterBox>

@@ -52,14 +52,14 @@ export default function Login() {
       })
         .then((res) => res.json())
         .then((data) => {
-          if (data.statusCode === 404) {
-            navigate('/login/nick', { state: userInfo });
-          } else if (data.isSuccess === true) {
+          if (data.isSuccess) {
             localStorage.clear();
             localStorage.setItem('id', data.data.id);
             localStorage.setItem('accessToken', data.data.accessToken);
             localStorage.setItem('nickname', data.data.nickname);
             navigate('/');
+          } else {
+            navigate('/login/nick', { state: userInfo });
           }
         });
   }, [userInfo]);

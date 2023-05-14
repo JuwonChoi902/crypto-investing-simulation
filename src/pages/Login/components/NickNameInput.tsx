@@ -40,6 +40,8 @@ export default function NickNameInput() {
     }
   };
   const submit = () => {
+    if (!isItDuplicated || !isItValid) return null;
+
     if (
       window.confirm(
         `한 번 생성한 닉네임은 변경할 수 없습니다. '${checkedString}'(으)로 닉네임을 만드시겠습니까?`,
@@ -181,6 +183,7 @@ const DuplicateCheck = styled.button<{ isItValid: boolean }>`
   width: 65px;
   height: 30px;
   color: ${(props) => (props.isItValid ? 'black' : 'grey')};
+  white-space: nowrap;
 
   &:hover {
     background-color: ${(props) => (props.isItValid ? '#fdd950' : '#e5e5e5')};
@@ -205,6 +208,7 @@ const SubmitButton = styled.button<{ isItDuplicated: boolean; isItValid: boolean
   position: absolute;
   bottom: 40px;
   color: ${(props) => (props.isItValid && props.isItDuplicated ? 'black' : 'grey')};
+  white-space: nowrap;
 
   &:hover {
     background-color: ${(props) => (props.isItValid && props.isItDuplicated ? '#fdd950' : '#e5e5e5')};

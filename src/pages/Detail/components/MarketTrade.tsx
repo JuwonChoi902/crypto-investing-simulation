@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { TradeDataTypes } from '../../../typing/type';
+import { TradeDataTypes } from '../../../typing/types';
 
 type MarketTradeBoxProps = {
   price: number | undefined;

@@ -5,7 +5,7 @@ import styled from 'styled-components';
 export default function WannaRich() {
   const navigate = useNavigate();
   return (
-    <OuterBox>
+    <OuterBox data-testid='wannarich'>
       <TitleBox>부자가 되고 싶으세요?</TitleBox>
       <ButtonBox>
         <button type='button' onClick={() => navigate('/login')}>

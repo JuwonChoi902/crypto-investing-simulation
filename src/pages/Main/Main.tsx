@@ -19,8 +19,8 @@ export default function Main() {
     <OuterBox>
       {isLogin ? null : <WannaRich />}
       <BillBoard volume={volume} />
-      <Popular setVolume={setVolume} />
-      <NeedHelp />
+      <Popular data-testid='popular' setVolume={setVolume} />
+      <NeedHelp data-testid='needhelp' />
     </OuterBox>
   );
 }

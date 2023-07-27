@@ -8,7 +8,7 @@ import community from '../images/community.png';
 export default function NeedHelp() {
   const navigate = useNavigate();
   return (
-    <OuterBox>
+    <OuterBox data-testid='needhelp'>
       <Title>도움이 필요하세요?</Title>
       <MenuBox>
         <MenuCard>

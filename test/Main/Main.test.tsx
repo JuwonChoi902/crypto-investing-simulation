@@ -1,11 +1,16 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, screen, act, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
-import * as reactRouter from 'react-router';
 import theme from '../../src/styles/theme';
 import variables from '../../src/styles/variables';
 import Main from '../../src/pages/Main/Main';
+
+global.fetch = jest.fn().mockImplementation(() =>
+  Promise.resolve({
+    json: () => Promise.resolve({ isSuccess: true, data: { count: 10 } }),
+  }),
+);
 
 const mockLocalStorage = {
   store: {} as { [key: string]: string },
@@ -25,30 +30,43 @@ Object.defineProperty(window, 'localStorage', {
 });
 
 describe('Main component', () => {
-  test('should render BillBoard, Popular, NeedHelp, and WannaRich components', () => {
-    // Render the Main component
-    const { getByTestId } = render(
-      <MemoryRouter>
-        <ThemeProvider theme={{ style: theme, variables }}>
-          <Main />
-        </ThemeProvider>
-      </MemoryRouter>,
-    );
+  test('should render BillBoard, Popular, NeedHelp, and WannaRich components', async () => {
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <ThemeProvider theme={{ style: theme, variables }}>
+            <Main />
+          </ThemeProvider>
+        </MemoryRouter>,
+      );
+    });
 
-    // Check if the BillBoard component is rendered
-    const billBoardComponent = getByTestId('billboard-component');
+    const billBoardComponent = screen.getByTestId('billboard');
     expect(billBoardComponent).toBeInTheDocument();
 
-    // Check if the Popular component is rendered
-    const popularComponent = getByTestId('popular-component');
+    const popularComponent = screen.getByTestId('popular');
     expect(popularComponent).toBeInTheDocument();
 
-    // Check if the NeedHelp component is rendered
-    const needHelpComponent = getByTestId('needhelp-component');
+    const needHelpComponent = screen.getByTestId('needhelp');
     expect(needHelpComponent).toBeInTheDocument();
 
-    // Check if the WannaRich component is rendered when the user is not logged in
-    const wannaRichComponent = getByTestId('wannarich-component');
+    const wannaRichComponent = screen.getByTestId('wannarich');
     expect(wannaRichComponent).toBeInTheDocument();
+  });
+
+  test('should not render WannaRich component with loginUserToken', async () => {
+    localStorage.setItem('accessToken', 'dummy_token');
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <ThemeProvider theme={{ style: theme, variables }}>
+            <Main />
+          </ThemeProvider>
+        </MemoryRouter>,
+      );
+    });
+
+    const wannaRichComponent = screen.queryByTestId('wannarich');
+    expect(wannaRichComponent).not.toBeInTheDocument();
   });
 });

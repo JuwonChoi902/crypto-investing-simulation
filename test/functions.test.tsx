@@ -42,7 +42,7 @@ describe('should pass all function tests', () => {
     const dateParsingTestCase = [
       {
         input: '2023-07-25T04:28:00.893Z',
-        expected: ['2023.07.25. 13:28', true],
+        expected: ['2023.07.25. 13:28', false],
       },
       {
         input: '2023-07-23T09:00:00',

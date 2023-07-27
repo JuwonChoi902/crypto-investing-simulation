@@ -109,7 +109,7 @@ export default function Popular({ setVolume }: PopularProps) {
   }, [totalVoume]);
 
   return (
-    <OuterBox>
+    <OuterBox data-testid='popular'>
       <TitleBox>
         <Title>인기 가상화폐</Title>
         <GoMarket onClick={() => navigate('/market')}>가상화폐 더 보러가기</GoMarket>

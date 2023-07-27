@@ -45,7 +45,7 @@ export default function BillBoard({ volume }: BillBoardProps) {
   }, []);
 
   return (
-    <OuterBox>
+    <OuterBox data-testid='billboard'>
       <Boards1>
         <BoardTitle>
           {volume ? (

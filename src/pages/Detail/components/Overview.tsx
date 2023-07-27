@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { SymbolTickerTypes } from '../../../typing/type';
+import { SymbolTickerTypes } from '../../../typing/types';
 import CustomSpinner from './CustomSpinner';
 
 type OverviewProps = {

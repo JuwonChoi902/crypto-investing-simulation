@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { createChart } from 'lightweight-charts';
-import { CandleData } from '../../../typing/type';
+import { CandleData } from '../../../typing/types';
 
 const initialData = [
   { time: '2018-12-22', open: 75.16, high: 82.84, low: 36.16, close: 45.72 },

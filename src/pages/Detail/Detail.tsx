@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useLocation } from 'react-router';
-import { SymbolTickerTypes } from '../../typing/type';
+import { SymbolTickerTypes } from '../../typing/types';
 import Overview from './components/Overview';
 import CallBox from './components/CallBox';
 import MarketTrade from './components/MarketTrade';

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 import styled from 'styled-components';
 import user from '../../images/user.png';
 import { HeadersType, CommentDataType, IndexObjectType } from '../../../../typing/types';
+import { dateParsing } from '../../../../utils/functions';
 
 type CommentsBoxProps = {
   commentWindowRef: React.RefObject<HTMLDivElement>;
@@ -14,7 +15,7 @@ type CommentsBoxProps = {
   setMenuNow: React.Dispatch<React.SetStateAction<number>>;
 };
 
-export default function CommentsBox({
+function CommentsBox({
   commentWindowRef,
   replying,
   setReplying,
@@ -44,22 +45,6 @@ export default function CommentsBox({
     dropBoxRefs.current = Array.from({ length: countAll }, () => React.createRef<HTMLDivElement>());
     nickBoxRefs.current = Array.from({ length: countAll }, () => React.createRef<HTMLDivElement>());
   }, [countAll]);
-
-  const dateParsing = (date: string): [string, boolean] => {
-    const theDate = new Date(date);
-    const todayDate = new Date();
-    const oneDayPlus = new Date(date);
-    oneDayPlus.setDate(oneDayPlus.getDate() + 1);
-    const isItInOneDay = oneDayPlus >= todayDate;
-    return [
-      `${theDate.getFullYear()}.${String(theDate.getMonth() + 1).padStart(2, '0')}.${String(
-        theDate.getDate(),
-      ).padStart(2, '0')}. ${String(theDate.getHours()).padStart(2, '0')}:${String(
-        theDate.getMinutes(),
-      ).padStart(2, '0')}`,
-      isItInOneDay,
-    ];
-  };
 
   const textarea = useRef<HTMLTextAreaElement>(null);
   const replyTextArea = useRef<HTMLTextAreaElement>(null);
@@ -696,6 +681,8 @@ export default function CommentsBox({
     </OuterBox>
   );
 }
+
+export default React.memo(CommentsBox);
 
 const OuterBox = styled.div``;
 const CommentHeader = styled.div`

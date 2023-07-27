@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
 import { PostDataType, HeadersType, SearchResType } from '../../../../typing/types';
@@ -67,7 +67,7 @@ export default function PostList({
     };
   }, [dropBox]);
 
-  const dateParsing = (date: string): [string, boolean] => {
+  const dateParsing = useCallback((date: string): [string, boolean] => {
     const theDate = new Date(date);
     const todayDate = new Date();
     const oneDayPlus = new Date(date);
@@ -93,7 +93,7 @@ export default function PostList({
       `${String(theDate.getHours()).padStart(2, '0')}:${String(theDate.getMinutes()).padStart(2, '0')}`,
       isItInOneDay,
     ];
-  };
+  }, []);
 
   useEffect(() => {
     const headers: HeadersType = {

@@ -55,7 +55,7 @@ export interface CommentDataType {
   comment: string;
   created_at: string;
   deleted_at: string;
-  isItNew: boolean;
+  isItNew?: boolean;
   replyId: number;
   isThisOrigin: boolean;
   user: UserDetail;

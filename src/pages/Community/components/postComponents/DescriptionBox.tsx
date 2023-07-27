@@ -6,6 +6,7 @@ import likeFill from '../../images/likeFill.png';
 import dislikeFill from '../../images/dislikeFill.png';
 import comment from '../../images/comment.png';
 import { HeadersType, PostDataType } from '../../../../typing/types';
+import { dateParsing } from '../../../../utils/functions';
 
 type DescriptionBoxProps = {
   commentCount: number;
@@ -41,24 +42,6 @@ export default function DescriptionBox({
   const nickBoxRef = useRef<HTMLDivElement>(null);
   const loginUserToken = localStorage.getItem('accessToken');
   const navigate = useNavigate();
-
-  const dateParsing = (date: string): [string, boolean] => {
-    const theDate = new Date(date);
-    const todayDate = new Date();
-    const oneDayPlus = new Date(date);
-    oneDayPlus.setDate(oneDayPlus.getDate() + 1);
-
-    const isItInOneDay = oneDayPlus >= todayDate;
-
-    return [
-      `${theDate.getFullYear()}.${String(theDate.getMonth() + 1).padStart(2, '0')}.${String(
-        theDate.getDate(),
-      ).padStart(2, '0')}. ${String(theDate.getHours()).padStart(2, '0')}:${String(
-        theDate.getMinutes(),
-      ).padStart(2, '0')}`,
-      isItInOneDay,
-    ];
-  };
 
   useEffect(() => {
     const headers: HeadersType = {

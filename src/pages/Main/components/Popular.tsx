@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router';
 import { SymbolTickerTypes, CoinTypes } from '../../../typing/types';
+import { unitParsing } from '../../../utils/functions';
 import bitCoin from '../images/bitcoin.png';
 import ethereum from '../images/ethereum.png';
 import usdc from '../images/usd.png';
@@ -28,22 +29,7 @@ export default function Popular({ setVolume }: PopularProps) {
   const navigate = useNavigate();
   const priceRef = useRef<number[]>([]);
 
-  const unitParsing = (num: string) => {
-    const temp = Number(num);
-    let [divideNum, resString, fractionDigit] = [1, '', 2];
-    if (temp >= 1000000000) {
-      [divideNum, resString] = [1000000000, 'B'];
-    } else if (temp < 1000000000 && temp >= 1000000) {
-      [divideNum, resString] = [1000000, 'M'];
-    } else if (temp < 1000000 && temp >= 1000) {
-      [divideNum, resString] = [1000, 'K'];
-    } else fractionDigit = 4;
-
-    return `${(temp / divideNum).toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: fractionDigit,
-    })}${resString}`;
-  };
+  const memoizedUnitParsing = useCallback(unitParsing, []);
 
   useEffect(() => {
     const webSockets: WebSocket[] = tenDummyCoins.map(
@@ -83,11 +69,11 @@ export default function Popular({ setVolume }: PopularProps) {
 
           updatedTickers[index] = {
             ...updatedTickers[index],
-            price: unitParsing(data.c),
+            price: memoizedUnitParsing(data.c),
             dayChange: Number(data.P) > 0 ? `+${Number(data.P).toFixed(2)}` : `${Number(data.P).toFixed(2)}`,
-            volume: unitParsing(data.q),
+            volume: memoizedUnitParsing(data.q),
             volumeOrigin: data.q,
-            marketCap: unitParsing(String(Number(data.c) * updatedTickers[index].quantity)),
+            marketCap: memoizedUnitParsing(String(Number(data.c) * updatedTickers[index].quantity)),
           };
 
           return updatedTickers;

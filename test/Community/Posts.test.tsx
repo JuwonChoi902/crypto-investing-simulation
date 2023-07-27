@@ -120,21 +120,14 @@ describe('Posts Component', () => {
     expect(postListComponent).toBeInTheDocument();
   });
 
-  test('should render post title and username correctly', async () => {
-    const testProps = {
-      boardNow: 0,
-      setBoardNow: jest.fn(),
-      isItSearching: false,
-      setIsItSearching: jest.fn(),
-      setProfileId: jest.fn(),
-      setMenuNow: jest.fn(),
-    };
+  test('should render post title and username correctly and whatIsList test is rendering correctly', async () => {
+    const testPropsChanged = { ...testProps, boardNow: 1 };
 
     await act(async () => {
       render(
         <MemoryRouter>
           <ThemeProvider theme={{ style: theme, variables }}>
-            <Posts {...testProps} />
+            <Posts {...testPropsChanged} />
           </ThemeProvider>
         </MemoryRouter>,
       );
@@ -145,6 +138,9 @@ describe('Posts Component', () => {
 
     const postUserNameComponent = screen.getByText('기석');
     expect(postUserNameComponent).toBeInTheDocument();
+
+    const whatIsListComponent = screen.getByText('질문하기');
+    expect(whatIsListComponent).toBeInTheDocument();
   });
 
   test('should render page components number correctly', async () => {

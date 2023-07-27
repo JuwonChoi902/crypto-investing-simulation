@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import styled from 'styled-components';
 import user from '../../images/user.png';
@@ -37,6 +37,7 @@ function CommentsBox({
   const loginUserId = Number(localStorage.getItem('id'));
   const params = useParams();
   const navigate = useNavigate();
+  const memoizedDateParsing = useCallback(dateParsing, []);
 
   const dropBoxRefs = useRef<Array<React.RefObject<HTMLDivElement> | undefined>>();
   const nickBoxRefs = useRef<Array<React.RefObject<HTMLDivElement> | undefined>>();
@@ -140,8 +141,8 @@ function CommentsBox({
             setCommentData(
               temp.map((el: CommentDataType) => ({
                 ...el,
-                created_at: dateParsing(el.created_at)[0],
-                isItNew: dateParsing(el.created_at)[1],
+                created_at: memoizedDateParsing(el.created_at)[0],
+                isItNew: memoizedDateParsing(el.created_at)[1],
                 isThisOrigin: el.id === el.replyId,
               })),
             );
@@ -221,8 +222,8 @@ function CommentsBox({
             setCommentData(
               temp.map((el: CommentDataType) => ({
                 ...el,
-                created_at: dateParsing(el.created_at)[0],
-                isItNew: dateParsing(el.created_at)[1],
+                created_at: memoizedDateParsing(el.created_at)[0],
+                isItNew: memoizedDateParsing(el.created_at)[1],
                 isThisOrigin: el.id === el.replyId,
               })),
             );
@@ -291,8 +292,8 @@ function CommentsBox({
                   setCommentData(
                     temp.map((el: CommentDataType) => ({
                       ...el,
-                      created_at: dateParsing(el.created_at)[0],
-                      isItNew: dateParsing(el.created_at)[1],
+                      created_at: memoizedDateParsing(el.created_at)[0],
+                      isItNew: memoizedDateParsing(el.created_at)[1],
                       isThisOrigin: el.id === el.replyId,
                     })),
                   );
@@ -350,8 +351,8 @@ function CommentsBox({
             setCommentData(
               temp.map((el: CommentDataType) => ({
                 ...el,
-                created_at: dateParsing(el.created_at)[0],
-                isItNew: dateParsing(el.created_at)[1],
+                created_at: memoizedDateParsing(el.created_at)[0],
+                isItNew: memoizedDateParsing(el.created_at)[1],
                 isThisOrigin: el.id === el.replyId,
               })),
             );
@@ -425,8 +426,8 @@ function CommentsBox({
                   setCommentData(
                     temp.map((el: CommentDataType) => ({
                       ...el,
-                      created_at: dateParsing(el.created_at)[0],
-                      isItNew: dateParsing(el.created_at)[1],
+                      created_at: memoizedDateParsing(el.created_at)[0],
+                      isItNew: memoizedDateParsing(el.created_at)[1],
                       isThisOrigin: el.id === el.replyId,
                     })),
                   );
@@ -778,7 +779,7 @@ const CommentDescription = styled.div`
   white-space: pre-wrap;
 
   word-break: break-all;
-  white-space: -moz-pre-wrap; ;
+  white-space: -moz-pre-wrap;
 `;
 const CommentCreatedAt = styled.div`
   font-size: 12px;

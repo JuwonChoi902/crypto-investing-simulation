@@ -192,7 +192,7 @@ export default function DescriptionBox({
   }, [dropBoxIsOpen]);
 
   return (
-    <OuterBox>
+    <OuterBox data-testid='descriptionbox-component'>
       <TitleBox>
         <Board
           onClick={() => {

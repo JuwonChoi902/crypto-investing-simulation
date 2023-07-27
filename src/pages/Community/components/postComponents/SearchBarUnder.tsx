@@ -130,7 +130,7 @@ export default function SearchBarUnder({
   };
 
   return (
-    <OuterBox>
+    <OuterBox data-testid='searchbarunder-component'>
       <SearchSelect
         ref={searchDropRef}
         isItClicked={searchDropIsOpen}

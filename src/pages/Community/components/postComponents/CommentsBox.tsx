@@ -439,7 +439,7 @@ function CommentsBox({
   };
 
   return (
-    <OuterBox>
+    <OuterBox data-testid='commentsbox-component'>
       <CommentHeader ref={commentWindowRef}>
         <CommentHeaderBox>
           <CommentHeaderTitle>댓글</CommentHeaderTitle>

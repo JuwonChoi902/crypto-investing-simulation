@@ -162,7 +162,7 @@ export default function SearchBarTop({
   };
 
   return (
-    <OuterBox>
+    <OuterBox data-testid='searchbartop-component'>
       <SearchBox>
         <BoardSelect
           ref={boardsDropRef}

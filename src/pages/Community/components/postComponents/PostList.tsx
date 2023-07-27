@@ -168,7 +168,7 @@ export default function PostList({
   }, [page]);
 
   return (
-    <OuterBox>
+    <OuterBox data-testid='postlist-component'>
       {posts?.length === 0 ? (
         <EmptyPosts>등록된 게시글이 없습니다.</EmptyPosts>
       ) : (

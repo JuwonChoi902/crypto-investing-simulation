@@ -20,7 +20,7 @@ export default function Post({ setPostNow, setBoardNow, setMenuNow, setProfileId
   const commentWindowRef = useRef<HTMLDivElement>(null);
 
   return (
-    <OuterBox>
+    <OuterBox data-testid='post-component'>
       <NavigateBoxTop setPostNow={setPostNow} postData={postData} />
       <MainBox>
         <DescriptionBox

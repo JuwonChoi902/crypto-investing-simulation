@@ -39,7 +39,7 @@ export default function Posts({
   const loginUserToken = localStorage.getItem('accessToken');
 
   return (
-    <OuterBox>
+    <OuterBox data-testid='posts-component'>
       {isItSearching ? (
         <SearchBarTop
           setBoardNow={setBoardNow}
@@ -50,9 +50,11 @@ export default function Posts({
         />
       ) : null}
       {isItSearching ? (
-        <SearchResult>{`'${searchRes.stringRes}'의 검색 결과입니다.`}</SearchResult>
+        <SearchResult data-testid='searchresult-component'>{`'${searchRes.stringRes}'의 검색 결과입니다.`}</SearchResult>
       ) : (
-        <WhatIsList>{boardNow !== null ? Category[boardNow] : null}</WhatIsList>
+        <WhatIsList data-testid='whatislist-component'>
+          {boardNow !== null ? Category[boardNow] : null}
+        </WhatIsList>
       )}
       <HowManyPosts>
         {postNumber}개의 글

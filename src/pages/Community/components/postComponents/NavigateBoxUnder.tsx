@@ -12,7 +12,7 @@ export default function NavigateBoxUnder({ setPostNow }: NavigateBoxUnderProps) 
   const loginUserToken = localStorage.getItem('accessToken');
 
   return (
-    <OuterBox>
+    <OuterBox data-id='navigateboxunder-component'>
       <NaviLeft>
         <WritePost
           onClick={() => {

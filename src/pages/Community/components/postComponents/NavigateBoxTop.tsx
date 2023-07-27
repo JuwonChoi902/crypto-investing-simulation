@@ -46,7 +46,7 @@ export default function NavigateBoxTop({ setPostNow, postData }: NavigateBoxTopP
   };
 
   return (
-    <OuterBox>
+    <OuterBox data-testid='navigateboxtop-component'>
       {loginUserId === postData?.user.id ? (
         <NavigateLeft>
           <EditPost

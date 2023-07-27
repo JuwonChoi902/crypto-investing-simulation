@@ -38,7 +38,7 @@ export default function Pages({ page, setPage, postNumber, limit }: PagesProps) 
         <img src={pageLeft} alt='pageLeft' />
       </PageLeft>
       {pages[pageIndex]?.map((el) => (
-        <Page page={page} id={String(el)} onClick={() => setPage(el)} key={el}>
+        <Page data-testid='page-component' page={page} id={String(el)} onClick={() => setPage(el)} key={el}>
           {el}
         </Page>
       ))}

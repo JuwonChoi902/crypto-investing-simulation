@@ -109,7 +109,7 @@ export default function Posting() {
   };
 
   return (
-    <OuterBox onSubmit={(e) => e.preventDefault()}>
+    <OuterBox data-testid='posting-component' onSubmit={(e) => e.preventDefault()}>
       <HeaderBox>
         <h1>게시판 글쓰기</h1>
         <button type='button' onClick={postThis}>

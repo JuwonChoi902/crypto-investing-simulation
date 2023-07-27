@@ -25,7 +25,7 @@ export default function PostBox({
   setProfileId,
 }: PostBoxProps) {
   return (
-    <OuterBox>
+    <OuterBox data-testid='postbox-component'>
       {postNow ? (
         <Post
           setPostNow={setPostNow}

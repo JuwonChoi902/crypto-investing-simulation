@@ -1,4 +1,5 @@
-import { HeadersType, SymbolTickerTypes, CoinTypes } from '../typing/types';
+import React from 'react';
+import { HeadersType, CommentDataType, IndexObjectType } from '../typing/types';
 
 export const makeHeader = (loginUserToken: string | null): HeadersType => {
   const headers: HeadersType = {
@@ -45,6 +46,63 @@ export const unitParsing = (num: string) => {
     minimumFractionDigits: 2,
     maximumFractionDigits: fractionDigit,
   })}${resString}`;
+};
+
+export const handleCommentsData = (
+  data: CommentDataType[],
+  setCommentCount: React.Dispatch<React.SetStateAction<number>>,
+  setCountAll: React.Dispatch<React.SetStateAction<number>>,
+  memoizedDateParsing: (dateString: string) => [string, boolean],
+): CommentDataType[] => {
+  let commentCount = 0;
+  const tempComments: CommentDataType[] = [];
+  const replyIdTable: IndexObjectType = {};
+
+  data.forEach((comment: CommentDataType) => {
+    if (!comment.deleted_at) {
+      if (replyIdTable[comment.replyId]) {
+        replyIdTable[comment.replyId] += 1;
+      } else {
+        replyIdTable[comment.replyId] = 1;
+      }
+    }
+  });
+
+  data.forEach((comment: CommentDataType) => {
+    if (comment.replyId === comment.id) {
+      if (comment.deleted_at && replyIdTable[comment.replyId]) {
+        tempComments.push(comment);
+      }
+    }
+
+    if (!comment.deleted_at) {
+      commentCount += 1;
+      tempComments.push(comment);
+    }
+  });
+  setCountAll(data.length);
+  setCommentCount(commentCount);
+
+  return tempComments.map((el: CommentDataType) => ({
+    ...el,
+    created_at: memoizedDateParsing(el.created_at)[0],
+    isItNew: memoizedDateParsing(el.created_at)[1],
+    isThisOrigin: el.id === el.replyId,
+  }));
+};
+
+export const makeHeaders = (loginUserToken: string | null): HeadersType => {
+  const tempHeaders: HeadersType = {
+    'Content-Type': 'application/json;charset=utf-8',
+  };
+
+  if (loginUserToken) {
+    tempHeaders.Authorization = `Bearer ${loginUserToken}`;
+  } else {
+    delete tempHeaders.Authorization;
+  }
+
+  return tempHeaders;
 };
 
 export const testModules = {

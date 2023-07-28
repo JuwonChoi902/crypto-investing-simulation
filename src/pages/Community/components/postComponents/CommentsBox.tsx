@@ -2,8 +2,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import styled from 'styled-components';
 import user from '../../images/user.png';
-import { HeadersType, CommentDataType, IndexObjectType } from '../../../../typing/types';
-import { dateParsing } from '../../../../utils/functions';
+import { CommentDataType, HeadersType } from '../../../../typing/types';
+import { dateParsing, handleCommentsData, makeHeaders } from '../../../../utils/functions';
 
 type CommentsBoxProps = {
   commentWindowRef: React.RefObject<HTMLDivElement>;
@@ -25,10 +25,10 @@ function CommentsBox({
   setMenuNow,
 }: CommentsBoxProps) {
   const [commentData, setCommentData] = useState<CommentDataType[]>();
-  const [commentWrite, setCommentWrite] = useState<string>('');
+  const [commentString, setCommentString] = useState<string>('');
   const [editing, setEditing] = useState<number | null>(null);
-  const [editingComment, setEditingComment] = useState<string>();
-  const [replyComment, setReplyComment] = useState<string>();
+  const [editingCommentString, setEditingCommentString] = useState<string>('');
+  const [replyCommentString, setReplyCommentString] = useState<string>('');
   const [dropBox, setDropBox] = useState<number | null>(null);
   const [countAll, setCountAll] = useState<number>(0);
 
@@ -38,120 +38,132 @@ function CommentsBox({
   const params = useParams();
   const navigate = useNavigate();
   const memoizedDateParsing = useCallback(dateParsing, []);
+  const memoizedHandleCommentData = useCallback(handleCommentsData, []);
+  const memoizedMakeHeaders = useCallback(makeHeaders, []);
 
   const dropBoxRefs = useRef<Array<React.RefObject<HTMLDivElement> | undefined>>();
   const nickBoxRefs = useRef<Array<React.RefObject<HTMLDivElement> | undefined>>();
-
-  useEffect(() => {
-    dropBoxRefs.current = Array.from({ length: countAll }, () => React.createRef<HTMLDivElement>());
-    nickBoxRefs.current = Array.from({ length: countAll }, () => React.createRef<HTMLDivElement>());
-  }, [countAll]);
 
   const textarea = useRef<HTMLTextAreaElement>(null);
   const replyTextArea = useRef<HTMLTextAreaElement>(null);
   const editTextArea = useRef<HTMLTextAreaElement>(null);
 
-  const TextAreaHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const adjustTextArea = useCallback((ref: React.RefObject<HTMLTextAreaElement>) => {
+    if (ref.current) {
+      const currentRef = ref.current;
+      currentRef.style.height = 'auto';
+      currentRef.style.height = `${ref.current.scrollHeight}px`;
+    }
+  }, []);
+
+  const textAreaHandler = (
+    event: React.ChangeEvent<HTMLTextAreaElement>,
+    setString: React.Dispatch<React.SetStateAction<string>>,
+  ) => {
     if (event.target.value.length > 1000) {
       alert('댓글은 최대 1,000자 이내로 입력 가능합니다.');
     } else {
-      setCommentWrite(event.target.value);
+      setString(event.target.value);
     }
   };
 
-  const replyTextAreaHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    if (event.target.value.length > 1000) {
-      alert('댓글은 최대 1,000자 이내로 입력 가능합니다.');
-    } else {
-      setReplyComment(event.target.value);
-    }
-  };
-
-  const editTextAreaHandler = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    if (event.target.value.length > 1000) {
-      alert('댓글은 최대 1,000자 이내로 입력 가능합니다.');
-    } else {
-      setEditingComment(event.target.value);
-    }
-  };
-
-  useEffect(() => {
-    if (textarea.current) {
-      textarea.current.style.height = 'auto';
-      textarea.current.style.height = `${textarea.current.scrollHeight}px`;
-    }
-
-    if (replyTextArea.current) {
-      replyTextArea.current.style.height = 'auto';
-      replyTextArea.current.style.height = `${replyTextArea.current.scrollHeight}px`;
-    }
-    if (editTextArea.current) {
-      editTextArea.current.style.height = 'auto';
-      editTextArea.current.style.height = `${editTextArea.current.scrollHeight}px`;
-    }
-  }, [commentWrite, editingComment, replyComment]);
-
-  useEffect(() => {
-    const headers: HeadersType = {
-      'Content-Type': 'application/json;charset=utf-8',
-    };
-
-    if (loginUserToken) {
-      headers.Authorization = `Bearer ${loginUserToken}`;
-    } else {
-      delete headers.Authorization;
-    }
-
-    if (params.id !== 'list' && params.id !== 'favorite' && params.id !== 'profile') {
+  const getCommentData = useCallback(
+    (headers: HeadersType) => {
       fetch(`https://server.pien.kr:4000/community/reply/${params.id}`, {
         headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
       })
         .then((res) => res.json())
         .then((data) => {
           if (data.isSuccess) {
-            let count = 0;
-            const temp = [];
-            const obj: IndexObjectType = {};
-            setCountAll(data.data.length);
-
-            for (let i = 0; i < data.data.length; i += 1) {
-              if (!data.data[i].deleted_at) {
-                if (obj[data.data[i].replyId]) {
-                  obj[data.data[i].replyId] += 1;
-                } else {
-                  obj[data.data[i].replyId] = 1;
-                }
-              }
-            }
-
-            for (let i = 0; i < data.data.length; i += 1) {
-              if (data.data[i].replyId === data.data[i].id) {
-                if (data.data[i].deleted_at && obj[data.data[i].replyId]) {
-                  temp.push(data.data[i]);
-                }
-              }
-
-              if (!data.data[i].deleted_at) {
-                count += 1;
-                temp.push(data.data[i]);
-              }
-            }
-
-            setCommentCount(count);
-            setCommentData(
-              temp.map((el: CommentDataType) => ({
-                ...el,
-                created_at: memoizedDateParsing(el.created_at)[0],
-                isItNew: memoizedDateParsing(el.created_at)[1],
-                isThisOrigin: el.id === el.replyId,
-              })),
+            const handledCommentData = memoizedHandleCommentData(
+              data.data,
+              setCommentCount,
+              setCountAll,
+              memoizedDateParsing,
             );
-          }
+            setCommentData(handledCommentData);
+          } else alert(data.message);
         });
+    },
+    [params.id],
+  );
 
+  const updateComment = useCallback(
+    (
+      action: 'create' | 'edit' | 'reply' | 'delete',
+      postId: string | undefined,
+      userInput: string | undefined,
+      replyId: number | undefined,
+    ) => {
+      if (action === 'delete') {
+        if (window.confirm('댓글을 삭제하시겠습니까?') !== true) return;
+      }
+
+      const headers = memoizedMakeHeaders(loginUserToken);
+      const fetchInfoTable = {
+        url: action === 'edit' ? `/${replyId}` : '',
+        method: {
+          create: 'POST',
+          edit: 'PATCH',
+          reply: 'POST',
+          delete: 'DELETE',
+        },
+        body: {
+          create: { postId, comment: userInput },
+          edit: { comment: userInput },
+          reply: { postId, comment: replyCommentString, replyId },
+          delete: { replyId: [replyId] },
+        },
+      };
+
+      fetch(`https://server.pien.kr:4000/community/reply${fetchInfoTable.url}`, {
+        method: fetchInfoTable.method[action],
+        headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
+        body: JSON.stringify(fetchInfoTable.body[action]),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.isSuccess) {
+            if (action === 'create' || action === 'reply') {
+              const handledCommentData = memoizedHandleCommentData(
+                data.data,
+                setCommentCount,
+                setCountAll,
+                memoizedDateParsing,
+              );
+              setCommentData(handledCommentData);
+              if (action === 'create') {
+                setCommentString('');
+                if (textarea.current) textarea.current.style.height = 'auto';
+              } else if (action === 'reply') setReplying(null);
+            } else if (action === 'edit' || action === 'delete') {
+              getCommentData(headers);
+              if (action === 'edit') setEditing(null);
+            }
+          } else alert(data.message);
+        });
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const headers = memoizedMakeHeaders(loginUserToken);
+    if (params.id !== 'list' && params.id !== 'favorite' && params.id !== 'profile') {
+      getCommentData(headers);
       setReplying(null);
     }
   }, [params.id]);
+
+  useEffect(() => {
+    dropBoxRefs.current = Array.from({ length: countAll }, () => React.createRef<HTMLDivElement>());
+    nickBoxRefs.current = Array.from({ length: countAll }, () => React.createRef<HTMLDivElement>());
+  }, [countAll]);
+
+  useEffect(() => {
+    adjustTextArea(textarea);
+    adjustTextArea(replyTextArea);
+    adjustTextArea(editTextArea);
+  }, [commentString, editingCommentString, replyCommentString]);
 
   useEffect(() => {
     const changeDropState = (e: CustomEvent<MouseEvent>) => {
@@ -175,270 +187,6 @@ function CommentsBox({
     };
   }, [dropBox]);
 
-  const makeComment = () => {
-    if (commentWrite === '') {
-      alert('내용을 입력해주세요');
-    } else {
-      fetch(`https://server.pien.kr:4000/community/reply`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
-          Authorization: `Bearer ${loginUserToken}`,
-        },
-        body: JSON.stringify({ postId: params.id, comment: commentWrite }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.isSuccess) {
-            let count = 0;
-            const temp = [];
-            const obj: IndexObjectType = {};
-            setCountAll(data.data.length);
-
-            for (let i = 0; i < data.data.length; i += 1) {
-              if (!data.data[i].deleted_at) {
-                if (obj[data.data[i].replyId]) {
-                  obj[data.data[i].replyId] += 1;
-                } else {
-                  obj[data.data[i].replyId] = 1;
-                }
-              }
-            }
-
-            for (let i = 0; i < data.data.length; i += 1) {
-              if (data.data[i].replyId === data.data[i].id) {
-                if (data.data[i].deleted_at && obj[data.data[i].replyId]) {
-                  temp.push(data.data[i]);
-                }
-              }
-
-              if (!data.data[i].deleted_at) {
-                count += 1;
-                temp.push(data.data[i]);
-              }
-            }
-
-            setCommentCount(count);
-            setCommentData(
-              temp.map((el: CommentDataType) => ({
-                ...el,
-                created_at: memoizedDateParsing(el.created_at)[0],
-                isItNew: memoizedDateParsing(el.created_at)[1],
-                isThisOrigin: el.id === el.replyId,
-              })),
-            );
-          }
-        });
-
-      setCommentWrite('');
-      if (textarea.current) textarea.current.style.height = 'auto';
-    }
-  };
-
-  const editComment = (id: number) => {
-    if (editingComment === '') {
-      alert('내용을 입력해주세요');
-    } else {
-      fetch(`https://server.pien.kr:4000/community/reply/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
-          Authorization: `Bearer ${loginUserToken}`,
-        },
-        body: JSON.stringify({ comment: editingComment }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.isSuccess) {
-            setEditing(null);
-            fetch(`https://server.pien.kr:4000/community/reply/${params.id}`, {
-              headers: {
-                'Content-Type': 'application/json;charset=utf-8',
-                Authorization: `Bearer ${loginUserToken}`,
-              },
-            })
-              .then((res) => res.json())
-              .then((data) => {
-                if (data.isSuccess) {
-                  let count = 0;
-                  const temp = [];
-                  const obj: IndexObjectType = {};
-                  setCountAll(data.data.length);
-
-                  for (let i = 0; i < data.data.length; i += 1) {
-                    if (!data.data[i].deleted_at) {
-                      if (obj[data.data[i].replyId]) {
-                        obj[data.data[i].replyId] += 1;
-                      } else {
-                        obj[data.data[i].replyId] = 1;
-                      }
-                    }
-                  }
-
-                  for (let i = 0; i < data.data.length; i += 1) {
-                    if (data.data[i].replyId === data.data[i].id) {
-                      if (data.data[i].deleted_at && obj[data.data[i].replyId]) {
-                        temp.push(data.data[i]);
-                      }
-                    }
-
-                    if (!data.data[i].deleted_at) {
-                      count += 1;
-                      temp.push(data.data[i]);
-                    }
-                  }
-
-                  setCommentCount(count);
-                  setCommentData(
-                    temp.map((el: CommentDataType) => ({
-                      ...el,
-                      created_at: memoizedDateParsing(el.created_at)[0],
-                      isItNew: memoizedDateParsing(el.created_at)[1],
-                      isThisOrigin: el.id === el.replyId,
-                    })),
-                  );
-                }
-              });
-          } else alert(data.message);
-        });
-    }
-  };
-
-  const makeReplyComment = (replyId: number) => {
-    if (replyComment === '') {
-      alert('내용을 입력해주세요');
-    } else {
-      fetch(`https://server.pien.kr:4000/community/reply`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
-          Authorization: `Bearer ${loginUserToken}`,
-        },
-        body: JSON.stringify({ postId: params.id, comment: replyComment, replyId }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.isSuccess) {
-            let count = 0;
-            const temp = [];
-            const obj: IndexObjectType = {};
-            setCountAll(data.data.length);
-
-            for (let i = 0; i < data.data.length; i += 1) {
-              if (!data.data[i].deleted_at) {
-                if (obj[data.data[i].replyId]) {
-                  obj[data.data[i].replyId] += 1;
-                } else {
-                  obj[data.data[i].replyId] = 1;
-                }
-              }
-            }
-
-            for (let i = 0; i < data.data.length; i += 1) {
-              if (data.data[i].replyId === data.data[i].id) {
-                if (data.data[i].deleted_at && obj[data.data[i].replyId]) {
-                  temp.push(data.data[i]);
-                }
-              }
-
-              if (!data.data[i].deleted_at) {
-                count += 1;
-                temp.push(data.data[i]);
-              }
-            }
-
-            setCommentCount(count);
-            setCommentData(
-              temp.map((el: CommentDataType) => ({
-                ...el,
-                created_at: memoizedDateParsing(el.created_at)[0],
-                isItNew: memoizedDateParsing(el.created_at)[1],
-                isThisOrigin: el.id === el.replyId,
-              })),
-            );
-
-            setReplying(null);
-          }
-        });
-
-      setReplyComment('');
-    }
-  };
-
-  const deleteComment = (id: number) => {
-    const headers: HeadersType = {
-      'Content-Type': 'application/json;charset=utf-8',
-    };
-
-    if (loginUserToken) {
-      headers.Authorization = `Bearer ${loginUserToken}`;
-    } else {
-      delete headers.Authorization;
-    }
-
-    if (window.confirm('댓글을 삭제하시겠습니까?') === true) {
-      fetch(`https://server.pien.kr:4000/community/reply`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
-          Authorization: `Bearer ${loginUserToken}`,
-        },
-        body: JSON.stringify({ replyId: [id] }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.isSuccess) {
-            fetch(`https://server.pien.kr:4000/community/reply/${params.id}`, {
-              headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
-            })
-              .then((res) => res.json())
-              .then((data) => {
-                if (data.isSuccess) {
-                  let count = 0;
-                  const temp = [];
-                  const obj: IndexObjectType = {};
-                  setCountAll(data.data.length);
-
-                  for (let i = 0; i < data.data.length; i += 1) {
-                    if (!data.data[i].deleted_at) {
-                      if (obj[data.data[i].replyId]) {
-                        obj[data.data[i].replyId] += 1;
-                      } else {
-                        obj[data.data[i].replyId] = 1;
-                      }
-                    }
-                  }
-
-                  for (let i = 0; i < data.data.length; i += 1) {
-                    if (data.data[i].replyId === data.data[i].id) {
-                      if (data.data[i].deleted_at && obj[data.data[i].replyId]) {
-                        temp.push(data.data[i]);
-                      }
-                    }
-
-                    if (!data.data[i].deleted_at) {
-                      count += 1;
-                      temp.push(data.data[i]);
-                    }
-                  }
-
-                  setCommentCount(count);
-                  setCommentData(
-                    temp.map((el: CommentDataType) => ({
-                      ...el,
-                      created_at: memoizedDateParsing(el.created_at)[0],
-                      isItNew: memoizedDateParsing(el.created_at)[1],
-                      isThisOrigin: el.id === el.replyId,
-                    })),
-                  );
-                }
-              });
-          } else alert(data.message);
-        });
-    }
-    return null;
-  };
-
   return (
     <OuterBox data-testid='commentsbox-component'>
       <CommentHeader ref={commentWindowRef}>
@@ -457,12 +205,12 @@ function CommentsBox({
                 <RTRPosting>
                   <NickAndLength>
                     <RTRNick>{loginUserNick}</RTRNick>
-                    {editingComment ? <RTRLength>{editingComment.length}/1000</RTRLength> : null}
+                    {editingCommentString ? <RTRLength>{editingCommentString.length}/1000</RTRLength> : null}
                   </NickAndLength>
                   <RTRDescription
                     ref={editTextArea}
-                    onChange={editTextAreaHandler}
-                    value={editingComment}
+                    onChange={(event) => textAreaHandler(event, setEditingCommentString)}
+                    value={editingCommentString}
                     placeholder='댓글을 남겨보세요'
                   />
                   <RTRBtns>
@@ -471,20 +219,20 @@ function CommentsBox({
                       <CancleWriting
                         onClick={() => {
                           setEditing(null);
-                          setEditingComment('');
+                          setEditingCommentString('');
                         }}
                       >
                         취소
                       </CancleWriting>
                       <PostThisComment
-                        isThisValid={editingComment?.length}
+                        isThisValid={editingCommentString?.length}
                         onClick={() => {
                           if (!loginUserToken) {
                             if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
                               navigate('/login');
                             }
                           } else {
-                            editComment(el.id);
+                            updateComment('edit', params.id, editingCommentString, el.replyId);
                           }
                         }}
                       >
@@ -517,11 +265,8 @@ function CommentsBox({
                             role='presentation'
                             onClick={() => {
                               if (!loginUserToken) {
-                                if (
-                                  window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true
-                                ) {
+                                if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?'))
                                   navigate('/login');
-                                }
                               } else {
                                 setProfileId(el.user.id);
                                 setMenuNow(2);
@@ -534,11 +279,8 @@ function CommentsBox({
                             role='presentation'
                             onClick={() => {
                               if (!loginUserToken) {
-                                if (
-                                  window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true
-                                ) {
+                                if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?'))
                                   navigate('/login');
-                                }
                               } else {
                                 alert('서비스 준비중입니다.');
                               }
@@ -550,11 +292,8 @@ function CommentsBox({
                             role='presentation'
                             onClick={() => {
                               if (!loginUserToken) {
-                                if (
-                                  window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true
-                                ) {
+                                if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?'))
                                   navigate('/login');
-                                }
                               } else {
                                 alert('서비스 준비중입니다.');
                               }
@@ -578,7 +317,7 @@ function CommentsBox({
                         } else {
                           setEditing(null);
                           setReplying(el.id);
-                          setReplyComment('');
+                          setReplyCommentString('');
                         }
                       }}
                     >
@@ -591,13 +330,13 @@ function CommentsBox({
                     <Edit
                       onClick={() => {
                         setReplying(null);
-                        setEditingComment(el.comment);
+                        setEditingCommentString(el.comment);
                         setEditing(el.id);
                       }}
                     >
                       수정
                     </Edit>
-                    <Delete onClick={() => deleteComment(el.id)}>삭제</Delete>
+                    <Delete onClick={() => updateComment('delete', params.id, undefined, el.id)}>삭제</Delete>
                   </DeleteOrEdit>
                 ) : null}
               </Comment>
@@ -607,14 +346,14 @@ function CommentsBox({
                 <RTRPosting>
                   <NickAndLength>
                     <RTRNick>{loginUserNick}</RTRNick>
-                    {replyComment ? <RTRLength>{replyComment.length}/1000</RTRLength> : null}
+                    {replyCommentString ? <RTRLength>{replyCommentString.length}/1000</RTRLength> : null}
                   </NickAndLength>
 
                   <RTRDescription
                     ref={replyTextArea}
                     placeholder={`${el.user.nickname}님께 답글쓰기`}
-                    onChange={replyTextAreaHandler}
-                    value={replyComment}
+                    onChange={(event) => textAreaHandler(event, setReplyCommentString)}
+                    value={replyCommentString}
                   />
                   <RTRBtns>
                     <ButtonsLeft />
@@ -622,20 +361,20 @@ function CommentsBox({
                       <CancleWriting
                         onClick={() => {
                           setReplying(null);
-                          setReplyComment('');
+                          setReplyCommentString('');
                         }}
                       >
                         취소
                       </CancleWriting>
                       <PostThisComment
-                        isThisValid={replyComment?.length}
+                        isThisValid={replyCommentString?.length}
                         onClick={() => {
                           if (!loginUserToken) {
                             if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
                               navigate('/login');
                             }
                           } else {
-                            makeReplyComment(el.replyId);
+                            updateComment('reply', params.id, replyCommentString, el.replyId);
                           }
                         }}
                       >
@@ -652,13 +391,13 @@ function CommentsBox({
       <CommentPosting>
         <NickAndLength>
           <CommentPostingNick>{loginUserNick}</CommentPostingNick>
-          {commentWrite ? <RTRLength>{commentWrite.length}/1000</RTRLength> : null}
+          {commentString ? <RTRLength>{commentString.length}/1000</RTRLength> : null}
         </NickAndLength>
         <CommentPostingDesc
           ref={textarea}
           placeholder={loginUserToken ? '댓글을 남겨보세요' : '로그인 후 이용 가능합니다'}
-          onChange={TextAreaHandler}
-          value={commentWrite}
+          onChange={(event) => textAreaHandler(event, setCommentString)}
+          value={commentString}
           disabled={!loginUserToken}
         />
         <CommentPostingBtns>
@@ -670,10 +409,10 @@ function CommentsBox({
                   navigate('/login');
                 }
               } else {
-                makeComment();
+                updateComment('create', params.id, commentString, undefined);
               }
             }}
-            isThisValid={commentWrite?.length}
+            isThisValid={commentString?.length}
           >
             등록
           </PostThisComment>

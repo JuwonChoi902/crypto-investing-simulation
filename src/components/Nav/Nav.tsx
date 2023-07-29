@@ -13,12 +13,12 @@ export default function Nav() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (localStorage.getItem('id')) {
+    if (localStorage.getItem('accessToken')) {
       setUserId(true);
     } else {
       setUserId(false);
     }
-  }, [localStorage.getItem('id')]);
+  }, [localStorage.getItem('accessToken')]);
 
   return (
     <OuterBox>
@@ -27,7 +27,11 @@ export default function Nav() {
         <span>CryptoBy</span>
       </CryptoBy>
       <NavButtonBox>
-        <NavButtonImgBox onMouseOver={() => setMenuColor(true)} onMouseOut={() => setMenuColor(false)}>
+        <NavButtonImgBox
+          data-testid='yellowbutton-component'
+          onMouseOver={() => setMenuColor(true)}
+          onMouseOut={() => setMenuColor(false)}
+        >
           {menuColor ? <img src={menuYellow} alt='menuYellow' /> : <img src={menuLeft} alt='menuLeft' />}
         </NavButtonImgBox>
         <NavMenuBtn

@@ -132,7 +132,6 @@ const HowManyPosts = styled.div`
   white-space: nowrap;
 
   button {
-    /* background-color: ${(props) => props.theme.style.backgroundGrey}; */
     background-color: white;
     border: none;
     white-space: nowrap;

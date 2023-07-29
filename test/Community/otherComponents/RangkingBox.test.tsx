@@ -2,9 +2,9 @@ import React from 'react';
 import { render, screen, act, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
-import theme from '../../src/styles/theme';
-import variables from '../../src/styles/variables';
-import RangkingBox from '../../src/pages/Community/components/otherComponents/RankingBox';
+import theme from '../../../src/styles/theme';
+import variables from '../../../src/styles/variables';
+import RangkingBox from '../../../src/pages/Community/components/otherComponents/RankingBox';
 
 describe('RangkingBox Component', () => {
   const mockAlert = jest.fn();

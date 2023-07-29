@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
-import { PostDataType, HeadersType, SearchResType } from '../../../../typing/types';
+import { PostDataType, SearchResType } from '../../../../typing/types';
+import { makeHeaders, getPostListData } from '../../../../utils/functions';
 
 type PostListProps = {
   setPosts: React.Dispatch<React.SetStateAction<PostDataType[] | undefined>>;
@@ -20,6 +21,7 @@ type PostListProps = {
 };
 
 const Category: string[] = ['전체글보기', '질문하기', '자랑하기', '공유하기', '잡담하기'];
+const DropBoxMenu: string[] = ['프로필보기', '1:1 채팅', '쪽지보내기'];
 
 export default function PostList({
   setPosts,
@@ -38,12 +40,13 @@ export default function PostList({
 }: PostListProps) {
   const [dropBox, setDropBox] = useState<number | null>(null);
   const { stringRes, filterRes, boardRes } = searchRes;
-
   const navigate = useNavigate();
+  const loginUserToken = localStorage.getItem('accessToken');
+  const memoizedMakeHeaders = useCallback(makeHeaders, []);
+  const memoizedGetList = useCallback(getPostListData, []);
+
   const refs = useRef(Array.from({ length: 10 }, () => React.createRef<HTMLDivElement>()));
   const nickRefs = useRef(Array.from({ length: 10 }, () => React.createRef<HTMLDivElement>()));
-
-  const loginUserToken = localStorage.getItem('accessToken');
 
   useEffect(() => {
     const changeDropState = (e: CustomEvent<MouseEvent>) => {
@@ -67,104 +70,38 @@ export default function PostList({
     };
   }, [dropBox]);
 
-  const dateParsing = useCallback((date: string): [string, boolean] => {
-    const theDate = new Date(date);
-    const todayDate = new Date();
-    const oneDayPlus = new Date(date);
-
-    oneDayPlus.setDate(oneDayPlus.getDate() + 1);
-
-    const strTheDate = theDate.toLocaleString();
-    const strTodayDate = todayDate.toLocaleString();
-    const isItInOneDay = oneDayPlus >= todayDate;
-
-    if (
-      strTheDate.slice(0, strTheDate.indexOf('오') - 1) !==
-      strTodayDate.slice(0, strTodayDate.indexOf('오') - 1)
-    ) {
-      return [
-        `${theDate.getFullYear()}.${String(theDate.getMonth() + 1).padStart(2, '0')}.${String(
-          theDate.getDate(),
-        ).padStart(2, '0')}.`,
-        isItInOneDay,
-      ];
-    }
-    return [
-      `${String(theDate.getHours()).padStart(2, '0')}:${String(theDate.getMinutes()).padStart(2, '0')}`,
-      isItInOneDay,
-    ];
-  }, []);
-
   useEffect(() => {
-    const headers: HeadersType = {
-      'Content-Type': 'application/json;charset=utf-8',
-    };
-
-    if (loginUserToken) {
-      headers.Authorization = `Bearer ${loginUserToken}`;
-    } else {
-      delete headers.Authorization;
-    }
-
+    const headers = memoizedMakeHeaders(loginUserToken);
     if (!isItSearching) {
       setSearchRes({ stringRes: '', filterRes: '', boardRes: boardNow });
       setPage(1);
-      fetch(`https://server.pien.kr:4000/community?page=1&number=10&categoryId=${boardNow}`, {
-        headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.isSuccess) {
-            setPostNumber(data.data.number);
-            setPosts(
-              data.data.post.map((el: PostDataType) => ({ ...el, created_at: dateParsing(el.created_at) })),
-            );
-          }
-        });
+      memoizedGetList(
+        isItSearching,
+        1,
+        boardNow,
+        boardRes,
+        filterRes,
+        stringRes,
+        headers,
+        setPostNumber,
+        setPosts,
+      );
     }
   }, [boardNow, isItSearching]);
 
   useEffect(() => {
-    const headers: HeadersType = {
-      'Content-Type': 'application/json;charset=utf-8',
-    };
-
-    if (loginUserToken) {
-      headers.Authorization = `Bearer ${loginUserToken}`;
-    } else {
-      delete headers.Authorization;
-    }
-
-    if (isItSearching) {
-      fetch(
-        `https://server.pien.kr:4000/community?page=${page}&number=10&categoryId=${boardRes}&filter=${filterRes}&search=${stringRes}`,
-        {
-          headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
-        },
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.isSuccess) {
-            setPostNumber(data.data.number);
-            setPosts(
-              data.data.post.map((el: PostDataType) => ({ ...el, created_at: dateParsing(el.created_at) })),
-            );
-          }
-        });
-    } else {
-      fetch(`https://server.pien.kr:4000/community?page=${page}&number=10&categoryId=${boardNow}`, {
-        headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.isSuccess) {
-            setPostNumber(data.data.number);
-            setPosts(
-              data.data.post.map((el: PostDataType) => ({ ...el, created_at: dateParsing(el.created_at) })),
-            );
-          }
-        });
-    }
+    const headers = memoizedMakeHeaders(loginUserToken);
+    memoizedGetList(
+      isItSearching,
+      1,
+      boardNow,
+      boardRes,
+      filterRes,
+      stringRes,
+      headers,
+      setPostNumber,
+      setPosts,
+    );
   }, [page]);
 
   return (
@@ -205,49 +142,26 @@ export default function PostList({
               {i === dropBox ? (
                 <UserDropBox ref={refs.current[i]}>
                   <ul>
-                    <li
-                      role='presentation'
-                      onClick={() => {
-                        if (!loginUserToken) {
-                          if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
-                            navigate('/login');
+                    {DropBoxMenu.map((menu, index) => (
+                      <li
+                        key={menu}
+                        role='presentation'
+                        onClick={() => {
+                          if (!loginUserToken) {
+                            if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+                              navigate('/login');
+                            }
+                          } else if (index === 0) {
+                            setProfileId(el.user.id);
+                            setMenuNow(2);
+                          } else {
+                            alert('서비스 준비중입니다.');
                           }
-                        } else {
-                          setProfileId(el.user.id);
-                          setMenuNow(2);
-                        }
-                      }}
-                    >
-                      프로필보기
-                    </li>
-                    <li
-                      role='presentation'
-                      onClick={() => {
-                        if (!loginUserToken) {
-                          if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
-                            navigate('/login');
-                          }
-                        } else {
-                          alert('서비스 준비중입니다.');
-                        }
-                      }}
-                    >
-                      1:1 채팅
-                    </li>
-                    <li
-                      role='presentation'
-                      onClick={() => {
-                        if (!loginUserToken) {
-                          if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
-                            navigate('/login');
-                          }
-                        } else {
-                          alert('서비스 준비중입니다.');
-                        }
-                      }}
-                    >
-                      쪽지보내기
-                    </li>
+                        }}
+                      >
+                        {menu}
+                      </li>
+                    ))}
                   </ul>
                 </UserDropBox>
               ) : null}

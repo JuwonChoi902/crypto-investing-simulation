@@ -2,9 +2,9 @@ import React from 'react';
 import { render, screen, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
-import theme from '../../src/styles/theme';
-import variables from '../../src/styles/variables';
-import Pages from '../../src/pages/Community/components/otherComponents/Pages';
+import theme from '../../../src/styles/theme';
+import variables from '../../../src/styles/variables';
+import Pages from '../../../src/pages/Community/components/otherComponents/Pages';
 
 describe('Pages Component', () => {
   const testProps = {

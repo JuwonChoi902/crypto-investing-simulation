@@ -3,9 +3,9 @@ import { render, screen, act, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import * as reactRouter from 'react-router';
-import theme from '../../src/styles/theme';
-import variables from '../../src/styles/variables';
-import MenuBox from '../../src/pages/Community/components/otherComponents/MenuBox';
+import theme from '../../../src/styles/theme';
+import variables from '../../../src/styles/variables';
+import MenuBox from '../../../src/pages/Community/components/otherComponents/MenuBox';
 
 describe('MenuBox Component', () => {
   const testProps = {

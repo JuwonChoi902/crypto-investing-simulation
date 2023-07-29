@@ -3,9 +3,9 @@ import { render, screen, act, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import * as reactRouter from 'react-router';
-import theme from '../../src/styles/theme';
-import variables from '../../src/styles/variables';
-import Posts from '../../src/pages/Community/components/postComponents/Posts';
+import theme from '../../../src/styles/theme';
+import variables from '../../../src/styles/variables';
+import Posts from '../../../src/pages/Community/components/postComponents/Posts';
 
 const mockLocalStorage = {
   store: {} as { [key: string]: string },

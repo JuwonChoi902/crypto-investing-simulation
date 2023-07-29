@@ -1,5 +1,5 @@
 import React from 'react';
-import { HeadersType, CommentDataType, IndexObjectType } from '../typing/types';
+import { HeadersType, CommentDataType, IndexObjectType, PostDataType } from '../typing/types';
 
 export const makeHeader = (loginUserToken: string | null): HeadersType => {
   const headers: HeadersType = {
@@ -27,6 +27,34 @@ export const dateParsing = (date: string): [string, boolean] => {
     ).padStart(2, '0')}. ${String(theDate.getHours()).padStart(2, '0')}:${String(
       theDate.getMinutes(),
     ).padStart(2, '0')}`,
+    isItInOneDay,
+  ];
+};
+
+export const dateParsingForList = (date: string): [string, boolean] => {
+  const theDate = new Date(date);
+  const todayDate = new Date();
+  const oneDayPlus = new Date(date);
+
+  oneDayPlus.setDate(oneDayPlus.getDate() + 1);
+
+  const strTheDate = theDate.toLocaleString();
+  const strTodayDate = todayDate.toLocaleString();
+  const isItInOneDay = oneDayPlus >= todayDate;
+
+  if (
+    strTheDate.slice(0, strTheDate.indexOf('오') - 1) !==
+    strTodayDate.slice(0, strTodayDate.indexOf('오') - 1)
+  ) {
+    return [
+      `${theDate.getFullYear()}.${String(theDate.getMonth() + 1).padStart(2, '0')}.${String(
+        theDate.getDate(),
+      ).padStart(2, '0')}.`,
+      isItInOneDay,
+    ];
+  }
+  return [
+    `${String(theDate.getHours()).padStart(2, '0')}:${String(theDate.getMinutes()).padStart(2, '0')}`,
     isItInOneDay,
   ];
 };
@@ -103,6 +131,41 @@ export const makeHeaders = (loginUserToken: string | null): HeadersType => {
   }
 
   return tempHeaders;
+};
+
+export const getPostListData = (
+  isItSearching: boolean,
+  page: number,
+  boardNow: number | null,
+  boardRes: number | null,
+  searchFilter: string | undefined,
+  searchString: string | undefined,
+  headers: HeadersType,
+  setPostNumber: React.Dispatch<React.SetStateAction<number | undefined>>,
+  setPosts: React.Dispatch<React.SetStateAction<PostDataType[] | undefined>>,
+) => {
+  const url = isItSearching ? `&filter=${searchFilter}&search=${searchString}` : '';
+
+  fetch(
+    `https://server.pien.kr:4000/community?page=${page}&number=10&categoryId=${
+      isItSearching ? boardRes : boardNow
+    }${url}`,
+    {
+      headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
+    },
+  )
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.isSuccess) {
+        setPostNumber(data.data.number);
+        setPosts(
+          data.data.post.map((el: PostDataType) => ({
+            ...el,
+            created_at: dateParsingForList(el.created_at),
+          })),
+        );
+      }
+    });
 };
 
 export const testModules = {

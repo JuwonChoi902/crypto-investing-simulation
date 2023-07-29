@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import styled from 'styled-components';
 import arrowUp from '../../images/arrowUp.png';
 import arrowDown from '../../images/arrowDown.png';
-import { PostDataType, SearchResType, HeadersType } from '../../../../typing/types';
+import { PostDataType, SearchResType } from '../../../../typing/types';
+import { dateParsingForList, makeHeaders } from '../../../../utils/functions';
 
 type SearchBarProps = {
   setPosts: React.Dispatch<React.SetStateAction<PostDataType[] | undefined>>;
@@ -35,6 +36,8 @@ export default function SearchBarUnder({
   const { searchFilter, searchString } = searchInput;
   const searchDropRef = useRef<HTMLDivElement>(null);
   const loginUserToken = localStorage.getItem('accessToken');
+  const memoizedDateParsing = useCallback(dateParsingForList, []);
+  const memoizedMakeHeaders = useCallback(makeHeaders, []);
 
   useEffect(() => {
     if (searchFilter === 'content') setSearchFilterNow('제목 + 내용');
@@ -44,34 +47,6 @@ export default function SearchBarUnder({
 
   const makeSearchFilter = (str: string) => {
     setSearchInput({ ...searchInput, searchFilter: str });
-  };
-
-  const dateParsing = (date: string): [string, boolean] => {
-    const theDate = new Date(date);
-    const todayDate = new Date();
-    const oneDayPlus = new Date(date);
-
-    oneDayPlus.setDate(oneDayPlus.getDate() + 1);
-
-    const strTheDate = theDate.toLocaleString();
-    const strTodayDate = todayDate.toLocaleString();
-    const isItInOneDay = oneDayPlus >= todayDate;
-
-    if (
-      strTheDate.slice(0, strTheDate.indexOf('오') - 1) !==
-      strTodayDate.slice(0, strTodayDate.indexOf('오') - 1)
-    ) {
-      return [
-        `${theDate.getFullYear()}.${String(theDate.getMonth() + 1).padStart(2, '0')}.${String(
-          theDate.getDate(),
-        ).padStart(2, '0')}.`,
-        isItInOneDay,
-      ];
-    }
-    return [
-      `${String(theDate.getHours()).padStart(2, '0')}:${String(theDate.getMinutes()).padStart(2, '0')}`,
-      isItInOneDay,
-    ];
   };
 
   useEffect(() => {
@@ -91,15 +66,7 @@ export default function SearchBarUnder({
   }, [searchDropIsOpen]);
 
   const search = () => {
-    const headers: HeadersType = {
-      'Content-Type': 'application/json;charset=utf-8',
-    };
-
-    if (loginUserToken) {
-      headers.Authorization = `Bearer ${loginUserToken}`;
-    } else {
-      delete headers.Authorization;
-    }
+    const headers = memoizedMakeHeaders(loginUserToken);
 
     if (!searchString) {
       alert('검색어를 입력해주세요');
@@ -118,7 +85,10 @@ export default function SearchBarUnder({
         if (data.isSuccess) {
           setPostNumber(data.data.number);
           setPosts(
-            data.data.post.map((el: PostDataType) => ({ ...el, created_at: dateParsing(el.created_at) })),
+            data.data.post.map((el: PostDataType) => ({
+              ...el,
+              created_at: memoizedDateParsing(el.created_at),
+            })),
           );
           setIsItSearching(true);
         }

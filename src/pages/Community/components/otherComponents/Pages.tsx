@@ -43,6 +43,7 @@ export default function Pages({ page, setPage, postNumber, limit }: PagesProps) 
         </Page>
       ))}
       <PageRight
+        data-testid='pageright-component'
         pagesLength={pages.length}
         pageIndex={pageIndex}
         onClick={() => setPage((pageIndex + 1) * 3 + 1)}

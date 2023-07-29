@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import arrowUp from '../../images/arrowUp.png';
 import arrowDown from '../../images/arrowDown.png';
 import { PostDataType, SearchResType } from '../../../../typing/types';
-import { dateParsingForList, makeHeaders } from '../../../../utils/functions';
+import { makeHeaders, getPostListData } from '../../../../utils/functions';
 
 type SearchBarProps = {
   setPosts: React.Dispatch<React.SetStateAction<PostDataType[] | undefined>>;
@@ -11,6 +11,7 @@ type SearchBarProps = {
   setSearchRes: React.Dispatch<React.SetStateAction<SearchResType>>;
   setIsItSearching: React.Dispatch<React.SetStateAction<boolean>>;
   boardNow: number | null;
+  isItSearching: boolean;
 };
 
 const filters: string[][] = [
@@ -25,6 +26,7 @@ export default function SearchBarUnder({
   setSearchRes,
   setPosts,
   setIsItSearching,
+  isItSearching,
 }: SearchBarProps) {
   const [searchDropIsOpen, setSearchDropIsOpen] = useState<boolean>(false);
   const [searchFilterNow, setSearchFilterNow] = useState<string>('제목 + 내용');
@@ -36,8 +38,8 @@ export default function SearchBarUnder({
   const { searchFilter, searchString } = searchInput;
   const searchDropRef = useRef<HTMLDivElement>(null);
   const loginUserToken = localStorage.getItem('accessToken');
-  const memoizedDateParsing = useCallback(dateParsingForList, []);
   const memoizedMakeHeaders = useCallback(makeHeaders, []);
+  const memoizedGetList = useCallback(getPostListData, []);
 
   useEffect(() => {
     if (searchFilter === 'content') setSearchFilterNow('제목 + 내용');
@@ -74,25 +76,18 @@ export default function SearchBarUnder({
     }
     setSearchRes({ filterRes: searchFilter, stringRes: searchString, boardRes: boardNow });
 
-    fetch(
-      `https://server.pien.kr:4000/community?page=1&number=10&categoryId=${boardNow}&filter=${searchFilter}&search=${searchString}`,
-      {
-        headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
-      },
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.isSuccess) {
-          setPostNumber(data.data.number);
-          setPosts(
-            data.data.post.map((el: PostDataType) => ({
-              ...el,
-              created_at: memoizedDateParsing(el.created_at),
-            })),
-          );
-          setIsItSearching(true);
-        }
-      });
+    memoizedGetList(
+      isItSearching,
+      1,
+      boardNow,
+      boardNow,
+      searchFilter,
+      searchString,
+      headers,
+      setPostNumber,
+      setPosts,
+    );
+    setIsItSearching(true);
   };
 
   const makeSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,13 +97,14 @@ export default function SearchBarUnder({
   return (
     <OuterBox data-testid='searchbarunder-component'>
       <SearchSelect
+        data-testid='selectBox'
         ref={searchDropRef}
         isItClicked={searchDropIsOpen}
         onClick={() => setSearchDropIsOpen((current) => !current)}
       >
         {searchFilterNow}
         <img src={searchDropIsOpen ? arrowUp : arrowDown} alt='arrow' />
-        <ul>
+        <ul data-testid='dropbox'>
           {filters.map((el) => (
             <li role='presentation' onClick={() => makeSearchFilter(el[1])} key={el[0]}>
               {el[0]}
@@ -118,6 +114,7 @@ export default function SearchBarUnder({
       </SearchSelect>
       <SearchInputBox>
         <SearchInput
+          data-testid='inputBox'
           placeholder='검색어를 입력해주세요'
           onChange={makeSearchInput}
           onKeyDown={(e) => (e.key === 'Enter' ? search() : null)}

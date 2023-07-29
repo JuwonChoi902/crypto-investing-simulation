@@ -6,7 +6,6 @@ import * as reactRouter from 'react-router';
 import theme from '../../../src/styles/theme';
 import variables from '../../../src/styles/variables';
 import NavigateBoxUnder from '../../../src/pages/Community/components/postComponents/NavigateBoxUnder';
-import exp from 'constants';
 
 const mockLocalStorage = {
   store: {} as { [key: string]: string },
@@ -46,5 +45,49 @@ describe('NavigateUnder Component', () => {
 
     const writeButton = screen.getByText('글쓰기');
     expect(writeButton).toBeInTheDocument();
+    fireEvent.click(writeButton);
+  });
+
+  test('useNavigate should work correctly with accessToken', async () => {
+    localStorage.setItem('accessToken', 'mock-token');
+
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <ThemeProvider theme={{ style: theme, variables }}>
+            <NavigateBoxUnder {...testProps} />
+          </ThemeProvider>
+        </MemoryRouter>,
+      );
+    });
+
+    const writeButton = screen.getByText('글쓰기');
+    fireEvent.click(writeButton);
+    expect(mockNavigate).toHaveBeenCalledWith('/community/posting');
+    mockNavigate.mockReset();
+
+    const replyButton = screen.getByText('목록');
+    fireEvent.click(replyButton);
+    expect(mockNavigate).toHaveBeenCalledWith('/community/list');
+  });
+
+  test('replyButton should not work', async () => {
+    localStorage.setItem('accessToken', 'mock-token');
+    const mockAlert = jest.fn();
+    global.alert = mockAlert;
+
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <ThemeProvider theme={{ style: theme, variables }}>
+            <NavigateBoxUnder {...testProps} />
+          </ThemeProvider>
+        </MemoryRouter>,
+      );
+    });
+
+    const writeButton = screen.getByText('답글');
+    fireEvent.click(writeButton);
+    expect(alert).toHaveBeenCalledWith('서비스 준비중입니다.');
   });
 });

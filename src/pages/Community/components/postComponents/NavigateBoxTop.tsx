@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import styled from 'styled-components';
-import { PostDataType, HeadersType } from '../../../../typing/types';
+import { PostDataType } from '../../../../typing/types';
+import { makeHeaders } from '../../../../utils/functions';
 import arrowUp from '../../images/arrowUpBlack.png';
 import arrowDown from '../../images/arrowDownBlack.png';
 
@@ -15,17 +16,10 @@ export default function NavigateBoxTop({ setPostNow, postData }: NavigateBoxTopP
   const params = useParams();
   const loginUserId = Number(localStorage.getItem('id'));
   const loginUserToken = localStorage.getItem('accessToken');
+  const memoizedMakeHeaders = useCallback(makeHeaders, []);
 
   const deletePost = () => {
-    const headers: HeadersType = {
-      'Content-Type': 'application/json;charset=utf-8',
-    };
-
-    if (loginUserToken) {
-      headers.Authorization = `Bearer ${loginUserToken}`;
-    } else {
-      delete headers.Authorization;
-    }
+    const headers = memoizedMakeHeaders(loginUserToken);
 
     if (window.confirm('해당 게시글을 삭제하시겠습니까?') === true) {
       fetch(`https://server.pien.kr:4000/community/post`, {
@@ -48,7 +42,7 @@ export default function NavigateBoxTop({ setPostNow, postData }: NavigateBoxTopP
   return (
     <OuterBox data-testid='navigateboxtop-component'>
       {loginUserId === postData?.user.id ? (
-        <NavigateLeft>
+        <NavigateLeft data-testid='leftBox'>
           <EditPost
             onClick={() =>
               navigate(`/community/posting`, {
@@ -66,7 +60,11 @@ export default function NavigateBoxTop({ setPostNow, postData }: NavigateBoxTopP
       <div />
       <NavigateRight>
         {!postData?.nextPostId ? null : (
-          <Previous type='button' onClick={() => navigate(`/community/${postData.nextPostId}`)}>
+          <Previous
+            data-testid='prevButton'
+            type='button'
+            onClick={() => navigate(`/community/${postData.nextPostId}`)}
+          >
             <img src={arrowUp} alt='arrowUp' />
             이전글
           </Previous>

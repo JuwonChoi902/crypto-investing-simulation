@@ -104,6 +104,7 @@ export default function Posts({
           setSearchRes={setSearchRes}
           setIsItSearching={setIsItSearching}
           boardNow={boardNow}
+          isItSearching={isItSearching}
         />
         <Pages postNumber={postNumber} setPage={setPage} page={page} limit={10} />
       </SearchAndPages>

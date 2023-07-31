@@ -103,7 +103,7 @@ describe('SearchBarUnder Component', () => {
     fireEvent.click(searchButton);
     expect(mockGetList).toHaveBeenCalledTimes(1);
     expect(mockGetList).toHaveBeenCalledWith(
-      false,
+      true,
       1,
       0,
       0,

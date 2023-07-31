@@ -77,7 +77,7 @@ export default function SearchBarUnder({
     setSearchRes({ filterRes: searchFilter, stringRes: searchString, boardRes: boardNow });
 
     memoizedGetList(
-      isItSearching,
+      true,
       1,
       boardNow,
       boardNow,

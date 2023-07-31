@@ -93,7 +93,7 @@ export default function PostList({
     const headers = memoizedMakeHeaders(loginUserToken);
     memoizedGetList(
       isItSearching,
-      1,
+      page,
       boardNow,
       boardRes,
       filterRes,

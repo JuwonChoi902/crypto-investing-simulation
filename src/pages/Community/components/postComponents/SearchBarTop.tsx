@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import arrowUp from '../../images/arrowUp.png';
 import arrowDown from '../../images/arrowDown.png';
-import { PostDataType, SearchResType, HeadersType, SearchInputType } from '../../../../typing/types';
+import { PostDataType, SearchResType, SearchInputType } from '../../../../typing/types';
+import { makeHeaders, getPostListData } from '../../../../utils/functions';
 
 type SearchBarProps = {
   setBoardNow: React.Dispatch<React.SetStateAction<number | null>>;
@@ -39,6 +40,9 @@ export default function SearchBarTop({
   const [boardsDropIsOpen, setBoardDropIsOpen] = useState<boolean>(false);
   const { searchFilter, searchString, searchBoard } = searchInput;
   const loginUserToken = localStorage.getItem('accessToken');
+
+  const memoizedMakeHeaders = useCallback(makeHeaders, []);
+  const memoizedGetList = useCallback(getPostListData, []);
 
   const makeSearchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput({ ...searchInput, searchString: event.target.value });
@@ -98,80 +102,41 @@ export default function SearchBarTop({
     };
   }, [boardsDropIsOpen]);
 
-  const dateParsing = (date: string): [string, boolean] => {
-    const theDate = new Date(date);
-    const todayDate = new Date();
-    const oneDayPlus = new Date(date);
-
-    oneDayPlus.setDate(oneDayPlus.getDate() + 1);
-
-    const strTheDate = theDate.toLocaleString();
-    const strTodayDate = todayDate.toLocaleString();
-    const isItInOneDay = oneDayPlus >= todayDate;
-
-    if (
-      strTheDate.slice(0, strTheDate.indexOf('오') - 1) !==
-      strTodayDate.slice(0, strTodayDate.indexOf('오') - 1)
-    ) {
-      return [
-        `${theDate.getFullYear()}.${String(theDate.getMonth() + 1).padStart(2, '0')}.${String(
-          theDate.getDate(),
-        ).padStart(2, '0')}.`,
-        isItInOneDay,
-      ];
-    }
-    return [
-      `${String(theDate.getHours()).padStart(2, '0')}:${String(theDate.getMinutes()).padStart(2, '0')}`,
-      isItInOneDay,
-    ];
-  };
-
   const search = (e: React.MouseEvent | React.KeyboardEvent) => {
-    const headers: HeadersType = {
-      'Content-Type': 'application/json;charset=utf-8',
-    };
-
-    if (loginUserToken) {
-      headers.Authorization = `Bearer ${loginUserToken}`;
-    } else {
-      delete headers.Authorization;
-    }
-
     e.preventDefault();
+
+    const headers = memoizedMakeHeaders(loginUserToken);
     if (!searchString) {
       alert('검색어를 입력해주세요');
       return;
     }
-    fetch(
-      `https://server.pien.kr:4000/community?page=1&number=10&categoryId=${searchBoard}&filter=${searchFilter}&search=${searchString}`,
-      {
-        headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
-      },
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.isSuccess) {
-          setBoardNow(searchBoard);
-          setSearchRes({ stringRes: searchString, filterRes: searchFilter, boardRes: searchBoard });
-          setPostNumber(data.data.number);
-          setPosts(
-            data.data.post.map((el: PostDataType) => ({ ...el, created_at: dateParsing(el.created_at) })),
-          );
-        }
-      });
+    setSearchRes({ stringRes: searchString, filterRes: searchFilter, boardRes: searchBoard });
+    memoizedGetList(
+      true,
+      1,
+      searchBoard,
+      searchBoard,
+      searchFilter,
+      searchString,
+      headers,
+      setPostNumber,
+      setPosts,
+    );
+    setBoardNow(searchBoard);
   };
 
   return (
     <OuterBox data-testid='searchbartop-component'>
       <SearchBox>
         <BoardSelect
+          data-testid='topBoardSelectBox'
           ref={boardsDropRef}
           isItClicked={boardsDropIsOpen}
           onClick={() => setBoardDropIsOpen((current) => !current)}
         >
           {searchBoard ? boards[searchBoard] : '전체글'}
           <img src={boardsDropIsOpen ? arrowUp : arrowDown} alt='arrow' />
-          <ul>
+          <ul data-testid='topBoardDropBox'>
             {boards.map((el, i) => (
               <li role='presentation' onClick={() => makeBoardFilter(i)} key={el}>
                 {el}
@@ -180,13 +145,14 @@ export default function SearchBarTop({
           </ul>
         </BoardSelect>
         <SearchSelect
+          data-testid='topFilterSelectBox'
           ref={searchDropRef}
           isItClicked={searchDropIsOpen}
           onClick={() => setSearchDropIsOpen((current) => !current)}
         >
           {searchFilterNow}
           <img src={searchDropIsOpen ? arrowUp : arrowDown} alt='arrow' />
-          <ul>
+          <ul data-testid='topFilterDropBox'>
             {filters.map((el) => (
               <li role='presentation' onClick={() => makeSearchFilter(el[1])} key={el[0]}>
                 {el[0]}
@@ -196,6 +162,7 @@ export default function SearchBarTop({
         </SearchSelect>
         <SearchInputBox>
           <SearchInput
+            data-testid='topInputBox'
             placeholder='검색어를 입력해주세요'
             onChange={makeSearchInput}
             onKeyDown={(e) => (e.key === 'Enter' ? search(e) : null)}

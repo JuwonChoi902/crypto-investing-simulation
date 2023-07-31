@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import styled from 'styled-components';
+import { makeHeaders } from '../../../../utils/functions';
 
 export default function Posting() {
   const location = useLocation().state;
@@ -8,6 +9,7 @@ export default function Posting() {
   window.scrollTo(0, 0);
 
   const editingData = location ? location.postData : null;
+  const memoizedMakeHeaders = useCallback(makeHeaders, []);
 
   const [userInput, setUserInput] = useState({
     title: '',
@@ -43,13 +45,11 @@ export default function Posting() {
         alert('라벨을 선택하세요');
       }
       if (title.length >= 2 && description.length >= 2 && categoryId !== 0) {
+        const headers = memoizedMakeHeaders(loginUserToken);
         if (editingData) {
           fetch(`https://server.pien.kr:4000/community/${editingData.id}`, {
             method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json;charset=utf-8',
-              Authorization: `Bearer ${loginUserToken}`,
-            },
+            headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
             body: JSON.stringify(userInput),
           })
             .then((res) => res.json())
@@ -61,10 +61,7 @@ export default function Posting() {
         } else {
           fetch(`https://server.pien.kr:4000/community/`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json;charset=utf-8',
-              Authorization: `Bearer ${loginUserToken}`,
-            },
+            headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
             body: JSON.stringify(userInput),
           })
             .then((res) => res.json())
@@ -121,12 +118,19 @@ export default function Posting() {
           <InputBox>
             <input
               name='title'
+              data-testid='titleInput'
               onChange={(e) => makingUserInput(e)}
               placeholder='제목을 입력하세요.'
               value={title}
             />
           </InputBox>
-          <CategorySelect name='categoryId' onChange={makingUserInput} required value={categoryId}>
+          <CategorySelect
+            data-testid='labelInput'
+            name='categoryId'
+            onChange={makingUserInput}
+            required
+            value={categoryId}
+          >
             <option value={0} disabled>
               게시판을 선택하세요.
             </option>

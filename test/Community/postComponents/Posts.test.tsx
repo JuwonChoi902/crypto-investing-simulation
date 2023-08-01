@@ -121,7 +121,7 @@ describe('Posts Component', () => {
   });
 
   test('should render post title and username correctly and whatIsList test is rendering correctly', async () => {
-    const testPropsChanged = { ...testProps, boardNow: 1 };
+    const testPropsChanged = { ...testProps, boardNow: 1, isItSearching: false };
 
     await act(async () => {
       render(
@@ -132,6 +132,8 @@ describe('Posts Component', () => {
         </MemoryRouter>,
       );
     });
+    const searchBarTopComponent = screen.queryByTestId('searchbartop-component');
+    expect(searchBarTopComponent).not.toBeInTheDocument();
 
     const postTitleComponent = screen.getByText('게시글 제목');
     expect(postTitleComponent).toBeInTheDocument();

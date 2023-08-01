@@ -1,12 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import styled from 'styled-components';
 import user from '../../images/user.png';
 import likeFill from '../../images/likeFill.png';
 import dislikeFill from '../../images/dislikeFill.png';
 import comment from '../../images/comment.png';
-import { HeadersType, PostDataType } from '../../../../typing/types';
-import { dateParsing } from '../../../../utils/functions';
+import { PostDataType } from '../../../../typing/types';
+import { makeHeaders, getPostData } from '../../../../utils/functions';
 
 type DescriptionBoxProps = {
   commentCount: number;
@@ -21,6 +21,7 @@ type DescriptionBoxProps = {
 };
 
 const PostCategory: string[] = ['전체글보기', '질문하기', '자랑하기', '공유하기', '잡담하기'];
+const DropBoxMenu: string[] = ['프로필보기', '1:1 채팅', '쪽지보내기'];
 
 export default function DescriptionBox({
   commentCount,
@@ -42,114 +43,41 @@ export default function DescriptionBox({
   const nickBoxRef = useRef<HTMLDivElement>(null);
   const loginUserToken = localStorage.getItem('accessToken');
   const navigate = useNavigate();
+  const memoizedMakeHeaders = useCallback(makeHeaders, []);
+  const memoizedGetPostData = useCallback(getPostData, []);
 
   useEffect(() => {
-    const headers: HeadersType = {
-      'Content-Type': 'application/json;charset=utf-8',
-    };
-
-    if (loginUserToken) {
-      headers.Authorization = `Bearer ${loginUserToken}`;
-    } else {
-      delete headers.Authorization;
-    }
-
+    const headers = memoizedMakeHeaders(loginUserToken);
     if (params.id !== 'list' && params.id !== 'favorite' && params.id !== 'profile') {
       setPostNow(Number(params.id));
-
-      fetch(`https://server.pien.kr:4000/community/${params.id}`, {
-        headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.isSuccess) {
-            setPostData({ ...data.data, created_at: dateParsing(data.data.created_at)[0] });
-          }
-        });
-
+      memoizedGetPostData('GET', params.id, headers, undefined, setPostData);
       setReplying(null);
     }
   }, [params.id]);
 
   const likeThisPost = () => {
+    const headers = memoizedMakeHeaders(loginUserToken);
     if (!loginUserToken) {
       if (window.confirm('로그인 후 가능합니다. 로그인을 하시겠습니까?') === true) {
         navigate('/login');
       }
     } else if (postData?.isLike !== true) {
-      fetch(`https://server.pien.kr:4000/community/like/${params.id}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
-          Authorization: `Bearer ${loginUserToken}`,
-        },
-        body: JSON.stringify({ isLike: true }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.isSuccess) {
-            setPostData({ ...data.data, created_at: dateParsing(data.data.created_at)[0] });
-          } else {
-            alert(data.message);
-          }
-        });
+      memoizedGetPostData('POST', params.id, headers, true, setPostData);
     } else {
-      fetch(`https://server.pien.kr:4000/community/like/${params.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
-          Authorization: `Bearer ${loginUserToken}`,
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.isSuccess) {
-            setPostData({ ...data.data, created_at: dateParsing(data.data.created_at)[0] });
-          } else {
-            alert(data.message);
-          }
-        });
+      memoizedGetPostData('DELETE', params.id, headers, undefined, setPostData);
     }
   };
 
   const dislikeThisPost = () => {
+    const headers = memoizedMakeHeaders(loginUserToken);
     if (!loginUserToken) {
       if (window.confirm('로그인 후 가능합니다. 로그인을 하시겠습니까?') === true) {
         navigate('/login');
       }
     } else if (postData?.isLike !== false) {
-      fetch(`https://server.pien.kr:4000/community/like/${params.id}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
-          Authorization: `Bearer ${loginUserToken}`,
-        },
-        body: JSON.stringify({ isLike: false }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.isSuccess) {
-            setPostData({ ...data.data, created_at: dateParsing(data.data.created_at)[0] });
-          } else {
-            alert(data.message);
-          }
-        });
+      memoizedGetPostData('POST', params.id, headers, false, setPostData);
     } else {
-      fetch(`https://server.pien.kr:4000/community/like/${params.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8',
-          Authorization: `Bearer ${loginUserToken}`,
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.isSuccess) {
-            setPostData({ ...data.data, created_at: dateParsing(data.data.created_at)[0] });
-          } else {
-            alert(data.message);
-          }
-        });
+      memoizedGetPostData('DELETE', params.id, headers, undefined, setPostData);
     }
   };
 
@@ -209,8 +137,8 @@ export default function DescriptionBox({
       <UserInfo>
         <UserDesc>
           <UserImg
+            data-testid='userimg'
             userImg={postData?.user.profileImage}
-            role='presentation'
             onClick={() => {
               if (!loginUserToken) {
                 if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
@@ -227,53 +155,30 @@ export default function DescriptionBox({
           <UserDetail>
             <DetailNickBox>
               <DetailNick ref={nickBoxRef} onClick={() => setDropBoxIsOpen((current) => !current)}>
-                {postData?.user?.nickname}
+                {postData?.user.nickname}
                 {dropBoxIsOpen ? (
-                  <UserDropBox ref={dropBoxRef}>
+                  <UserDropBox data-testid='dropbox1' ref={dropBoxRef}>
                     <ul>
-                      <li
-                        role='presentation'
-                        onClick={() => {
-                          if (!loginUserToken) {
-                            if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
-                              navigate('/login');
+                      {DropBoxMenu.map((menu, index) => (
+                        <li
+                          key={menu}
+                          role='presentation'
+                          onClick={() => {
+                            if (!loginUserToken) {
+                              if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
+                                navigate('/login');
+                              }
+                            } else if (index === 0) {
+                              setProfileId(postData?.user.id);
+                              setMenuNow(2);
+                            } else {
+                              alert('서비스 준비중입니다.');
                             }
-                          } else {
-                            setProfileId(postData?.user.id);
-                            setMenuNow(2);
-                          }
-                        }}
-                      >
-                        프로필보기
-                      </li>
-                      <li
-                        role='presentation'
-                        onClick={() => {
-                          if (!loginUserToken) {
-                            if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
-                              navigate('/login');
-                            }
-                          } else {
-                            alert('서비스 준비중입니다.');
-                          }
-                        }}
-                      >
-                        1:1 채팅
-                      </li>
-                      <li
-                        role='presentation'
-                        onClick={() => {
-                          if (!loginUserToken) {
-                            if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
-                              navigate('/login');
-                            }
-                          } else {
-                            alert('서비스 준비중입니다.');
-                          }
-                        }}
-                      >
-                        쪽지보내기
-                      </li>
+                          }}
+                        >
+                          {menu}
+                        </li>
+                      ))}
                     </ul>
                   </UserDropBox>
                 ) : null}
@@ -289,6 +194,7 @@ export default function DescriptionBox({
         </UserDesc>
         <ButtonBox>
           <GoComment
+            data-testid='goComment'
             onClick={() => {
               if (commentWindowY) window.scrollTo(0, commentWindowY + 300);
             }}
@@ -324,14 +230,18 @@ export default function DescriptionBox({
       </ShowMore>
       <LikeAndHateBox>
         <LikeAndHate>
-          <LikeBox isLiked={postData?.isLike} onClick={likeThisPost}>
+          <LikeBox data-testid='likeButtonForClick' isLiked={postData?.isLike} onClick={likeThisPost}>
             <div>좋아요</div>
-            <span>{postData?.likeCount}</span>
+            <span data-testid='likeButton'>{postData?.likeCount}</span>
             <LikeImg src={likeFill} alt='like' isLiked={postData?.isLike} />
           </LikeBox>
-          <DisLikeBox isLiked={postData?.isLike} onClick={dislikeThisPost}>
+          <DisLikeBox
+            data-testid='dislikeButtonForClick'
+            isLiked={postData?.isLike}
+            onClick={dislikeThisPost}
+          >
             <DislikeImg src={dislikeFill} alt='dislike' isLiked={postData?.isLike} />
-            <span>{postData?.unLikeCount}</span>
+            <span data-testid='dislikeButton'>{postData?.unLikeCount}</span>
             <div>싫어요</div>
           </DisLikeBox>
         </LikeAndHate>

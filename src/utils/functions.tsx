@@ -168,6 +168,30 @@ export const getPostListData = (
     });
 };
 
+export const getPostData = (
+  method: string,
+  postId: string | undefined,
+  headers: HeadersType,
+  likeType: boolean | undefined,
+  setPostData: React.Dispatch<React.SetStateAction<PostDataType | undefined>>,
+) => {
+  const url = method === 'GET' ? '' : '/like';
+  const fetchObj = {
+    method,
+    headers: Object.entries(headers).map(([key, value]) => [key, value || '']) as [string, string][],
+    body: method === 'GET' ? undefined : JSON.stringify({ isLike: likeType }),
+  };
+  fetch(`https://server.pien.kr:4000/community${url}/${postId}`, fetchObj)
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.isSuccess) {
+        setPostData({ ...data.data, created_at: dateParsing(data.data.created_at)[0] });
+      } else {
+        alert(data.message);
+      }
+    });
+};
+
 export const testModules = {
   makeHeader,
   dateParsing,

@@ -11,7 +11,6 @@ type SearchBarProps = {
   setSearchRes: React.Dispatch<React.SetStateAction<SearchResType>>;
   setIsItSearching: React.Dispatch<React.SetStateAction<boolean>>;
   boardNow: number | null;
-  isItSearching: boolean;
 };
 
 const filters: string[][] = [
@@ -26,7 +25,6 @@ export default function SearchBarUnder({
   setSearchRes,
   setPosts,
   setIsItSearching,
-  isItSearching,
 }: SearchBarProps) {
   const [searchDropIsOpen, setSearchDropIsOpen] = useState<boolean>(false);
   const [searchFilterNow, setSearchFilterNow] = useState<string>('제목 + 내용');

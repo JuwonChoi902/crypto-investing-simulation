@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, act, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, act, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import * as reactRouter from 'react-router';
@@ -199,6 +199,36 @@ describe('PostList Component', () => {
     const goCommentButton = screen.getByTestId('goComment');
     fireEvent.click(goCommentButton);
     expect(mockScrollTo).toHaveBeenCalledTimes(0);
+
+    mockGetData.mockReset();
+
+    const likeButton = screen.getByTestId('likeButtonForClick');
+    fireEvent.click(likeButton);
+    expect(mockGetData).toHaveBeenCalledTimes(1);
+    expect(mockGetData).toBeCalledWith('DELETE', '1', undefined, undefined, expect.any(Function));
+
+    mockGetData.mockReset();
+
+    const dislikeButton = screen.getByTestId('dislikeButtonForClick');
+    fireEvent.click(dislikeButton);
+    expect(mockGetData).toHaveBeenCalledTimes(1);
+    expect(mockGetData).toBeCalledWith('POST', '1', undefined, false, expect.any(Function));
+  });
+
+  test('like and dislike button works correctly', async () => {
+    localStorage.setItem('accessToken', 'mock-token');
+    const mockScrollTo = jest.fn();
+    window.scrollTo = mockScrollTo;
+
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <ThemeProvider theme={{ style: theme, variables }}>
+            <DescriptionBox {...testProps} />
+          </ThemeProvider>
+        </MemoryRouter>,
+      );
+    });
 
     mockGetData.mockReset();
 

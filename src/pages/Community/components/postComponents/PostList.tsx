@@ -140,7 +140,7 @@ export default function PostList({
             <User ref={nickRefs.current[i]} onClick={() => setDropBox(i)}>
               {el.user.nickname}
               {i === dropBox ? (
-                <UserDropBox ref={refs.current[i]}>
+                <UserDropBox data-testid='dropbox' ref={refs.current[i]}>
                   <ul>
                     {DropBoxMenu.map((menu, index) => (
                       <li

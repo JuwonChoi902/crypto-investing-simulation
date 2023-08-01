@@ -19,11 +19,11 @@ export interface PostDataType {
   categoryId: number;
   created_at: string;
   repliesCount: number;
-  isLike: boolean;
-  likeCount: number;
-  unLikeCount: number;
-  prevPostId: number | null;
-  nextPostId: number | null;
+  isLike?: boolean;
+  likeCount?: number;
+  unLikeCount?: number;
+  prevPostId?: number | null;
+  nextPostId?: number | null;
   isPublished?: boolean;
   user: UserDataType;
 }

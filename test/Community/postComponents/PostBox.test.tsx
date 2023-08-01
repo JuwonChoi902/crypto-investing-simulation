@@ -22,6 +22,8 @@ const mockLocalStorage = {
 Object.defineProperty(window, 'localStorage', {
   value: mockLocalStorage,
 });
+const mockAlert = jest.fn();
+global.alert = mockAlert;
 
 describe('PostBox Component', () => {
   test('should render posts component when postNow is null', async () => {

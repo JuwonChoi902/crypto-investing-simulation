@@ -54,10 +54,10 @@ export interface CommentDataType {
   id: number;
   comment: string;
   created_at: string;
-  deleted_at: string;
+  deleted_at: string | null;
   isItNew?: boolean;
   replyId: number;
-  isThisOrigin: boolean;
+  isThisOrigin?: boolean;
   user: UserDetail;
   post?: PostDataType;
 }

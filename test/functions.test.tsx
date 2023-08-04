@@ -18,7 +18,7 @@ describe('should pass all function tests', () => {
       },
     ];
     makeHeaderTestCase.forEach((test) => {
-      expect(testModules.makeHeader(test.loginUserToken)).toEqual(test.expected);
+      expect(testModules.makeHeaders(test.loginUserToken)).toEqual(test.expected);
     });
   });
 

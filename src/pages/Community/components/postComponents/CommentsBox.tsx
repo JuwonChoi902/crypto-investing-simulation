@@ -15,6 +15,8 @@ type CommentsBoxProps = {
   setMenuNow: React.Dispatch<React.SetStateAction<number>>;
 };
 
+const DropBoxMenu: string[] = ['프로필보기', '1:1 채팅', '쪽지보내기'];
+
 function CommentsBox({
   commentWindowRef,
   replying,
@@ -69,6 +71,8 @@ function CommentsBox({
 
   const getCommentData = useCallback(
     (headers: HeadersType) => {
+      if (!params.id) return;
+      if (!loginUserToken) return;
       fetch(`https://server.pien.kr:4000/community/reply/${params.id}`, {
         headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
       })
@@ -147,6 +151,8 @@ function CommentsBox({
   );
 
   useEffect(() => {
+    if (!params.id) return;
+
     const headers = memoizedMakeHeaders(loginUserToken);
     if (params.id !== 'list' && params.id !== 'favorite' && params.id !== 'profile') {
       getCommentData(headers);
@@ -192,7 +198,7 @@ function CommentsBox({
       <CommentHeader ref={commentWindowRef}>
         <CommentHeaderBox>
           <CommentHeaderTitle>댓글</CommentHeaderTitle>
-          <span>{commentCount}개</span>
+          <span data-testid='commentCount'>{commentCount}개</span>
           {commentData?.some((el) => el.isItNew) ? <IsItNew>N</IsItNew> : null}
         </CommentHeaderBox>
       </CommentHeader>
@@ -208,10 +214,11 @@ function CommentsBox({
                     {editingCommentString ? <RTRLength>{editingCommentString.length}/1000</RTRLength> : null}
                   </NickAndLength>
                   <RTRDescription
+                    data-testid='editTextArea'
                     ref={editTextArea}
                     onChange={(event) => textAreaHandler(event, setEditingCommentString)}
                     value={editingCommentString}
-                    placeholder='댓글을 남겨보세요'
+                    placeholder='댓글을 남겨보세요.'
                   />
                   <RTRBtns>
                     <ButtonsLeft />
@@ -225,6 +232,7 @@ function CommentsBox({
                         취소
                       </CancleWriting>
                       <PostThisComment
+                        data-testid='editPostButton'
                         isThisValid={editingCommentString?.length}
                         onClick={() => {
                           if (!loginUserToken) {
@@ -246,6 +254,7 @@ function CommentsBox({
               <Comment index={i} isThisOrigin={el.isThisOrigin} isThisDeleted={el.deleted_at}>
                 <UserImgBox>
                   <UserImg
+                    data-testid='userImg'
                     userImg={el.user.profileImage}
                     onClick={() => {
                       setProfileId(el.user.id);
@@ -256,56 +265,42 @@ function CommentsBox({
                   </UserImg>
                 </UserImgBox>
                 <CommentTextBox>
-                  <CommentUserNick ref={nickBoxRefs.current?.[i]} onClick={() => setDropBox(i)}>
+                  <CommentUserNick
+                    data-testid='userNickForDropBox'
+                    ref={nickBoxRefs.current?.[i]}
+                    onClick={() => setDropBox(i)}
+                  >
                     {el.user.nickname}
                     {dropBox === i ? (
                       <UserDropBox ref={dropBoxRefs.current?.[i]}>
                         <ul>
-                          <li
-                            role='presentation'
-                            onClick={() => {
-                              if (!loginUserToken) {
-                                if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?'))
-                                  navigate('/login');
-                              } else {
-                                setProfileId(el.user.id);
-                                setMenuNow(2);
-                              }
-                            }}
-                          >
-                            프로필보기
-                          </li>
-                          <li
-                            role='presentation'
-                            onClick={() => {
-                              if (!loginUserToken) {
-                                if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?'))
-                                  navigate('/login');
-                              } else {
-                                alert('서비스 준비중입니다.');
-                              }
-                            }}
-                          >
-                            1:1 채팅
-                          </li>
-                          <li
-                            role='presentation'
-                            onClick={() => {
-                              if (!loginUserToken) {
-                                if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?'))
-                                  navigate('/login');
-                              } else {
-                                alert('서비스 준비중입니다.');
-                              }
-                            }}
-                          >
-                            쪽지보내기
-                          </li>
+                          {DropBoxMenu.map((menu, index) => (
+                            <li
+                              key={menu}
+                              role='presentation'
+                              onClick={() => {
+                                if (!loginUserToken) {
+                                  if (
+                                    window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true
+                                  ) {
+                                    navigate('/login');
+                                  }
+                                } else if (index === 0) {
+                                  setProfileId(el.user.id);
+                                  setMenuNow(2);
+                                } else {
+                                  alert('서비스 준비중입니다.');
+                                }
+                              }}
+                            >
+                              {menu}
+                            </li>
+                          ))}
                         </ul>
                       </UserDropBox>
                     ) : null}
                   </CommentUserNick>
-                  <CommentDescription>{el.comment}</CommentDescription>
+                  <CommentDescription data-testid='commentDesc'>{el.comment}</CommentDescription>
                   <CommentCreatedAt>
                     <span>{el.created_at}</span>
                     <ReplyToReply
@@ -351,6 +346,7 @@ function CommentsBox({
 
                   <RTRDescription
                     ref={replyTextArea}
+                    data-testid='replyTextArea'
                     placeholder={`${el.user.nickname}님께 답글쓰기`}
                     onChange={(event) => textAreaHandler(event, setReplyCommentString)}
                     value={replyCommentString}
@@ -395,7 +391,7 @@ function CommentsBox({
         </NickAndLength>
         <CommentPostingDesc
           ref={textarea}
-          placeholder={loginUserToken ? '댓글을 남겨보세요' : '로그인 후 이용 가능합니다'}
+          placeholder={loginUserToken ? '댓글을 남겨보세요.' : '로그인 후 이용 가능합니다.'}
           onChange={(event) => textAreaHandler(event, setCommentString)}
           value={commentString}
           disabled={!loginUserToken}
@@ -403,6 +399,7 @@ function CommentsBox({
         <CommentPostingBtns>
           <ButtonsLeft />
           <PostThisComment
+            data-testid='postButton'
             onClick={() => {
               if (!loginUserToken) {
                 if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
@@ -467,7 +464,11 @@ const DeletedOrigin = styled.div<{ index: number }>`
   border-top: ${(props) => (props.index === 0 ? 'none' : '1px solid #e5e5e5')};
   padding: 15px 0 15px 0;
 `;
-const Comment = styled.div<{ index: number; isThisOrigin: boolean; isThisDeleted: string }>`
+const Comment = styled.div<{
+  index: number;
+  isThisOrigin: boolean | undefined;
+  isThisDeleted: string | null;
+}>`
   display: ${(props) => (props.isThisDeleted ? 'none' : 'flex')};
   position: relative;
   padding: 12px 0 10px 0;

@@ -1,20 +1,6 @@
 import React from 'react';
 import { HeadersType, CommentDataType, IndexObjectType, PostDataType } from '../typing/types';
 
-export const makeHeader = (loginUserToken: string | null): HeadersType => {
-  const headers: HeadersType = {
-    'Content-Type': 'application/json;charset=utf-8',
-  };
-
-  if (loginUserToken) {
-    headers.Authorization = `Bearer ${loginUserToken}`;
-  } else {
-    delete headers.Authorization;
-  }
-
-  return headers;
-};
-
 export const dateParsing = (date: string): [string, boolean] => {
   const theDate = new Date(date);
   const todayDate = new Date();
@@ -193,7 +179,7 @@ export const getPostData = (
 };
 
 export const testModules = {
-  makeHeader,
+  makeHeaders,
   dateParsing,
   unitParsing,
 };

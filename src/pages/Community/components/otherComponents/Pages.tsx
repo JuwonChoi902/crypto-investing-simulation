@@ -38,7 +38,15 @@ export default function Pages({ page, setPage, postNumber, limit }: PagesProps) 
         <img src={pageLeft} alt='pageLeft' />
       </PageLeft>
       {pages[pageIndex]?.map((el) => (
-        <Page data-testid='page-component' page={page} id={String(el)} onClick={() => setPage(el)} key={el}>
+        <Page
+          data-testid='page-component'
+          data-test-id={`page-component-${el}`}
+          name='pages'
+          page={page}
+          id={String(el)}
+          onClick={() => setPage(el)}
+          key={el}
+        >
           {el}
         </Page>
       ))}
@@ -88,7 +96,7 @@ const PageRight = styled.div<{ pageIndex: number; pagesLength: number }>`
   }
 `;
 
-const Page = styled.div<{ page: number; id: string }>`
+const Page = styled.button<{ page: number; id: string }>`
   font-weight: ${(props) => (props.page === Number(props.id) ? 'bold' : 'normal')};
   margin-left: 25px;
   border: ${(props) => (props.page === Number(props.id) ? '1px solid #e5e5e5' : 'none')};

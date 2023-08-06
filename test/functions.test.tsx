@@ -1,7 +1,22 @@
-import exp from 'constants';
 import { testModules } from '../src/utils/functions';
 
 describe('should pass all function tests', () => {
+  const mockLocalStorage = {
+    store: {} as { [key: string]: string },
+    getItem(key: string) {
+      return this.store[key];
+    },
+    setItem(key: string, value: string) {
+      this.store[key] = value.toString();
+    },
+    clear() {
+      this.store = {};
+    },
+  };
+
+  Object.defineProperty(window, 'localStorage', {
+    value: mockLocalStorage,
+  });
   test('makeHeader function should work correctly', () => {
     const makeHeaderTestCase = [
       {
@@ -236,23 +251,6 @@ describe('should pass all function tests', () => {
     const setPostNumber = jest.fn();
     const setPosts = jest.fn();
 
-    const mockLocalStorage = {
-      store: {} as { [key: string]: string },
-      getItem(key: string) {
-        return this.store[key];
-      },
-      setItem(key: string, value: string) {
-        this.store[key] = value.toString();
-      },
-      clear() {
-        this.store = {};
-      },
-    };
-
-    Object.defineProperty(window, 'localStorage', {
-      value: mockLocalStorage,
-    });
-
     localStorage.setItem('accessToken', 'mock-token');
     const loginUserToken = localStorage.getItem('accessToken');
     const headers = testModules.makeHeaders(loginUserToken);
@@ -328,5 +326,75 @@ describe('should pass all function tests', () => {
         ],
       },
     );
+  });
+
+  test('getPostData function works correctly', () => {
+    const fetchData = {
+      isSuccess: true,
+      data: {
+        id: 6,
+        title: '게시글 제목',
+        description: '게시글 내용',
+        hits: 50,
+        categoryId: 1,
+        created_at: '2023-08-06T07:59:29.685Z',
+        repliesCount: 20,
+        isLike: true,
+        likeCount: 20,
+        isPublished: true,
+        unLikeCount: 10,
+        prevPostId: 5,
+        nextPostId: 7,
+        user: {
+          id: 1,
+          nickname: '기석',
+          description: '백엔드 개발자 장기석입니다.',
+          profileImage:
+            'https://velog.velcdn.com/images/kisuk623/profile/8dc78e6c-5544-4b8a-8ebe-1ecd9dcb14fd/image.png',
+        },
+      },
+    };
+
+    const mockFetch = jest.fn().mockImplementation(() =>
+      Promise.resolve({
+        json: () => Promise.resolve(fetchData),
+      }),
+    );
+    global.fetch = mockFetch;
+
+    localStorage.setItem('accessToken', 'mock-token');
+    const loginUserToken = localStorage.getItem('accessToken');
+
+    const headers = testModules.makeHeaders(loginUserToken);
+    const setPostData = jest.fn();
+
+    testModules.getPostData('GET', '1', headers, undefined, setPostData);
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(mockFetch).toHaveBeenCalledWith('https://server.pien.kr:4000/community/1', {
+      body: undefined,
+      headers: [
+        ['Content-Type', 'application/json;charset=utf-8'],
+        ['Authorization', 'Bearer mock-token'],
+      ],
+      method: 'GET',
+    });
+
+    mockFetch.mockReset().mockImplementation(() =>
+      Promise.resolve({
+        json: () => Promise.resolve(fetchData),
+      }),
+    );
+
+    testModules.getPostData('POST', '1', headers, true, setPostData);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(mockFetch).toHaveBeenCalledWith('https://server.pien.kr:4000/community/like/1', {
+      body: '{"isLike":true}',
+      headers: [
+        ['Content-Type', 'application/json;charset=utf-8'],
+        ['Authorization', 'Bearer mock-token'],
+      ],
+      method: 'POST',
+    });
   });
 });

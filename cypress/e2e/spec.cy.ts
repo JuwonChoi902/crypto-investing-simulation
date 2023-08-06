@@ -9,6 +9,8 @@ function getTimestampString() {
   return `${year}${month}${day}${hours}${minutes}`;
 }
 
+const testString = `cypress E2E test ${getTimestampString()}`;
+
 const popularDummyCoins = [
   { id: 1, name: 'Bitcoin', nick: 'BTC', symbol: 'btcusdt', imgURL: '', quantity: 19365700 },
   { id: 2, name: 'Ethereum', nick: 'ETH', symbol: 'ethusdt', imgURL: '', quantity: 120350515 },
@@ -82,9 +84,8 @@ const defaultComponentForProfile = [
 ];
 
 describe('E2E test for CryptoBy', () => {
-  it('connect to main page and explore before community page', () => {
+  it('connect to main page and connect to websocket successfully', () => {
     cy.visit('http://localhost:3000/');
-    // should render nav components,
 
     defaultComponentsForMain.forEach((component) => {
       cy.contains(component).should('exist');
@@ -111,8 +112,10 @@ describe('E2E test for CryptoBy', () => {
     popularDummyCoins.forEach((coin) => {
       cy.contains(coin.name).should('exist');
     });
+  });
 
-    // register and login process should work correctly.
+  it('register and login process should work correctly', () => {
+    cy.visit('http://localhost:3000/');
     cy.contains('회원가입').click();
 
     cy.window().then((win) => {
@@ -129,14 +132,24 @@ describe('E2E test for CryptoBy', () => {
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTUsImVtYWlsIjoicnlvbzYwNTNAZ21haWwuY29tIiwiaWF0IjoxNjkxMTU1NTcwLCJleHAiOjE2OTExNTczNzB9.e9pRG1YFJfr9yLrRYxOTvHGPy0F29K4kdVWS5aVtHJ0',
       );
     cy.contains('CryptoBy').click();
-
-    // Market page coins websocket should connect correctly
     cy.contains('로그아웃').should('exist');
+  });
+
+  it('Market page components and websocket data should render correctly', () => {
+    cy.window().then((win) => {
+      win.localStorage.setItem('accessToken', userData.accessToken);
+      win.localStorage.setItem('id', userData.id);
+      win.localStorage.setItem('nickname', userData.nickname);
+    });
+
+    cy.visit('http://localhost:3000/');
+
     cy.contains('구매하기').click();
     cy.wait(3000);
     tenDummyCoins.forEach((coin) => {
       cy.contains(coin.name).should('exist');
     });
+
     cy.contains('Bitcoin').click();
     cy.contains('구매하기').should('exist');
     cy.contains('매도하기').should('exist');
@@ -145,13 +158,14 @@ describe('E2E test for CryptoBy', () => {
     cy.contains('전체글보기').should('exist');
   });
 
-  it('exploring community page should work correctly', () => {
-    cy.visit('http://localhost:3000/');
+  it('community page menus and board components should render and work correctly', () => {
     cy.window().then((win) => {
       win.localStorage.setItem('accessToken', userData.accessToken);
       win.localStorage.setItem('id', userData.id);
       win.localStorage.setItem('nickname', userData.nickname);
     });
+
+    cy.visit('http://localhost:3000/');
 
     cy.contains('커뮤니티').click();
     cy.url().should('include', 'list');
@@ -179,9 +193,16 @@ describe('E2E test for CryptoBy', () => {
       const query = new URLSearchParams(interception.request.url.split('?')[1]);
       expect(query.get('page')).to.equal('2');
     });
+  });
 
-    // CRUD process in community page
-    const testString = `cypress E2E test ${getTimestampString()}`;
+  it('creating post process', () => {
+    cy.window().then((win) => {
+      win.localStorage.setItem('accessToken', userData.accessToken);
+      win.localStorage.setItem('id', userData.id);
+      win.localStorage.setItem('nickname', userData.nickname);
+    });
+
+    cy.visit('http://localhost:3000/community/list');
 
     cy.contains('글 작성하기').click();
     cy.url().should('include', 'posting');
@@ -197,7 +218,18 @@ describe('E2E test for CryptoBy', () => {
     cy.contains('등록').click();
 
     cy.url().should('match', /\/\d+$/);
+  });
 
+  it('components and functions in post detail page', () => {
+    cy.window().then((win) => {
+      win.localStorage.setItem('accessToken', userData.accessToken);
+      win.localStorage.setItem('id', userData.id);
+      win.localStorage.setItem('nickname', userData.nickname);
+    });
+
+    cy.visit('http://localhost:3000/community/list');
+
+    cy.get('[data-testid="postListTitle"]').eq(0).click();
     defaultPostDetialComponents.forEach((component) => {
       cy.contains(component).should('exist');
     });
@@ -242,8 +274,18 @@ describe('E2E test for CryptoBy', () => {
     cy.contains('주원쓰님의 게시글 더보기').click();
     cy.url().should('include', 'profile');
     cy.go('back');
+  });
 
-    // editing post process
+  it('editing post process', () => {
+    cy.window().then((win) => {
+      win.localStorage.setItem('accessToken', userData.accessToken);
+      win.localStorage.setItem('id', userData.id);
+      win.localStorage.setItem('nickname', userData.nickname);
+    });
+
+    cy.visit('http://localhost:3000/community/list');
+    cy.get('[data-testid="postListTitle"]').eq(0).click();
+
     cy.contains('수정').click();
     cy.url().should('include', 'posting');
     cy.get('[name="title"]').should('have.value', testString);
@@ -257,8 +299,18 @@ describe('E2E test for CryptoBy', () => {
     cy.get('[data-testid="title"]').should('have.text', `${testString} edited`);
     cy.get('[data-testid="description"]').should('have.text', `${testString} edited`);
     cy.get('[data-testid="board"]').should('have.text', '질문하기');
+  });
 
-    // comment CRUD
+  it('comment CRUD process', () => {
+    cy.window().then((win) => {
+      win.localStorage.setItem('accessToken', userData.accessToken);
+      win.localStorage.setItem('id', userData.id);
+      win.localStorage.setItem('nickname', userData.nickname);
+    });
+
+    cy.visit('http://localhost:3000/community/list');
+    cy.get('[data-testid="postListTitle"]').eq(0).click();
+
     cy.contains('댓글').click();
     cy.get('[data-testid="commentsbox-component"]').should('be.visible');
     cy.get('[data-testid="commentPostTextArea"]').type(testString);
@@ -279,18 +331,34 @@ describe('E2E test for CryptoBy', () => {
     cy.get('[data-testid="commentDesc"]').eq(1).should('have.text', `${testString} reply`);
     cy.get('[data-testid="deleteThisComment"]').eq(0).click();
     cy.contains('삭제된 댓글입니다.').should('exist');
+  });
 
-    // find comment in post list
-    cy.contains('목록').click();
-    cy.url().should('include', 'list');
+  it('find post in postList', () => {
+    cy.window().then((win) => {
+      win.localStorage.setItem('accessToken', userData.accessToken);
+      win.localStorage.setItem('id', userData.id);
+      win.localStorage.setItem('nickname', userData.nickname);
+    });
+
+    cy.visit('http://localhost:3000/community/list');
+
     cy.get('[data-testid="postListTitle"]').eq(0).should('include.text', `${testString} edited`);
     cy.contains('질문하기').click();
     cy.get('[data-testid="postListTitle"]').eq(0).should('include.text', `${testString} edited`);
     cy.contains('자랑하기').click();
     cy.contains(`${testString} edited`).should('not.exist');
     cy.contains('전체글보기').click();
+  });
 
-    // search post
+  it('search process', () => {
+    cy.window().then((win) => {
+      win.localStorage.setItem('accessToken', userData.accessToken);
+      win.localStorage.setItem('id', userData.id);
+      win.localStorage.setItem('nickname', userData.nickname);
+    });
+
+    cy.visit('http://localhost:3000/community/list');
+
     cy.get('[data-testid="selectBox"]').click();
     cy.get('ul').should('exist');
     cy.get('ul li').eq(1).click();
@@ -307,8 +375,17 @@ describe('E2E test for CryptoBy', () => {
     cy.contains('검색').click();
     cy.contains(`${testString} edited`).should('exist');
     cy.get('[data-testid="postListTitle"]').eq(0).should('include.text', `${testString} edited`);
+  });
 
-    // explore userprofile
+  it('explore userprofile page', () => {
+    cy.window().then((win) => {
+      win.localStorage.setItem('accessToken', userData.accessToken);
+      win.localStorage.setItem('id', userData.id);
+      win.localStorage.setItem('nickname', userData.nickname);
+    });
+
+    cy.visit('http://localhost:3000/community/list');
+
     cy.get('[data-testid="postListUserNick"]').eq(0).click();
     cy.get('ul').should('exist');
     cy.contains('프로필보기').click();
@@ -334,10 +411,16 @@ describe('E2E test for CryptoBy', () => {
     cy.get('input').eq(0).click();
     cy.contains('좋아요 취소').click();
     cy.contains(`${testString} edited`).should('not.exist');
+  });
 
-    // delete post
-    cy.contains('게시글 보기').click();
-    cy.url().should('include', 'list');
+  it('delete post process', () => {
+    cy.window().then((win) => {
+      win.localStorage.setItem('accessToken', userData.accessToken);
+      win.localStorage.setItem('id', userData.id);
+      win.localStorage.setItem('nickname', userData.nickname);
+    });
+
+    cy.visit('http://localhost:3000/community/list');
     cy.get('[data-testid="postListTitle"]').eq(0).click();
     cy.scrollTo('top');
     cy.contains('삭제').click();
@@ -346,8 +429,16 @@ describe('E2E test for CryptoBy', () => {
     cy.contains('유저페이지').click();
     cy.contains('삭제한 게시글').click();
     cy.contains(`${testString} edited`).should('exist');
+  });
 
-    // components should render correctly when accessToken is not found
+  it('components should render correctly when accessToken is not found', () => {
+    cy.window().then((win) => {
+      win.localStorage.setItem('accessToken', userData.accessToken);
+      win.localStorage.setItem('id', userData.id);
+      win.localStorage.setItem('nickname', userData.nickname);
+    });
+
+    cy.visit('http://localhost:3000/community/list');
     cy.contains('로그아웃').click();
     cy.url().should('include', 'login');
     cy.scrollTo('top');

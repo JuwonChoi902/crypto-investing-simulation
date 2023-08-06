@@ -181,5 +181,9 @@ export const getPostData = (
 export const testModules = {
   makeHeaders,
   dateParsing,
+  dateParsingForList,
   unitParsing,
+  handleCommentsData,
+  getPostListData,
+  getPostData,
 };

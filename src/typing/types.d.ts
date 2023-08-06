@@ -58,7 +58,7 @@ export interface CommentDataType {
   isItNew?: boolean;
   replyId: number;
   isThisOrigin?: boolean;
-  user: UserDetail;
+  user: UserDataType;
   post?: PostDataType;
 }
 

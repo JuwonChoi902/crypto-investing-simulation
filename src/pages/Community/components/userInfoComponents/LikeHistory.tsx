@@ -157,6 +157,7 @@ export default function LikeHistory({ profileId }: LikeHistoryProps) {
                 {profileId === loginUserId ? (
                   <CheckBox>
                     <input
+                      data-testid='likeCheckBox'
                       type='checkBox'
                       id={String(post.id)}
                       checked={checked.includes(String(post.id))}

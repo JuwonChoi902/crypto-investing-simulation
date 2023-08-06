@@ -35,8 +35,8 @@
     "eject": "craco eject",
     "deploy": "aws s3 sync ./build s3://juwon-bycrypto --profile=nerdcloud_",
     "invalidate": "aws cloudfront create-invalidation --profile=nerdcloud_ --distribution-id E2M178KS5QNC4J --paths /*",
-    "cypress:open" : "cypress open",
-    "cypress:run" : "cypress run"
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run"
   },
   "eslintConfig": {
     "extends": [

@@ -31,6 +31,7 @@ export default function Community() {
       setMenuNow(0);
     } else {
       setMenuNow(1);
+      setBoardNow(null);
       setPostNow(Number(params.id));
     }
   }, [params.id]);

@@ -31,6 +31,7 @@ export default function UserInfo({ profileId }: UserInfoProps) {
           <CategoryLeft>
             {categories.map((c, i) => (
               <Category
+                data-testid={`profileMenu-${i}`}
                 id={String(i)}
                 category={category}
                 onClick={() => {

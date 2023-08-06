@@ -121,6 +121,7 @@ export default function PostList({
                 {Category[el.categoryId].slice(0, 2)}
               </Label>
               <Title
+                data-testid='postListTitle'
                 onClick={() =>
                   navigate(`/community/${el.id}`, {
                     state: {
@@ -137,7 +138,7 @@ export default function PostList({
                 </ReplyAndNew>
               </Title>
             </LabelAndTitle>
-            <User ref={nickRefs.current[i]} onClick={() => setDropBox(i)}>
+            <User data-testid='postListUserNick' ref={nickRefs.current[i]} onClick={() => setDropBox(i)}>
               {el.user.nickname}
               {i === dropBox ? (
                 <UserDropBox data-testid='dropbox' ref={refs.current[i]}>

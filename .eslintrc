@@ -13,8 +13,7 @@
     "plugin:@typescript-eslint/recommended",
     // "prettier/@typescript-eslint",
     // "plugin:prettier/recommended"
-    "prettier",
-    "plugin:cypress/recommend"
+    "prettier"
   ],
   "globals": {
     "google" : "readonly",

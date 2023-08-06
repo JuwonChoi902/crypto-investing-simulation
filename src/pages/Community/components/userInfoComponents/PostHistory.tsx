@@ -167,6 +167,7 @@ export default function PostHistory({ profileId }: PostHistoryProps) {
                 ) : null}
                 <PostId>{post.id}</PostId>
                 <PostTitle
+                  data-testid='profilePostTitle'
                   onClick={() => {
                     navigate(`/community/${post.id}`);
                   }}

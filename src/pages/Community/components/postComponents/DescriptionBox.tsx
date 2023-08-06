@@ -122,17 +122,18 @@ export default function DescriptionBox({
   return (
     <OuterBox data-testid='descriptionbox-component'>
       <TitleBox>
-        <Board
+        <Board data-testid='board'
           onClick={() => {
             if (postData) {
               navigate('/community/list');
-              setBoardNow(postData.categoryId);
+              setPostNow(null);
+              setTimeout(() => setBoardNow(postData.categoryId), 100);
             }
           }}
         >
           {postData ? PostCategory[postData.categoryId] : null}
         </Board>
-        <Title>{postData?.title}</Title>
+        <Title data-testid='title'>{postData?.title}</Title>
       </TitleBox>
       <UserInfo>
         <UserDesc>
@@ -154,7 +155,11 @@ export default function DescriptionBox({
           </UserImg>
           <UserDetail>
             <DetailNickBox>
-              <DetailNick ref={nickBoxRef} onClick={() => setDropBoxIsOpen((current) => !current)}>
+              <DetailNick
+                data-testid='descriptionbox-usernick'
+                ref={nickBoxRef}
+                onClick={() => setDropBoxIsOpen((current) => !current)}
+              >
                 {postData?.user.nickname}
                 {dropBoxIsOpen ? (
                   <UserDropBox data-testid='dropbox1' ref={dropBoxRef}>
@@ -209,7 +214,7 @@ export default function DescriptionBox({
         </ButtonBox>
         <IsCopied isURLCopied={isURLCopied}>URL이 복사되었습니다.</IsCopied>
       </UserInfo>
-      <Description>{postData?.description}</Description>
+      <Description data-testid='description'>{postData?.description}</Description>
       <ShowMore
         onClick={() => {
           if (!loginUserToken) {

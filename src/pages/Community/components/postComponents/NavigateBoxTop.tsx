@@ -30,6 +30,7 @@ export default function NavigateBoxTop({ setPostNow, postData }: NavigateBoxTopP
         .then((res) => res.json())
         .then((data) => {
           if (data.isSuccess === true) {
+            navigate('/community/list');
             setPostNow(null);
           } else {
             alert('해당 게시글의 삭제 권한이 없습니다.');

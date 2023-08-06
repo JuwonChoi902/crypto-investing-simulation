@@ -68,7 +68,6 @@ function CommentsBox({
       setString(event.target.value);
     }
   };
-
   const getCommentData = useCallback(
     (headers: HeadersType) => {
       if (!params.id) return;
@@ -115,7 +114,7 @@ function CommentsBox({
         body: {
           create: { postId, comment: userInput },
           edit: { comment: userInput },
-          reply: { postId, comment: replyCommentString, replyId },
+          reply: { postId, comment: userInput, replyId },
           delete: { replyId: [replyId] },
         },
       };
@@ -199,7 +198,7 @@ function CommentsBox({
         <CommentHeaderBox>
           <CommentHeaderTitle>댓글</CommentHeaderTitle>
           <span data-testid='commentCount'>{commentCount}개</span>
-          {commentData?.some((el) => el.isItNew) ? <IsItNew>N</IsItNew> : null}
+          {commentData?.some((el) => el.isItNew) ? <IsItNew data-testid='isItNew'>N</IsItNew> : null}
         </CommentHeaderBox>
       </CommentHeader>
       <Comments>
@@ -323,6 +322,7 @@ function CommentsBox({
                 {loginUserId === el.user.id ? (
                   <DeleteOrEdit>
                     <Edit
+                      data-testid='editThisComment'
                       onClick={() => {
                         setReplying(null);
                         setEditingCommentString(el.comment);
@@ -331,7 +331,12 @@ function CommentsBox({
                     >
                       수정
                     </Edit>
-                    <Delete onClick={() => updateComment('delete', params.id, undefined, el.id)}>삭제</Delete>
+                    <Delete
+                      data-testid='deleteThisComment'
+                      onClick={() => updateComment('delete', params.id, undefined, el.id)}
+                    >
+                      삭제
+                    </Delete>
                   </DeleteOrEdit>
                 ) : null}
               </Comment>
@@ -364,6 +369,7 @@ function CommentsBox({
                       </CancleWriting>
                       <PostThisComment
                         isThisValid={replyCommentString?.length}
+                        data-testid='replyPostButton'
                         onClick={() => {
                           if (!loginUserToken) {
                             if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
@@ -395,6 +401,7 @@ function CommentsBox({
           onChange={(event) => textAreaHandler(event, setCommentString)}
           value={commentString}
           disabled={!loginUserToken}
+          data-testid='commentPostTextArea'
         />
         <CommentPostingBtns>
           <ButtonsLeft />

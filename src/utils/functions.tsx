@@ -1,5 +1,12 @@
 import React from 'react';
-import { HeadersType, CommentDataType, IndexObjectType, PostDataType } from '../typing/types';
+import {
+  HeadersType,
+  CommentDataType,
+  IndexObjectType,
+  PostDataType,
+  CoinTypes,
+  SymbolTickerTypes,
+} from '../typing/types';
 
 export const dateParsing = (date: string): [string, boolean] => {
   const theDate = new Date(date);
@@ -176,6 +183,47 @@ export const getPostData = (
         alert(data.message);
       }
     });
+};
+
+export const updateTickerData = (
+  index: number,
+  data: SymbolTickerTypes,
+  setTickers: React.Dispatch<React.SetStateAction<CoinTypes[]>>,
+  setPriceColor: React.Dispatch<React.SetStateAction<string[]>>,
+  priceRef: React.RefObject<number[]>,
+) => {
+  setTickers((prevTickers) => {
+    const updatedTickers = [...prevTickers];
+    const prevPrice = priceRef.current?.[index];
+    const currentPrice = Number(data.c);
+    const copiedPriceRef = priceRef;
+
+    if (prevPrice !== undefined) {
+      setPriceColor((prevColors) => {
+        const colors = [...prevColors];
+        if (currentPrice > prevPrice) {
+          colors[index] = 'green';
+        } else if (currentPrice < prevPrice) {
+          colors[index] = 'red';
+        } else {
+          colors[index] = 'black';
+        }
+        return colors;
+      });
+    }
+    if (copiedPriceRef.current) copiedPriceRef.current[index] = currentPrice;
+
+    updatedTickers[index] = {
+      ...updatedTickers[index],
+      price: unitParsing(data.c),
+      dayChange: Number(data.P) > 0 ? `+${Number(data.P).toFixed(2)}` : `${Number(data.P).toFixed(2)}%`,
+      volume: unitParsing(data.q),
+      volumeOrigin: data.q,
+      marketCap: unitParsing(String(Number(data.c) * updatedTickers[index].quantity)),
+    };
+
+    return updatedTickers;
+  });
 };
 
 export const testModules = {

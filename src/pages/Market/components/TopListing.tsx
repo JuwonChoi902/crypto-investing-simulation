@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router';
 import CustomSpinner from './CustomSpinner';
 import coinIcon from '../images/mainIcon.png';
 import { CoinTypes, SymbolTickerTypes } from '../../../typing/types';
+import { updateTickerData } from '../../../utils/functions';
 
 type TopListingProps = {
   tickers: CoinTypes[];
@@ -19,84 +20,19 @@ export default function TopListing({ tickers, newAndPopCoins, priceColor }: TopL
   const priceRef = useRef<number[]>([]);
   const navigate = useNavigate();
 
-  const unitParsing = (num: string) => {
-    const temp = Number(num);
-    let [divideNum, resString, fractionDigit] = [1, '', 2];
-    if (temp >= 1000000000) {
-      [divideNum, resString] = [1000000000, 'B'];
-    } else if (temp < 1000000000 && temp >= 1000000) {
-      [divideNum, resString] = [1000000, 'M'];
-    } else if (temp < 1000000 && temp >= 1000) {
-      [divideNum, resString] = [1000, 'K'];
-    } else fractionDigit = 4;
-
-    return `${(temp / divideNum).toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: fractionDigit,
-    })}${resString}`;
-  };
-
   useEffect(() => {
     const webSockets: WebSocket[] = newAndPopCoins.map(
       (coin) => new WebSocket(`wss://stream.binance.com:9443/ws/${coin.symbol}@ticker`),
     );
 
-    const updateTickerData = (index: number, data: SymbolTickerTypes) =>
-      new Promise<Array<CoinTypes | undefined>>((resolve) => {
-        setRestTickers((prevTickers) => {
-          const updatedTickers = [...prevTickers];
-          const prevPrice = priceRef.current[index];
-          const currentPrice = Number(data.c);
-
-          if (prevPrice !== undefined) {
-            if (currentPrice > prevPrice) {
-              setRestPriceColor((prevColors) => {
-                const colors = [...prevColors];
-                colors[index] = 'green';
-                return colors;
-              });
-            } else if (currentPrice < prevPrice) {
-              setRestPriceColor((prevColors) => {
-                const colors = [...prevColors];
-                colors[index] = 'red';
-                return colors;
-              });
-            } else {
-              setRestPriceColor((prevColors) => {
-                const colors = [...prevColors];
-                colors[index] = 'black';
-                return colors;
-              });
-            }
-          }
-
-          priceRef.current[index] = currentPrice;
-
-          updatedTickers[index] = {
-            ...updatedTickers[index],
-            price: unitParsing(data.c),
-            dayChange: Number(data.P) > 0 ? `+${Number(data.P).toFixed(2)}` : `${Number(data.P).toFixed(2)}%`,
-            volume: unitParsing(data.q),
-            marketCap: unitParsing(String(Number(data.c) * updatedTickers[index].quantity)),
-          };
-          return updatedTickers;
-        });
-        resolve([]);
+    const attachWebSocketListeners = (webSocket: WebSocket, index: number) => {
+      webSocket.addEventListener('message', (event) => {
+        const data = JSON.parse(event.data) as SymbolTickerTypes;
+        updateTickerData(index, data, setRestTickers, setRestPriceColor, priceRef);
       });
+    };
 
-    const attachWebSocketListeners = (webSocket: WebSocket, index: number) =>
-      new Promise<void>((resolve) => {
-        webSocket.addEventListener('message', (event) => {
-          const data = JSON.parse(event.data) as SymbolTickerTypes;
-          updateTickerData(index, data).then(() => {
-            resolve();
-          });
-        });
-      });
-
-    Promise.all(webSockets.map((webSocket, index) => attachWebSocketListeners(webSocket, index))).then(() => {
-      // 모든 웹소켓 연결 완료
-    });
+    webSockets.map((webSocket, index) => attachWebSocketListeners(webSocket, index));
 
     return () => {
       webSockets.forEach((webSocket) => {

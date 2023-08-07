@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router';
 import { SymbolTickerTypes, CoinTypes } from '../../../typing/types';
-import { unitParsing } from '../../../utils/functions';
+import { updateTickerData } from '../../../utils/functions';
 import bitCoin from '../images/bitcoin.png';
 import ethereum from '../images/ethereum.png';
 import usdc from '../images/usd.png';
@@ -29,71 +29,19 @@ export default function Popular({ setVolume }: PopularProps) {
   const navigate = useNavigate();
   const priceRef = useRef<number[]>([]);
 
-  const memoizedUnitParsing = useCallback(unitParsing, []);
-
   useEffect(() => {
     const webSockets: WebSocket[] = tenDummyCoins.map(
       (coin) => new WebSocket(`wss://stream.binance.com:9443/ws/${coin.symbol}@ticker`),
     );
 
-    const updateTickerData = (index: number, data: SymbolTickerTypes) =>
-      new Promise<Array<CoinTypes | undefined>>((resolve) => {
-        setTickers((prevTickers) => {
-          const updatedTickers = [...prevTickers];
-          const prevPrice = priceRef.current[index];
-          const currentPrice = Number(data.c);
-
-          if (prevPrice !== undefined) {
-            if (currentPrice > prevPrice) {
-              setPriceColor((prevColors) => {
-                const colors = [...prevColors];
-                colors[index] = 'green';
-                return colors;
-              });
-            } else if (currentPrice < prevPrice) {
-              setPriceColor((prevColors) => {
-                const colors = [...prevColors];
-                colors[index] = 'red';
-                return colors;
-              });
-            } else {
-              setPriceColor((prevColors) => {
-                const colors = [...prevColors];
-                colors[index] = 'black';
-                return colors;
-              });
-            }
-          }
-
-          priceRef.current[index] = currentPrice;
-
-          updatedTickers[index] = {
-            ...updatedTickers[index],
-            price: memoizedUnitParsing(data.c),
-            dayChange: Number(data.P) > 0 ? `+${Number(data.P).toFixed(2)}` : `${Number(data.P).toFixed(2)}`,
-            volume: memoizedUnitParsing(data.q),
-            volumeOrigin: data.q,
-            marketCap: memoizedUnitParsing(String(Number(data.c) * updatedTickers[index].quantity)),
-          };
-
-          return updatedTickers;
-        });
-        resolve([]);
+    const attachWebSocketListeners = (webSocket: WebSocket, index: number) => {
+      webSocket.addEventListener('message', (event) => {
+        const data = JSON.parse(event.data) as SymbolTickerTypes;
+        updateTickerData(index, data, setTickers, setPriceColor, priceRef);
       });
+    };
 
-    const attachWebSocketListeners = (webSocket: WebSocket, index: number) =>
-      new Promise<void>((resolve) => {
-        webSocket.addEventListener('message', (event) => {
-          const data = JSON.parse(event.data) as SymbolTickerTypes;
-          updateTickerData(index, data).then(() => {
-            resolve();
-          });
-        });
-      });
-
-    Promise.all(webSockets.map((webSocket, index) => attachWebSocketListeners(webSocket, index))).then(() => {
-      // 모든 웹소켓 연결 완료
-    });
+    webSockets.map((webSocket, index) => attachWebSocketListeners(webSocket, index));
 
     return () => {
       webSockets.forEach((webSocket) => {

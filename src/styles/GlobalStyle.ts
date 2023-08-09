@@ -6,7 +6,7 @@ const GlobalStyle = createGlobalStyle`
 
   body {
     box-sizing: border-box;
-    font-family: Nanum Gothic Coding
+    font-family: 'Noto Sans KR', sans-serif;
   }
 `;
 

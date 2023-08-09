@@ -27,4 +27,11 @@
 7. Websocket
 
 ## 테스트
+
+### 단위 및 통합테스트
 <img width="661" alt="스크린샷 2023-08-09 오전 10 54 51" src="https://github.com/JuwonChoi902/crypto-investing-simulation/assets/110681462/cdf136e2-a1cc-4659-895a-0d95af5c5bdd">
+
+### E2E 테스트
+https://github.com/JuwonChoi902/crypto-investing-simulation/assets/110681462/e856952e-a5c4-485b-8ce1-410e7729ee62
+
+

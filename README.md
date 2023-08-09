@@ -27,3 +27,4 @@
 7. Websocket
 
 ## 테스트
+<img width="661" alt="스크린샷 2023-08-09 오전 10 54 51" src="https://github.com/JuwonChoi902/crypto-investing-simulation/assets/110681462/cdf136e2-a1cc-4659-895a-0d95af5c5bdd">

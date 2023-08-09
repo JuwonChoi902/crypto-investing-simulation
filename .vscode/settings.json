@@ -7,11 +7,11 @@
     "source.fixAll.eslint": true,
     "source.fixAll.stylelint": true
   },
+  "files.autoSave": "onFocusChange",
   "css.validate": false,
   "scss.validate": false,
   "stylelint.validate": ["css", "scss", ".module.scss"],
   "stylelint.enable": true,
   "javascript.format.enable": false,
   "eslint.alwaysShowStatus": true,
-  "files.autoSave": "onFocusChange"
 }

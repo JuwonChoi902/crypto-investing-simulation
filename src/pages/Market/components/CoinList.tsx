@@ -79,7 +79,7 @@ export default function CoinList({ tickers, priceColor }: CoinListProps) {
                   </CoinName>
 
                   <CoinPrice color={priceColor[index]}>${coin.price}</CoinPrice>
-                  <CoinChange dayChange={coin.dayChange}>{coin.dayChange}</CoinChange>
+                  <CoinChange dayChange={coin.dayChange}>{coin.dayChange}%</CoinChange>
                   <CoinVolume>${coin.volume}</CoinVolume>
                   <CoinMaketCap>${coin.marketCap}</CoinMaketCap>
                   <CoinTrade>거래하기</CoinTrade>

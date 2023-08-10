@@ -216,7 +216,7 @@ export const updateTickerData = (
     updatedTickers[index] = {
       ...updatedTickers[index],
       price: unitParsing(data.c),
-      dayChange: Number(data.P) > 0 ? `+${Number(data.P).toFixed(2)}` : `${Number(data.P).toFixed(2)}%`,
+      dayChange: Number(data.P) > 0 ? `+${Number(data.P).toFixed(2)}` : `${Number(data.P).toFixed(2)}`,
       volume: unitParsing(data.q),
       volumeOrigin: data.q,
       marketCap: unitParsing(String(Number(data.c) * updatedTickers[index].quantity)),

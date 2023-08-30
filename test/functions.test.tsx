@@ -1,4 +1,27 @@
 import { testModules } from '../src/utils/functions';
+import { CommentDataType } from '../src/typing/types';
+
+const makeEdgeComments = () => {
+  const temp: CommentDataType[] = [];
+  for (let i = 3; i <= 10003; i += 1) {
+    temp.push({
+      id: i,
+      comment: '1만개',
+      replyId: 3,
+      created_at: '2021-08-31T15:00:00.000Z',
+      deleted_at: null,
+      user: {
+        id: 1,
+        nickname: '기석',
+        description: '백엔드 개발자 장기석입니다.',
+        profileImage:
+          'https://velog.velcdn.com/images/kisuk623/profile/8dc78e6c-5544-4b8a-8ebe-1ecd9dcb14fd/image.png',
+      },
+    });
+  }
+  return temp;
+};
+const edgeCase = makeEdgeComments();
 
 describe('should pass all function tests', () => {
   const mockLocalStorage = {
@@ -123,6 +146,7 @@ describe('should pass all function tests', () => {
         },
       },
     ];
+
     const setCommentCount = jest.fn();
     const setCountAll = jest.fn();
     const memoizedDateParsing = jest.fn().mockReturnValue(['2023-08-01 12:34', true]);
@@ -169,6 +193,22 @@ describe('should pass all function tests', () => {
         },
       },
     ]);
+  });
+
+  test('handleCommentsData should handle edge case comments data correctly', () => {
+    const setCommentCount = jest.fn();
+    const setCountAll = jest.fn();
+    const memoizedDateParsing = jest.fn().mockReturnValue(['2023-08-01 12:34', true]);
+
+    const result = testModules.handleCommentsData(
+      edgeCase,
+      setCommentCount,
+      setCountAll,
+      memoizedDateParsing,
+    );
+
+    expect(setCommentCount).toHaveBeenCalledWith(10001);
+    expect(setCountAll).toHaveBeenCalledWith(10001);
   });
 
   test('getPostListData should get data correctly', () => {

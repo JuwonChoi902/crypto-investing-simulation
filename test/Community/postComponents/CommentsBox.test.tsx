@@ -62,6 +62,8 @@ const makeEdgeComments = () => {
   }
   return temp;
 };
+
+const edgeData = makeEdgeComments();
 const commentWindowRef = { current: document.createElement('div') };
 const testProps = {
   commentCount: 10,
@@ -314,7 +316,7 @@ describe('CommentsBox Component', () => {
         json: () =>
           Promise.resolve({
             isSuccess: true,
-            data: makeEdgeComments(),
+            data: edgeData,
           }),
       }),
     );

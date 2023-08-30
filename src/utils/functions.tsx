@@ -72,7 +72,6 @@ export const unitParsing = (num: string) => {
 export const handleCommentsData = (
   data: CommentDataType[],
   setCommentCount: React.Dispatch<React.SetStateAction<number>>,
-  setCountAll: React.Dispatch<React.SetStateAction<number>>,
   memoizedDateParsing: (dateString: string) => [string, boolean],
 ): CommentDataType[] => {
   let commentCount = 0;
@@ -101,7 +100,6 @@ export const handleCommentsData = (
       tempComments.push(comment);
     }
   });
-  setCountAll(data.length);
   setCommentCount(commentCount);
 
   return tempComments.map((el: CommentDataType) => ({
@@ -224,6 +222,83 @@ export const updateTickerData = (
 
     return updatedTickers;
   });
+};
+
+export const getCommentData = (
+  headers: HeadersType,
+  postId: string | undefined,
+  setCommentCount: React.Dispatch<React.SetStateAction<number>>,
+  setCommentData: React.Dispatch<React.SetStateAction<CommentDataType[] | undefined>>,
+) => {
+  if (!postId) return;
+  fetch(`https://server.pien.kr:4000/community/reply/${postId}`, {
+    headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.isSuccess) {
+        const handledCommentData = handleCommentsData(data.data, setCommentCount, dateParsing);
+        setCommentData(handledCommentData);
+      } else alert(data.message);
+    });
+};
+
+export const updateComment = (
+  action: 'create' | 'edit' | 'reply' | 'delete',
+  postId: string | undefined,
+  userInput: string | undefined,
+  replyId: number | undefined,
+  headers: HeadersType,
+  setCommentCount: React.Dispatch<React.SetStateAction<number>>,
+  setCommentData: React.Dispatch<React.SetStateAction<CommentDataType[] | undefined>>,
+  setCommentString: React.Dispatch<React.SetStateAction<string>>,
+  setReplying: React.Dispatch<React.SetStateAction<number | null>>,
+  setEditing: React.Dispatch<React.SetStateAction<number | null>>,
+  textarea: React.RefObject<HTMLTextAreaElement>,
+) => {
+  if (action === 'delete') {
+    if (window.confirm('댓글을 삭제하시겠습니까?') !== true) return;
+  }
+
+  const fetchInfoTable = {
+    url: action === 'edit' ? `/${replyId}` : '',
+    method: {
+      create: 'POST',
+      edit: 'PATCH',
+      reply: 'POST',
+      delete: 'DELETE',
+    },
+    body: {
+      create: { postId, comment: userInput },
+      edit: { comment: userInput },
+      reply: { postId, comment: userInput, replyId },
+      delete: { replyId: [replyId] },
+    },
+  };
+
+  const copiedTextarea = textarea;
+
+  fetch(`https://server.pien.kr:4000/community/reply${fetchInfoTable.url}`, {
+    method: fetchInfoTable.method[action],
+    headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
+    body: JSON.stringify(fetchInfoTable.body[action]),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.isSuccess) {
+        if (action === 'create' || action === 'reply') {
+          const handledCommentData = handleCommentsData(data.data, setCommentCount, dateParsing);
+          setCommentData(handledCommentData);
+          if (action === 'create') {
+            setCommentString('');
+            if (copiedTextarea.current) copiedTextarea.current.style.height = 'auto';
+          } else if (action === 'reply') setReplying(null);
+        } else if (action === 'edit' || action === 'delete') {
+          getCommentData(headers, postId, setCommentCount, setCommentData);
+          if (action === 'edit') setEditing(null);
+        }
+      } else alert(data.message);
+    });
 };
 
 export const testModules = {

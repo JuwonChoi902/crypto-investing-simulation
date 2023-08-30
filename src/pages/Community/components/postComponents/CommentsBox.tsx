@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import styled from 'styled-components';
-import user from '../../images/user.png';
-import { CommentDataType, HeadersType } from '../../../../typing/types';
-import { dateParsing, handleCommentsData, makeHeaders } from '../../../../utils/functions';
+import { CommentDataType } from '../../../../typing/types';
+import { makeHeaders, getCommentData, updateComment } from '../../../../utils/functions';
+import Comment from './Comment';
 
 type CommentsBoxProps = {
   commentWindowRef: React.RefObject<HTMLDivElement>;
@@ -14,8 +14,6 @@ type CommentsBoxProps = {
   setProfileId: React.Dispatch<React.SetStateAction<number | undefined | null>>;
   setMenuNow: React.Dispatch<React.SetStateAction<number>>;
 };
-
-const DropBoxMenu: string[] = ['프로필보기', '1:1 채팅', '쪽지보내기'];
 
 function CommentsBox({
   commentWindowRef,
@@ -32,19 +30,12 @@ function CommentsBox({
   const [editingCommentString, setEditingCommentString] = useState<string>('');
   const [replyCommentString, setReplyCommentString] = useState<string>('');
   const [dropBox, setDropBox] = useState<number | null>(null);
-  const [countAll, setCountAll] = useState<number>(0);
 
   const loginUserNick = localStorage.getItem('nickname');
   const loginUserToken = localStorage.getItem('accessToken');
-  const loginUserId = Number(localStorage.getItem('id'));
   const params = useParams();
   const navigate = useNavigate();
-  const memoizedDateParsing = useCallback(dateParsing, []);
-  const memoizedHandleCommentData = useCallback(handleCommentsData, []);
-  const memoizedMakeHeaders = useCallback(makeHeaders, []);
-
-  const dropBoxRefs = useRef<Array<React.RefObject<HTMLDivElement> | undefined>>();
-  const nickBoxRefs = useRef<Array<React.RefObject<HTMLDivElement> | undefined>>();
+  const headers = makeHeaders(loginUserToken);
 
   const textarea = useRef<HTMLTextAreaElement>(null);
   const replyTextArea = useRef<HTMLTextAreaElement>(null);
@@ -68,129 +59,20 @@ function CommentsBox({
       setString(event.target.value);
     }
   };
-  const getCommentData = useCallback(
-    (headers: HeadersType) => {
-      if (!params.id) return;
-      if (!loginUserToken) return;
-      fetch(`https://server.pien.kr:4000/community/reply/${params.id}`, {
-        headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.isSuccess) {
-            const handledCommentData = memoizedHandleCommentData(
-              data.data,
-              setCommentCount,
-              setCountAll,
-              memoizedDateParsing,
-            );
-            setCommentData(handledCommentData);
-          } else alert(data.message);
-        });
-    },
-    [params.id],
-  );
-
-  const updateComment = useCallback(
-    (
-      action: 'create' | 'edit' | 'reply' | 'delete',
-      postId: string | undefined,
-      userInput: string | undefined,
-      replyId: number | undefined,
-    ) => {
-      if (action === 'delete') {
-        if (window.confirm('댓글을 삭제하시겠습니까?') !== true) return;
-      }
-
-      const headers = memoizedMakeHeaders(loginUserToken);
-      const fetchInfoTable = {
-        url: action === 'edit' ? `/${replyId}` : '',
-        method: {
-          create: 'POST',
-          edit: 'PATCH',
-          reply: 'POST',
-          delete: 'DELETE',
-        },
-        body: {
-          create: { postId, comment: userInput },
-          edit: { comment: userInput },
-          reply: { postId, comment: userInput, replyId },
-          delete: { replyId: [replyId] },
-        },
-      };
-
-      fetch(`https://server.pien.kr:4000/community/reply${fetchInfoTable.url}`, {
-        method: fetchInfoTable.method[action],
-        headers: Object.entries(headers).map(([key, value]) => [key, value || '']),
-        body: JSON.stringify(fetchInfoTable.body[action]),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.isSuccess) {
-            if (action === 'create' || action === 'reply') {
-              const handledCommentData = memoizedHandleCommentData(
-                data.data,
-                setCommentCount,
-                setCountAll,
-                memoizedDateParsing,
-              );
-              setCommentData(handledCommentData);
-              if (action === 'create') {
-                setCommentString('');
-                if (textarea.current) textarea.current.style.height = 'auto';
-              } else if (action === 'reply') setReplying(null);
-            } else if (action === 'edit' || action === 'delete') {
-              getCommentData(headers);
-              if (action === 'edit') setEditing(null);
-            }
-          } else alert(data.message);
-        });
-    },
-    [],
-  );
 
   useEffect(() => {
     if (!params.id) return;
-
-    const headers = memoizedMakeHeaders(loginUserToken);
     if (params.id !== 'list' && params.id !== 'favorite' && params.id !== 'profile') {
-      getCommentData(headers);
+      getCommentData(headers, params.id, setCommentCount, setCommentData);
       setReplying(null);
     }
   }, [params.id]);
-
-  useEffect(() => {
-    dropBoxRefs.current = Array.from({ length: countAll }, () => React.createRef<HTMLDivElement>());
-    nickBoxRefs.current = Array.from({ length: countAll }, () => React.createRef<HTMLDivElement>());
-  }, [countAll]);
 
   useEffect(() => {
     adjustTextArea(textarea);
     adjustTextArea(replyTextArea);
     adjustTextArea(editTextArea);
   }, [commentString, editingCommentString, replyCommentString]);
-
-  useEffect(() => {
-    const changeDropState = (e: CustomEvent<MouseEvent>) => {
-      if (
-        dropBox !== null &&
-        nickBoxRefs.current?.[dropBox]?.current &&
-        dropBoxRefs.current?.[dropBox]?.current &&
-        !dropBoxRefs.current?.[dropBox]?.current?.contains(e.target as Node) &&
-        !nickBoxRefs.current?.[dropBox]?.current?.contains(e.target as Node)
-      ) {
-        setDropBox(null);
-      }
-    };
-
-    if (dropBox !== null) {
-      window.addEventListener('click', changeDropState as EventListener);
-    }
-
-    return () => {
-      window.removeEventListener('click', changeDropState as EventListener);
-    };
-  }, [dropBox]);
 
   return (
     <OuterBox data-testid='commentsbox-component'>
@@ -239,7 +121,19 @@ function CommentsBox({
                               navigate('/login');
                             }
                           } else {
-                            updateComment('edit', params.id, editingCommentString, el.replyId);
+                            updateComment(
+                              'edit',
+                              params.id,
+                              editingCommentString,
+                              el.replyId,
+                              headers,
+                              setCommentCount,
+                              setCommentData,
+                              setCommentString,
+                              setReplying,
+                              setEditing,
+                              textarea,
+                            );
                           }
                         }}
                       >
@@ -250,96 +144,23 @@ function CommentsBox({
                 </RTRPosting>
               </ReplyToReplyBox>
             ) : (
-              <Comment index={i} isThisOrigin={el.isThisOrigin} isThisDeleted={el.deleted_at}>
-                <UserImgBox>
-                  <UserImg
-                    data-testid='userImg'
-                    userImg={el.user.profileImage}
-                    onClick={() => {
-                      setProfileId(el.user.id);
-                      setMenuNow(2);
-                    }}
-                  >
-                    <img src={el.user.profileImage || user} alt='user' />
-                  </UserImg>
-                </UserImgBox>
-                <CommentTextBox>
-                  <CommentUserNick
-                    data-testid='userNickForDropBox'
-                    ref={nickBoxRefs.current?.[i]}
-                    onClick={() => setDropBox(i)}
-                  >
-                    {el.user.nickname}
-                    {dropBox === i ? (
-                      <UserDropBox ref={dropBoxRefs.current?.[i]}>
-                        <ul>
-                          {DropBoxMenu.map((menu, index) => (
-                            <li
-                              key={menu}
-                              role='presentation'
-                              onClick={() => {
-                                if (!loginUserToken) {
-                                  if (
-                                    window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true
-                                  ) {
-                                    navigate('/login');
-                                  }
-                                } else if (index === 0) {
-                                  setProfileId(el.user.id);
-                                  setMenuNow(2);
-                                } else {
-                                  alert('서비스 준비중입니다.');
-                                }
-                              }}
-                            >
-                              {menu}
-                            </li>
-                          ))}
-                        </ul>
-                      </UserDropBox>
-                    ) : null}
-                  </CommentUserNick>
-                  <CommentDescription data-testid='commentDesc'>{el.comment}</CommentDescription>
-                  <CommentCreatedAt>
-                    <span>{el.created_at}</span>
-                    <ReplyToReply
-                      onClick={() => {
-                        if (!loginUserToken) {
-                          if (window.confirm('로그인 후 이용가능합니다. 로그인 하시겠습니까?') === true) {
-                            navigate('/login');
-                          }
-                        } else {
-                          setEditing(null);
-                          setReplying(el.id);
-                          setReplyCommentString('');
-                        }
-                      }}
-                    >
-                      답글쓰기
-                    </ReplyToReply>
-                  </CommentCreatedAt>
-                </CommentTextBox>
-                {loginUserId === el.user.id ? (
-                  <DeleteOrEdit>
-                    <Edit
-                      data-testid='editThisComment'
-                      onClick={() => {
-                        setReplying(null);
-                        setEditingCommentString(el.comment);
-                        setEditing(el.id);
-                      }}
-                    >
-                      수정
-                    </Edit>
-                    <Delete
-                      data-testid='deleteThisComment'
-                      onClick={() => updateComment('delete', params.id, undefined, el.id)}
-                    >
-                      삭제
-                    </Delete>
-                  </DeleteOrEdit>
-                ) : null}
-              </Comment>
+              <Comment
+                index={i}
+                commentData={el}
+                setMenuNow={setMenuNow}
+                setProfileId={setProfileId}
+                dropBox={dropBox}
+                setDropBox={setDropBox}
+                setEditing={setEditing}
+                setReplying={setReplying}
+                setReplyCommentString={setReplyCommentString}
+                setEditingCommentString={setEditingCommentString}
+                postId={params.id}
+                setCommentCount={setCommentCount}
+                setCommentString={setCommentString}
+                setCommentData={setCommentData}
+                textarea={textarea}
+              />
             )}
             {replying === el.id ? (
               <ReplyToReplyBox id={String(el.id)} isLastOne={i === commentData.length - 1}>
@@ -376,7 +197,19 @@ function CommentsBox({
                               navigate('/login');
                             }
                           } else {
-                            updateComment('reply', params.id, replyCommentString, el.replyId);
+                            updateComment(
+                              'reply',
+                              params.id,
+                              replyCommentString,
+                              el.replyId,
+                              headers,
+                              setCommentCount,
+                              setCommentData,
+                              setCommentString,
+                              setReplying,
+                              setEditing,
+                              textarea,
+                            );
                           }
                         }}
                       >
@@ -413,7 +246,19 @@ function CommentsBox({
                   navigate('/login');
                 }
               } else {
-                updateComment('create', params.id, commentString, undefined);
+                updateComment(
+                  'create',
+                  params.id,
+                  commentString,
+                  undefined,
+                  headers,
+                  setCommentCount,
+                  setCommentData,
+                  setCommentString,
+                  setReplying,
+                  setEditing,
+                  textarea,
+                );
               }
             }}
             isThisValid={commentString?.length}
@@ -470,112 +315,6 @@ const DeletedOrigin = styled.div<{ index: number }>`
   display: flex;
   border-top: ${(props) => (props.index === 0 ? 'none' : '1px solid #e5e5e5')};
   padding: 15px 0 15px 0;
-`;
-const Comment = styled.div<{
-  index: number;
-  isThisOrigin: boolean | undefined;
-  isThisDeleted: string | null;
-}>`
-  display: ${(props) => (props.isThisDeleted ? 'none' : 'flex')};
-  position: relative;
-  padding: 12px 0 10px 0;
-  border-top: ${(props) => (props.index === 0 ? 'none' : '1px solid #e5e5e5')};
-  padding-left: ${(props) => (props.isThisOrigin ? '0' : '46px')};
-`;
-
-const CommentTextBox = styled.div``;
-const CommentUserNick = styled.div`
-  display: inline-block;
-  width: auto;
-  font-size: 13px;
-  font-weight: bold;
-  margin-bottom: 6px;
-  position: relative;
-  white-space: nowrap;
-
-  &:hover {
-    cursor: pointer;
-  }
-`;
-
-const UserDropBox = styled.div`
-  display: block;
-  position: absolute;
-  width: 113px;
-  top: 23px;
-  left: 7px;
-  font-size: 12px;
-  z-index: 1;
-  font-weight: bold;
-  background-color: white;
-  border: 1px solid #e5e5e5;
-  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
-
-  li {
-    padding: 11px 15px;
-
-    &:hover {
-      cursor: pointer;
-      background-color: #feeaa3;
-    }
-  }
-`;
-
-const CommentDescription = styled.div`
-  font-size: 13px;
-  white-space: pre-wrap;
-
-  word-break: break-all;
-  white-space: -moz-pre-wrap;
-`;
-const CommentCreatedAt = styled.div`
-  font-size: 12px;
-  color: #979797;
-  margin-top: 7px;
-`;
-const ReplyToReply = styled.button`
-  border: none;
-  font-size: 12px;
-  font-weight: bold;
-  background-color: white;
-  margin-left: 8px;
-  color: #979797;
-
-  &:hover {
-    cursor: pointer;
-  }
-`;
-
-const DeleteOrEdit = styled.div`
-  display: flex;
-  position: absolute;
-  right: 0;
-`;
-const Edit = styled.button`
-  background-color: white;
-  border: none;
-  color: #979797;
-  font-size: 12px;
-  font-weight: bold;
-  height: 16px;
-  white-space: nowrap;
-
-  &:hover {
-    cursor: pointer;
-  }
-`;
-const Delete = styled.button`
-  background-color: white;
-  border: none;
-  color: #979797;
-  font-size: 12px;
-  font-weight: bold;
-  height: 16px;
-  white-space: nowrap;
-
-  &:hover {
-    cursor: pointer;
-  }
 `;
 
 const ReplyToReplyBox = styled.div<{ isLastOne: boolean }>`
@@ -696,30 +435,6 @@ const PostThisComment = styled.button<{ isThisValid: number | undefined }>`
   background-color: ${(props) => (props.isThisValid && props.isThisValid > 0 ? '#feeaa3' : 'white')};
   border-radius: 5px;
   white-space: nowrap;
-
-  &:hover {
-    cursor: pointer;
-  }
-`;
-
-const UserImgBox = styled.div``;
-
-const UserImg = styled.div<{ userImg: string | undefined }>`
-  display: flex;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 100%;
-  border: 1px solid #e5e5e5;
-  overflow: hidden;
-  margin-right: 10px;
-
-  img {
-    margin-top: ${(props) => (props.userImg ? 0 : '12px')};
-    width: ${(props) => (props.userImg ? '35px' : '24px')};
-    height: ${(props) => (props.userImg ? '35px' : '24px')};
-    opacity: ${(props) => (props.userImg ? 1 : '0.2')};
-  }
 
   &:hover {
     cursor: pointer;

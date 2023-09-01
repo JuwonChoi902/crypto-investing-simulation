@@ -148,18 +148,11 @@ describe('should pass all function tests', () => {
     ];
 
     const setCommentCount = jest.fn();
-    const setCountAll = jest.fn();
     const memoizedDateParsing = jest.fn().mockReturnValue(['2023-08-01 12:34', true]);
 
-    const result = testModules.handleCommentsData(
-      testData,
-      setCommentCount,
-      setCountAll,
-      memoizedDateParsing,
-    );
+    const result = testModules.handleCommentsData(testData, setCommentCount, memoizedDateParsing);
 
     expect(setCommentCount).toHaveBeenCalledWith(2);
-    expect(setCountAll).toHaveBeenCalledWith(2);
 
     expect(result).toEqual([
       {
@@ -197,18 +190,11 @@ describe('should pass all function tests', () => {
 
   test('handleCommentsData should handle edge case comments data correctly', () => {
     const setCommentCount = jest.fn();
-    const setCountAll = jest.fn();
     const memoizedDateParsing = jest.fn().mockReturnValue(['2023-08-01 12:34', true]);
 
-    const result = testModules.handleCommentsData(
-      edgeCase,
-      setCommentCount,
-      setCountAll,
-      memoizedDateParsing,
-    );
+    const result = testModules.handleCommentsData(edgeCase, setCommentCount, memoizedDateParsing);
 
     expect(setCommentCount).toHaveBeenCalledWith(10001);
-    expect(setCountAll).toHaveBeenCalledWith(10001);
   });
 
   test('getPostListData should get data correctly', () => {
@@ -241,17 +227,10 @@ describe('should pass all function tests', () => {
       },
     ];
     const setCommentCount = jest.fn();
-    const setCountAll = jest.fn();
 
-    const result = testModules.handleCommentsData(
-      testData,
-      setCommentCount,
-      setCountAll,
-      testModules.dateParsing,
-    );
+    const result = testModules.handleCommentsData(testData, setCommentCount, testModules.dateParsing);
 
     expect(setCommentCount).toHaveBeenCalledWith(2);
-    expect(setCountAll).toHaveBeenCalledWith(2);
 
     expect(result).toEqual([
       {

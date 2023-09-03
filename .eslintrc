@@ -51,7 +51,9 @@
     "react/prop-types": 0,
     "no-empty-pattern": 0,
     "no-alert": 0,
-    "react-hooks/exhaustive-deps": 0
+    "react-hooks/exhaustive-deps": 0,
+    "no-new": "off"
+
   },
   "settings": {
     "import/parsers": {

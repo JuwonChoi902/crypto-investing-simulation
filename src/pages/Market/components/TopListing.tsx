@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { useNavigate } from 'react-router';
-import CustomSpinner from './CustomSpinner';
-import coinIcon from '../images/mainIcon.png';
+import ListingCoin from './ListingCoin';
 import { CoinTypes, SymbolTickerTypes } from '../../../typing/types';
 import { updateTickerData } from '../../../utils/functions';
 
@@ -18,7 +16,6 @@ export default function TopListing({ tickers, newAndPopCoins, priceColor }: TopL
     Array.from({ length: newAndPopCoins.length }),
   );
   const priceRef = useRef<number[]>([]);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const webSockets: WebSocket[] = newAndPopCoins.map(
@@ -69,18 +66,7 @@ export default function TopListing({ tickers, newAndPopCoins, priceColor }: TopL
           <CardTitle>{c[0]}</CardTitle>
           <CoinBox>
             {c[1].map((coin, index) => (
-              <Coin key={coin.id}>
-                {coin.price ? (
-                  <CoinInnerBox onClick={() => navigate('/detail', { state: { symbol: coin.symbol } })}>
-                    <img src={coin.imgURL} alt={coinIcon} />
-                    <CoinName>{coin.nick}</CoinName>
-                    <CoinPrice thisColor={c[2][index]}>${coin.price}</CoinPrice>
-                    <CoinChange isColor={coin.dayChange}>{coin.dayChange}</CoinChange>
-                  </CoinInnerBox>
-                ) : (
-                  <CustomSpinner />
-                )}
-              </Coin>
+              <ListingCoin key={coin.id} coin={coin} priceColor={c[2][index]} />
             ))}
           </CoinBox>
         </ListingCard>
@@ -116,53 +102,3 @@ const CardTitle = styled.div`
   font-weight: 600;
 `;
 const CoinBox = styled.div``;
-const Coin = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const CoinInnerBox = styled.div`
-  height: 24px;
-  width: 100%;
-  display: flex;
-  margin: 0px -8px;
-  padding: 6px 8px;
-  align-items: center;
-  z-index: 3;
-  img {
-    width: 24px;
-    margin-right: 8px;
-  }
-
-  &:hover {
-    cursor: pointer;
-    background-color: ${(props) => props.theme.style.backgroundGrey};
-  }
-`;
-const CoinName = styled.div`
-  width: 74px;
-  font-size: 14px;
-  font-weight: 600;
-`;
-const CoinPrice = styled.div<{ thisColor: string }>`
-  font-size: 14px;
-  width: 91.59px;
-  font-weight: bold;
-  color: ${(props) => {
-    if (props.thisColor === 'green') return props.theme.style.green;
-    if (props.thisColor === 'red') return props.theme.style.red;
-    return 'black';
-  }};
-`;
-const CoinChange = styled.div<{ isColor: string | undefined }>`
-  width: 56.03;
-  margin-left: 15px;
-  font-size: 14px;
-  font-weight: 600;
-
-  color: ${(props) => {
-    if (Number(props.isColor) === 0) return 'black';
-    return Number(props.isColor) > 0 ? props.theme.style.green : props.theme.style.red;
-  }};
-`;

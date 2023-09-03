@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useMemo, useState } from 'react';
 import styled from 'styled-components';
 import Pages from './Pages';
-import CustomSpinner from './CustomSpinner';
+import Coin from './Coin';
 import star from '../images/star.png';
 import search from '../images/searchCoin.png';
-import coinIcon from '../images/mainIcon.png';
 import upDown from '../images/upDown.png';
 import { CoinTypes } from '../../../typing/types';
 
@@ -14,11 +12,10 @@ type CoinListProps = {
   priceColor: string[];
 };
 
-export default function CoinList({ tickers, priceColor }: CoinListProps) {
-  const navigate = useNavigate();
+function CoinList({ tickers, priceColor }: CoinListProps) {
   const [page, setPage] = useState<number>(1);
   const [category, setCategory] = useState<string>('2');
-  const coinNumber = 350;
+  const coinNumber = useMemo(() => 350, []);
 
   return (
     <OuterBox>
@@ -63,36 +60,12 @@ export default function CoinList({ tickers, priceColor }: CoinListProps) {
         </FilterTap>
         <Coins>
           {tickers.slice(0, 10).map((coin, index) => (
-            <Coin
-              key={coin.id}
-              isMounted={coin.dayChange}
-              onClick={() => {
-                if (coin.dayChange) navigate('/detail', { state: { symbol: coin.symbol } });
-              }}
-            >
-              {coin.dayChange ? (
-                <CoinInnerBox>
-                  <img src={coin.imgURL} alt={coinIcon} />
-                  <CoinName>
-                    <Nick>{coin.nick}</Nick>
-                    <Name>{coin.name}</Name>
-                  </CoinName>
-
-                  <CoinPrice color={priceColor[index]}>${coin.price}</CoinPrice>
-                  <CoinChange dayChange={coin.dayChange}>{coin.dayChange}%</CoinChange>
-                  <CoinVolume>${coin.volume}</CoinVolume>
-                  <CoinMaketCap>${coin.marketCap}</CoinMaketCap>
-                  <CoinTrade>거래하기</CoinTrade>
-                </CoinInnerBox>
-              ) : (
-                <CustomSpinner />
-              )}
-            </Coin>
+            <Coin key={coin.id} coin={coin} priceColor={priceColor[index]} />
           ))}
         </Coins>
       </CoinListBox>
       <PageBox>
-        <Pages page={page} postNumber={coinNumber} limit={10} />
+        <Pages page={page} postNumber={coinNumber} limit={10} setPage={setPage} />
       </PageBox>
     </OuterBox>
   );
@@ -210,88 +183,6 @@ const FilterMarketCap = styled.div`
 
 const Coins = styled.div``;
 
-const Coin = styled.div<{ isMounted: string | undefined }>`
-  display: flex;
-  height: 64px;
-  padding: 0 16px;
-  align-items: center;
-  justify-content: center;
-  border-bottom: 1px solid #e9ecef;
-  &:hover {
-    cursor: ${(props) => (props.isMounted ? 'pointer' : 'normal')};
-    background-color: ${(props) => (props.isMounted ? props.theme.style.backgroundGrey : 'none')};
-  }
-
-  img {
-    width: 32px;
-    height: 32px;
-    margin-right: 16px;
-  }
-`;
-
-const CoinInnerBox = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
-const CoinName = styled.div`
-  display: flex;
-  align-items: center;
-  width: 213px;
-`;
-
-const Nick = styled.div`
-  font-size: 16px;
-  font-weight: 600;
-  margin-right: 10px;
-`;
-const Name = styled.div`
-  font-size: 14px;
-  color: ${(props) => props.theme.style.grey};
-`;
-const CoinPrice = styled.div<{ color: string | undefined }>`
-  width: 118px;
-  font-size: 16px;
-  font-weight: 600;
-  color: ${(props) => {
-    if (props.color === 'green') return props.theme.style.green;
-    if (props.color === 'red') return props.theme.style.red;
-    return 'black';
-  }};
-`;
-const CoinChange = styled.div<{ dayChange: string | undefined }>`
-  display: flex;
-  justify-content: end;
-  width: 200px;
-  font-size: 16px;
-  font-weight: 600;
-  color: ${(props) => {
-    if (Number(props.dayChange) === 0) return 'black';
-    return Number(props.dayChange) > 0 ? props.theme.style.green : props.theme.style.red;
-  }};
-`;
-const CoinVolume = styled.div`
-  display: flex;
-  justify-content: end;
-  width: 154px;
-  font-size: 16px;
-  font-weight: bold;
-`;
-const CoinMaketCap = styled.div`
-  display: flex;
-  justify-content: end;
-  width: 154px;
-  font-size: 16px;
-  font-weight: bold;
-`;
-const CoinTrade = styled.div`
-  display: flex;
-  justify-content: end;
-  font-size: 16px;
-  color: #c99402;
-  width: 196px;
-  margin-right: 65px;
-`;
 const PageBox = styled.div`
   display: flex;
   justify-content: end;
@@ -299,3 +190,5 @@ const PageBox = styled.div`
   margin-top: 40px;
   padding-bottom: 24px;
 `;
+
+export default React.memo(CoinList);

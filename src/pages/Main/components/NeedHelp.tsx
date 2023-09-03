@@ -5,7 +5,7 @@ import support from '../images/support.png';
 import faq from '../images/faq.png';
 import community from '../images/community.png';
 
-export default function NeedHelp() {
+function NeedHelp() {
   const navigate = useNavigate();
   return (
     <OuterBox data-testid='needhelp'>
@@ -91,3 +91,5 @@ const HelpLink = styled.div`
     color: ${(props) => props.theme.style.buttonYellow};
   }
 `;
+
+export default React.memo(NeedHelp);

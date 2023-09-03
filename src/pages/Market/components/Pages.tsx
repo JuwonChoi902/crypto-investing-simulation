@@ -7,9 +7,10 @@ type PagesProps = {
   page: number;
   postNumber: number | undefined;
   limit: number;
+  setPage: React.Dispatch<React.SetStateAction<number>>;
 };
 
-export default function Pages({ page, postNumber, limit }: PagesProps) {
+function Pages({ page, postNumber, limit, setPage }: PagesProps) {
   const pagination = (number: number | undefined) => {
     const temp = number ? Math.ceil(number / limit) : undefined;
     const arr = [];
@@ -47,8 +48,8 @@ export default function Pages({ page, postNumber, limit }: PagesProps) {
           page={page}
           id={String(el)}
           onClick={() => {
-            // setPage(el);
             alert('현재 코인은 상위 10개만 조회 가능합니다.');
+            setPage(1);
           }}
           key={el}
         >
@@ -113,3 +114,5 @@ const Page = styled.div<{ page: number; id: string }>`
     cursor: pointer;
   }
 `;
+
+export default React.memo(Pages);

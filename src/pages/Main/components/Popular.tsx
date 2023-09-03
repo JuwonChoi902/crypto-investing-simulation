@@ -3,13 +3,12 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router';
 import { SymbolTickerTypes, CoinTypes } from '../../../typing/types';
 import { updateTickerData } from '../../../utils/functions';
+import Coin from './Coin';
 import bitCoin from '../images/bitcoin.png';
 import ethereum from '../images/ethereum.png';
 import usdc from '../images/usd.png';
 import tether from '../images/tether.png';
 import bnb from '../images/bnb.png';
-import coinImg from '../images/coinImg.png';
-import CustomSpinner from './CustomSpinner';
 
 type PopularProps = {
   setVolume: React.Dispatch<React.SetStateAction<number | undefined>>;
@@ -23,13 +22,83 @@ const tenDummyCoins: CoinTypes[] = [
   { id: 5, name: 'USD coin', nick: 'USDC', symbol: 'usdcusdt', imgURL: usdc, quantity: 30390000000 },
 ];
 
-export default function Popular({ setVolume }: PopularProps) {
+function Popular({ setVolume }: PopularProps) {
   const [tickers, setTickers] = useState<CoinTypes[]>(tenDummyCoins);
   const [priceColor, setPriceColor] = useState<string[]>(Array.from({ length: tickers.length }));
   const navigate = useNavigate();
   const priceRef = useRef<number[]>([]);
+  const [mountTime, setMountTime] = useState<number>(0);
+  const [isCoinsRedered, setIsCoinsRendered] = useState<boolean>(false);
+
+  // function printWebSocketTime(url: string) {
+  //   const startTime = performance.now();
+  //   let openTime = 0;
+  //   let firstMessageTime = 0;
+
+  //   const ws = new WebSocket(url);
+
+  //   ws.addEventListener('open', () => {
+  //     openTime = performance.now();
+  //   });
+
+  //   ws.addEventListener('message', () => {
+  //     if (!firstMessageTime) {
+  //       firstMessageTime = performance.now();
+
+  //       const connectionTime = (openTime - startTime) / 1000;
+  //       const firstMessageDelay = (firstMessageTime - openTime) / 1000;
+
+  //       console.log(`WebSocket 연결 시간: ${connectionTime}ms`);
+  //       console.log(`첫 번째 메시지 도착 시간: ${firstMessageDelay}ms`);
+  //     }
+  //   });
+
+  //   return ws;
+  // }
+
+  // const wsUrl = `wss://stream.binance.com:9443/ws/usdcusdt@ticker`;
+
+  // useEffect(() => {
+  //   const webSocket = printWebSocketTime(wsUrl);
+  // }, []);
 
   useEffect(() => {
+    if (!isCoinsRedered && tickers.every((coin) => coin.price)) {
+      setIsCoinsRendered(true);
+      const renderTime = (performance.now() - mountTime) / 1000;
+      console.log(`All Coin Render Time : ${renderTime}`);
+    }
+  }, [tickers]);
+
+  // const webSocketsRef = useRef<WebSocket[]>([]);
+
+  // useEffect(() => {
+  //   setMountTime(performance.now());
+
+  //   Promise.all<WebSocket>(
+  //     tenDummyCoins.map(
+  //       (coin, index) =>
+  //         new Promise<WebSocket>(() => {
+  //           const socket = new WebSocket(`wss://stream.binance.com:9443/ws/${coin.symbol}@ticker`);
+
+  //           socket.addEventListener('message', (event) => {
+  //             const data = JSON.parse(event.data) as SymbolTickerTypes;
+  //             updateTickerData(index, data, setTickers, setPriceColor, priceRef);
+  //           });
+  //         }),
+  //     ),
+  //   );
+
+  //   return () => {
+  //     webSocketsRef.current.forEach((webSocket) => {
+  //       webSocket.close();
+  //     });
+  //   };
+  // }, []);
+
+  useEffect(() => {
+    setMountTime(performance.now());
+
     const webSockets: WebSocket[] = tenDummyCoins.map(
       (coin) => new WebSocket(`wss://stream.binance.com:9443/ws/${coin.symbol}@ticker`),
     );
@@ -50,11 +119,10 @@ export default function Popular({ setVolume }: PopularProps) {
     };
   }, []);
 
-  const totalVoume = tickers.reduce((prev, cur) => prev + Number(cur.volumeOrigin), 0);
-
   useEffect(() => {
+    const totalVoume = () => tickers.reduce((prev, cur) => prev + Number(cur.volumeOrigin), 0);
     setVolume(totalVoume);
-  }, [totalVoume]);
+  }, [tickers]);
 
   return (
     <OuterBox data-testid='popular'>
@@ -73,48 +141,7 @@ export default function Popular({ setVolume }: PopularProps) {
         </CategoryBox>
         <CryptoList>
           {tickers.map((coin, index) => (
-            <Crypto key={coin.id} onClick={() => navigate('/detail', { state: { symbol: coin.symbol } })}>
-              <CryptoTap1>
-                {coin.dayChange ? (
-                  <>
-                    <img src={coin.imgURL} alt={coinImg} />
-                    <CryptoName>{coin.name}</CryptoName>
-                    <CryptoNick>{coin.nick}</CryptoNick>
-                  </>
-                ) : (
-                  <CryptoTap1Spinner>
-                    <CustomSpinner />
-                  </CryptoTap1Spinner>
-                )}
-              </CryptoTap1>
-              <CryptoTap2 thisColor={priceColor[index]}>
-                {coin.price ? (
-                  `$${coin.price}`
-                ) : (
-                  <CryptoTap2Spinner>
-                    <CustomSpinner />
-                  </CryptoTap2Spinner>
-                )}
-              </CryptoTap2>
-              <CryptoTap3 dayChange={coin.dayChange}>
-                {coin.dayChange ? (
-                  `${coin.dayChange}%`
-                ) : (
-                  <CryptoTap3Spinner>
-                    <CustomSpinner />
-                  </CryptoTap3Spinner>
-                )}
-              </CryptoTap3>
-              <CryptoTap4>
-                {coin.dayChange ? (
-                  `$${coin.volume}`
-                ) : (
-                  <CryptoTap4Spinner>
-                    <CustomSpinner />
-                  </CryptoTap4Spinner>
-                )}
-              </CryptoTap4>
-            </Crypto>
+            <Coin key={coin.id} coin={coin} priceColor={priceColor[index]} />
           ))}
         </CryptoList>
       </ListBox>
@@ -176,87 +203,5 @@ const Tap4 = styled.div`
 `;
 
 const CryptoList = styled.div``;
-const Crypto = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  height: 32px;
-  padding: 16px;
 
-  img {
-    width: 32px;
-    height: 32px;
-    margin-right: 16px;
-  }
-
-  &:hover {
-    cursor: pointer;
-    background-color: #f5f5f5;
-  }
-`;
-
-const CryptoTap1 = styled.div`
-  display: flex;
-  align-items: center;
-  margin-right: 130px;
-  width: 100%;
-`;
-const CryptoTap1Spinner = styled.div`
-  margin-left: 50px;
-`;
-
-const CryptoTap2 = styled.div<{ thisColor: string }>`
-  width: 100%;
-  margin-right: 50px;
-  font-weight: bold;
-  color: ${(props) => {
-    if (props.thisColor === 'green') return props.theme.style.green;
-    if (props.thisColor === 'red') return props.theme.style.red;
-    return 'black';
-  }};
-`;
-
-const CryptoTap2Spinner = styled.div`
-  margin-left: 30px;
-`;
-
-const CryptoTap3 = styled.div<{ dayChange: string | undefined }>`
-  width: 100%;
-  margin-left: 0px;
-  font-weight: bold;
-  color: ${(props) => {
-    if (Number(props.dayChange) === 0) {
-      return 'black';
-    }
-    return Number(props.dayChange) < 0 ? props.theme.style.red : props.theme.style.green;
-  }};
-`;
-
-const CryptoTap3Spinner = styled.div`
-  margin-left: 30px;
-`;
-
-const CryptoTap4 = styled.div`
-  display: flex;
-  justify-content: end;
-  width: 100%;
-  font-weight: bold;
-`;
-
-const CryptoTap4Spinner = styled.div`
-  display: flex;
-  justify-content: end;
-`;
-
-const CryptoName = styled.div`
-  display: flex;
-  white-space: nowrap;
-  font-size: 16px;
-  font-weight: 600;
-  margin-right: 8px;
-`;
-const CryptoNick = styled.div`
-  font-size: 14px;
-  color: ${(props) => props.theme.style.grey};
-`;
+export default React.memo(Popular);

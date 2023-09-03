@@ -133,9 +133,3 @@ const Service: FooterDater[] = [
 ];
 
 const Learn: FooterDater[] = [{ id: 1, name: '이용방법', url: 'www.naver.com' }];
-
-const Community: FooterDater[] = [
-  { id: 1, name: 'Youtube', url: 'www.youtube.com' },
-  { id: 2, name: 'Instagram', url: 'www.instagram.com' },
-  { id: 3, name: 'discord', url: 'www.discord.com' },
-];

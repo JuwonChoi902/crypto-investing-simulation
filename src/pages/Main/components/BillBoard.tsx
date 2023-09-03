@@ -7,7 +7,7 @@ type BillBoardProps = {
   volume: number | undefined;
 };
 
-export default function BillBoard({ volume }: BillBoardProps) {
+function BillBoard({ volume }: BillBoardProps) {
   const [symbolLength, setSymbolLength] = useState<number | undefined>();
   const [userCount, setUserCount] = useState<number>(0);
   const loginUserToken = localStorage.getItem('accessToken');
@@ -111,3 +111,5 @@ const BoardDesc = styled.div`
   font-size: 16px;
   white-space: nowrap;
 `;
+
+export default React.memo(BillBoard);
